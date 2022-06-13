@@ -12,5 +12,9 @@ public interface UserMapper {
     @Select("select * from users")
     List<User> selectAll();
 
+    // Generate MappedStatement automatically for this method
     List<User> selectBySample(User user);
+
+    // Ignore this method
+    void anotherMethod();
 }
