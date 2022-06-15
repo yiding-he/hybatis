@@ -16,7 +16,7 @@ public class MyBatisBaseTest {
 
     @Test
     public void testBasicDatabaseOperation() throws Exception {
-        Configuration configuration = Initializer.initialize();
+        Configuration configuration = MyBatisConfigurationBuilder.build();
 
         //////////////////////////
 

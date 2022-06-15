@@ -41,13 +41,23 @@
       <scope>compile</scope>
     </dependency>
 
-    <!-- ////////////////////////// Test ////////////////////////// -->
+    <!-- ////////////////////////// Provided ////////////////////////// -->
+    <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.36</version>
-      <scope>test</scope>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <version>2.7.0</version>
+      <scope>provided</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+    <dependency>
+      <groupId>org.mybatis.spring.boot</groupId>
+      <artifactId>mybatis-spring-boot-starter</artifactId>
+      <version>2.2.2</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- ////////////////////////// Test ////////////////////////// -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

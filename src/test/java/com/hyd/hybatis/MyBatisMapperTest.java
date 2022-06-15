@@ -10,10 +10,10 @@ public class MyBatisMapperTest {
 
     @Test
     public void test() throws Exception {
-        var configuration = Initializer.initialize();
+        var configuration = MyBatisConfigurationBuilder.build();
         configuration.addMapper(UserMapper.class);
 
-        new Hybatis().process(configuration);
+        new Hybatis(new HybatisConfiguration()).process(configuration);
 
         SqlSessionFactory sqlSessionFactory = new DefaultSqlSessionFactory(configuration);
         try (var sqlSession = sqlSessionFactory.openSession()) {

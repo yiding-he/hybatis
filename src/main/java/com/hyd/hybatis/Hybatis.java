@@ -13,7 +13,15 @@ public class Hybatis {
 
     private final MappedStatementFactories mappedStatementFactories = new MappedStatementFactories();
 
+    private final HybatisConfiguration configuration;
+
+    public Hybatis(HybatisConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
     public void process(Configuration configuration) {
+        log.info("Processing mybatis configuration {}", configuration.getDatabaseId());
+
         configuration.getMapperRegistry().getMappers().forEach(mapperClass -> {
             processMapperClass(configuration, mapperClass);
         });
@@ -28,7 +36,7 @@ public class Hybatis {
     private void processMapperMethod(Configuration configuration, Class<?> mapperClass, Method method) {
         var sqlId = mapperClass.getName() + "." + method.getName();
         if (!configuration.hasStatement(sqlId)) {
-            log.debug("MappedStatement '{}' not found.", sqlId);
+            log.info("MappedStatement '{}' not found.", sqlId);
             MappedStatement ms = mappedStatementFactories
                 .createMappedStatement(configuration, sqlId, method, true);
             if (ms != null) {

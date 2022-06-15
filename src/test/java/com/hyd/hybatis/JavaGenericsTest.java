@@ -8,7 +8,7 @@ import java.util.List;
 
 import static org.apache.ibatis.reflection.TypeParameterResolver.resolveReturnType;
 
-public class GenericTest {
+public class JavaGenericsTest {
 
     private final List<String> list = new ArrayList<>();
 
@@ -20,10 +20,10 @@ public class GenericTest {
     public void test() throws Exception {
         Type returnType;
 
-        returnType = resolveReturnType(getClass().getMethod("getList"), GenericTest.class);
+        returnType = resolveReturnType(getClass().getMethod("getList"), JavaGenericsTest.class);
         System.out.println("getList() returns " + returnType);
 
-        returnType = resolveReturnType(getClass().getMethod("hashCode"), GenericTest.class);
+        returnType = resolveReturnType(getClass().getMethod("hashCode"), JavaGenericsTest.class);
         System.out.println("hashCode() returns " + returnType);
     }
 }
