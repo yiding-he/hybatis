@@ -20,7 +20,7 @@ public class Hybatis {
     }
 
     public void process(Configuration configuration) {
-        log.info("Processing mybatis configuration {}", configuration.getDatabaseId());
+        log.info("Processing mybatis configuration {}", configuration);
 
         configuration.getMapperRegistry().getMappers().forEach(mapperClass -> {
             processMapperClass(configuration, mapperClass);

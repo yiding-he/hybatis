@@ -28,8 +28,6 @@ public class MyBatisConfigurationBuilder {
         Environment environment = new Environment("default", transactionFactory, ds);
         Configuration configuration = new Configuration(environment);
         configuration.setMapUnderscoreToCamelCase(true);
-
-        configuration.addInterceptor(new HybatisQueryInterceptor());
         return configuration;
     }
 }
