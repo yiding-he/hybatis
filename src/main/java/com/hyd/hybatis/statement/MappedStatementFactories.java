@@ -5,8 +5,9 @@ import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,13 +16,17 @@ public class MappedStatementFactories {
     public static final String METHOD_NAME_HINT = "Method name should start with: " +
         Stream.of(SqlCommandType.values()).map(t -> t.name().toLowerCase()).collect(Collectors.joining(", "));
 
-    private final Map<SqlCommandType, MappedStatementFactory> factoryMap = new HashMap<>();
+    private final List<MappedStatementFactory> mappedStatementFactories = new ArrayList<>(Arrays.asList(
+        new SelectMappedStatementFactory(),
+        new InsertMappedStatementFactory(),
+        new UpdateMappedStatementFactory(),
+        new DeleteMappedStatementFactory()
+    ));
 
-    {
-        factoryMap.put(SqlCommandType.SELECT, new SelectMappedStatementFactory());
-        factoryMap.put(SqlCommandType.INSERT, new InsertMappedStatementFactory());
-        factoryMap.put(SqlCommandType.UPDATE, new UpdateMappedStatementFactory());
-        factoryMap.put(SqlCommandType.DELETE, new DeleteMappedStatementFactory());
+    public void registerMappedStatementFactory(MappedStatementFactory mappedStatementFactory) {
+        if (!mappedStatementFactories.contains(mappedStatementFactory)) {
+            mappedStatementFactories.add(0, mappedStatementFactory);
+        }
     }
 
     public MappedStatement createMappedStatement(
@@ -32,7 +37,9 @@ public class MappedStatementFactories {
             return null;
         }
 
-        var factory = factoryMap.get(sqlCommandType);
+        var factory = mappedStatementFactories
+            .stream().filter(f -> f.match(method)).findFirst().orElse(null);
+
         if (factory == null) {
             return null;
         }

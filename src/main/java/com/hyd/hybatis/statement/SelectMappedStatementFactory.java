@@ -15,6 +15,11 @@ import java.util.Collections;
 public class SelectMappedStatementFactory implements MappedStatementFactory {
 
     @Override
+    public boolean match(Method method) {
+        return getSqlCommandType(method) == SqlCommandType.SELECT;
+    }
+
+    @Override
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         // todo implement SelectMappedStatementFactory.createMappedStatement()
 
