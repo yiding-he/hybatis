@@ -1,9 +1,9 @@
 package com.hyd.hybatis.entity;
 
-import com.hyd.hybatis.annotations.Table;
+import com.hyd.hybatis.annotations.HbTable;
 import lombok.Data;
 
-@Table("users")
+@HbTable("users")
 @Data
 public class User {
 

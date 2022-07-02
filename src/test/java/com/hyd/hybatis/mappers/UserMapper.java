@@ -1,6 +1,7 @@
 package com.hyd.hybatis.mappers;
 
 import com.hyd.hybatis.entity.User;
+import com.hyd.hybatis.entity.UserQuery;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -19,6 +20,8 @@ public interface UserMapper {
 
     // Generate MappedStatement automatically for this method
     List<User> selectBySample(User user);
+
+    List<User> selectByQuery(UserQuery userQuery);
 
     // Ignore this method
     void anotherMethod();

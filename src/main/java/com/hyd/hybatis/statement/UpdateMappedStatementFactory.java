@@ -6,7 +6,7 @@ import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
 
-public class UpdateMappedStatementFactory implements MappedStatementFactory {
+public class UpdateMappedStatementFactory extends AbstractMappedStatementFactory {
 
     @Override
     public boolean match(Method method) {
