@@ -1,6 +1,7 @@
 package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Condition;
+import com.hyd.hybatis.annotations.HbColumn;
 import com.hyd.hybatis.annotations.HbQuery;
 import com.hyd.hybatis.reflection.Reflections;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class SelectSqlSource extends HybatisSqlSource {
         for (Field conditionField : conditionFields) {
             var condition = getCondition(parameterObject, conditionField);
             var fieldName = conditionField.getName();
-            var columnName = getColumnName(fieldName);
+            var columnName = getColumnName(conditionField);
             if (condition != null) {
                 if (condition.getStartsWith() != null) {
                     var paramName = fieldName + ":startsWith";
@@ -163,8 +164,12 @@ public class SelectSqlSource extends HybatisSqlSource {
         return new ParameterMapping.Builder(getConfiguration(), fieldName, value.getClass()).build();
     }
 
-    private String getColumnName(String fieldName) {
-        return fieldName.replaceAll("([A-Z])", "_$1").toLowerCase();
+    private String getColumnName(Field field) {
+        if (field.isAnnotationPresent(HbColumn.class)) {
+            return field.getAnnotation(HbColumn.class).value();
+        } else {
+            return field.getName().replaceAll("([A-Z])", "_$1").toLowerCase();
+        }
     }
 
     private Condition<?> getCondition(Object parameterObject, Field conditionField) {

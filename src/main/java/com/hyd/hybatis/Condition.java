@@ -9,33 +9,27 @@ import java.util.List;
 @Data
 public class Condition<T> {
 
-    private String startsWith;   // like '...%'
+    private String startsWith;  // like '...%'
 
-    private String endsWith;     // like '%...'
+    private String endsWith;    // like '%...'
 
-    private String contains;     // like '%...%'
+    private String contains;    // like '%...%'
 
-    /**
-     * equals
-     */
-    private T eq;
+    private T eq;               // =
 
-    /**
-     * not equal
-     */
-    private T ne;
+    private T ne;               // !=
 
-    private Boolean Null;
+    private Boolean Null;       // is (not) null
 
-    private T lt;
+    private T lt;               // <
 
-    private T lte;
+    private T lte;              // <=
 
-    private T gt;
+    private T gt;               // >
 
-    private T gte;
+    private T gte;              // >=
 
-    private List<T> in;
+    private List<T> in;         // in
 
     public void startsWith(String s) {
         this.startsWith = s;
