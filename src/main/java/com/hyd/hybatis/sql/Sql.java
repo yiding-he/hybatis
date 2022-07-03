@@ -10,15 +10,15 @@ import java.util.stream.Collectors;
 /**
  * Dynamic SQL generator
  *
+ * 本类中的有些方法命名以大写字母开头，这是因为考虑到 SQL 属于
+ * 不同语种，即使是用 Java 语法来模拟 SQL，也应该保持这种感觉
+ *
  * @author yiding.he
  */
 @SuppressWarnings({
     "unused", "BooleanMethodIsAlwaysInverted", "unchecked", "UnusedReturnValue"
 })
 public abstract class Sql<T extends Sql<?>> {
-
-    //在这个类中本人坚持这种“不符合规范”的命名方式，因为考虑到
-    //SQL 属于不同语种，即使是用 Java 语法来模拟 SQL，也应该保持这种感觉
 
     private Sql() {
 
@@ -41,7 +41,7 @@ public abstract class Sql<T extends Sql<?>> {
         return str.length() == 0 || str.trim().length() == 0;
     }
 
-    public abstract Command toCommand();
+    public abstract SqlCommand toCommand();
 
     protected String table;
 
@@ -139,7 +139,7 @@ public abstract class Sql<T extends Sql<?>> {
             throw new IllegalStateException("cannot use 'where' block in Insert");
         }
         if (exp) {
-            Command childCmd = child.toCommand();
+            SqlCommand childCmd = child.toCommand();
             this.conditions.add(new Pair(Joint.AND, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
         }
         return (T) this;
@@ -175,7 +175,7 @@ public abstract class Sql<T extends Sql<?>> {
 
     public T And(boolean exp, String statement, Sql<T> child) {
         if (exp) {
-            Command childCmd = child.toCommand();
+            SqlCommand childCmd = child.toCommand();
             this.conditions.add(new Pair(Joint.AND, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
         }
         return (T) this;
@@ -229,7 +229,7 @@ public abstract class Sql<T extends Sql<?>> {
 
     public T Or(boolean exp, String statement, Sql<T> child) {
         if (exp) {
-            Command childCmd = child.toCommand();
+            SqlCommand childCmd = child.toCommand();
             this.conditions.add(new Pair(Joint.OR, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
         }
         return (T) this;
@@ -504,13 +504,13 @@ public abstract class Sql<T extends Sql<?>> {
         }
 
         @Override
-        public Command toCommand() {
+        public SqlCommand toCommand() {
             this.statement = "insert into " + table +
                 "(" + Pair.joinPairName(pairs) + ") values " +
                 "(" + Pair.joinPairHolder(pairs) + ")";
             this.params = Pair.joinPairValue(pairs);
 
-            return new Command(statement, params);
+            return new SqlCommand(statement, params);
         }
     }
 
@@ -533,12 +533,12 @@ public abstract class Sql<T extends Sql<?>> {
         }
 
         @Override
-        public Command toCommand() {
+        public SqlCommand toCommand() {
             this.params.clear();
             this.statement = "update " + table +
                 " set " + generateSetBlock() + " " + generateWhereBlock();
 
-            return new Command(this.statement, this.params);
+            return new SqlCommand(this.statement, this.params);
         }
 
         private String generateSetBlock() {
@@ -655,7 +655,7 @@ public abstract class Sql<T extends Sql<?>> {
         }
 
         @Override
-        public Command toCommand() {
+        public SqlCommand toCommand() {
             this.params.clear();
             this.statement = "select " + this.columns + " from " + this.from + " ";
             this.statement += generateJoinBlock();
@@ -664,7 +664,7 @@ public abstract class Sql<T extends Sql<?>> {
             this.statement += generateOrderBy();
             this.statement += this.skip > 0 ? (" skip " + this.skip + " ") : "";
             this.statement += this.limit > 0 ? (" limit " + this.limit + " ") : "";
-            return new Command(this.statement, this.params);
+            return new SqlCommand(this.statement, this.params);
         }
 
         private String generateGroupBy() {
@@ -685,10 +685,10 @@ public abstract class Sql<T extends Sql<?>> {
         }
 
         @Override
-        public Command toCommand() {
+        public SqlCommand toCommand() {
             this.params.clear();
             this.statement = "delete from " + table + generateWhereBlock();
-            return new Command(this.statement, this.params);
+            return new SqlCommand(this.statement, this.params);
         }
     }
 }

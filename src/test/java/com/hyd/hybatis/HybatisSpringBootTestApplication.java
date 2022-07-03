@@ -33,9 +33,10 @@ public class HybatisSpringBootTestApplication {
             userMapper.insertUser(1L, "Zhang San");
             userMapper.insertUser(2L, "Li Si");
             userMapper.insertUser(3L, "Wang wu");
+            userMapper.insertUser(4L, null);
 
             UserQuery userQuery = new UserQuery();
-            userQuery.userId().eq(2L);
+            userQuery.userId().in(1L, 3L, 4L);
 
             userMapper.selectByQuery(userQuery).forEach(System.out::println);
         };

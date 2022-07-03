@@ -5,7 +5,7 @@ import com.hyd.hybatis.annotations.HbQuery;
 import lombok.Data;
 
 @Data
-@HbQuery(table = "users", entity = User.class)
+@HbQuery(table = "users")
 public class UserQuery {
 
     private Condition<String> userName;

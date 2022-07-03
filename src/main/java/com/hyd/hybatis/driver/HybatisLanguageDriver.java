@@ -13,7 +13,7 @@ public class HybatisLanguageDriver implements LanguageDriver {
 
     @Override
     public ParameterHandler createParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
-        return new DefaultParameterHandler(mappedStatement, parameterObject, boundSql);
+        return new DefaultParameterHandler(mappedStatement, boundSql.getParameterObject(), boundSql);
     }
 
     @Override

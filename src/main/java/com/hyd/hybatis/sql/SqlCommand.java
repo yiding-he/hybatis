@@ -2,16 +2,16 @@ package com.hyd.hybatis.sql;
 
 import java.util.List;
 
-public class Command {
+public class SqlCommand {
 
     private String statement;
 
     private List<Object> params;
 
-    public Command() {
+    public SqlCommand() {
     }
 
-    public Command(String statement, List<Object> params) {
+    public SqlCommand(String statement, List<Object> params) {
         this.statement = statement;
         this.params = params;
     }
