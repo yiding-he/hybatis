@@ -1,6 +1,7 @@
 package com.hyd.hybatis;
 
 import com.hyd.hybatis.entity.User;
+import com.hyd.hybatis.entity.UserCteQuery;
 import com.hyd.hybatis.entity.UserQuery;
 import com.hyd.hybatis.mappers.UserMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -54,9 +55,20 @@ public class HybatisSpringBootTestApplication {
         @Autowired
         private UserMapper userMapper;
 
+        // curl "http://localhost:8080/users/query?id.eq=1"
+        // curl "http://localhost:8080/users/query?id.gt=1&id.lt=4"
+        // curl "http://localhost:8080/users/query?userName.null=true"
+        // curl "http://localhost:8080/users/query?id.orderAsc=1&userName.orderDesc=2"
+        // curl "http://localhost:8080/users/query?id.eq=1"
+        // curl "http://localhost:8080/users/query?id.eq=1"
         @GetMapping("/query")
         public List<User> getUsers(UserQuery userQuery) {
             return userMapper.selectByQuery(userQuery);
+        }
+
+        @GetMapping("/query-cte")
+        public List<User> getUsersCte(UserCteQuery userQuery) {
+            return userMapper.selectByQueryCte(userQuery);
         }
 
         @GetMapping("/queryMap")

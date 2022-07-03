@@ -1,6 +1,5 @@
 package com.hyd.hybatis.statement;
 
-import com.hyd.hybatis.annotations.HbQuery;
 import com.hyd.hybatis.driver.HybatisLanguageDriver;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.sql.SelectSqlSource;
@@ -26,12 +25,14 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
         Class<?> entityType = Reflections.getReturnEntityType(method);
         var sqlSource = new SelectSqlSource(configuration);
 
-        return new MappedStatement.Builder(
-            configuration, sqlId, sqlSource, SqlCommandType.SELECT
-        ).lang(
-            new HybatisLanguageDriver()
-        ).resultMaps(Collections.singletonList(
-            new ResultMap.Builder(configuration, sqlId + "_RM", entityType, Collections.emptyList(), true).build()
-        )).build();
+        ResultMap resultMap = new ResultMap
+            .Builder(configuration, sqlId + "_RM", entityType, Collections.emptyList(), true)
+            .build();
+
+        return new MappedStatement
+            .Builder(configuration, sqlId, sqlSource, SqlCommandType.SELECT)
+            .lang(new HybatisLanguageDriver())
+            .resultMaps(Collections.singletonList(resultMap))
+            .build();
     }
 }

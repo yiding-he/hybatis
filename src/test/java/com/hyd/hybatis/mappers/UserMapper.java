@@ -1,6 +1,7 @@
 package com.hyd.hybatis.mappers;
 
 import com.hyd.hybatis.entity.User;
+import com.hyd.hybatis.entity.UserCteQuery;
 import com.hyd.hybatis.entity.UserQuery;
 import org.apache.ibatis.annotations.*;
 
@@ -21,6 +22,9 @@ public interface UserMapper {
 
     // Generate MappedStatement automatically for this method
     List<User> selectByQuery(UserQuery userQuery);
+
+    // Generate MappedStatement automatically for this method
+    List<User> selectByQueryCte(UserCteQuery userQuery);
 
     // Generate MappedStatement automatically for this method
     List<Map<String, Object>> selectMapByQuery(UserQuery userQuery);

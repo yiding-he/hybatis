@@ -3,7 +3,6 @@ package com.hyd.hybatis;
 import lombok.Data;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 @Data
@@ -30,6 +29,10 @@ public class Condition<T> {
     private T gte;              // >=
 
     private List<T> in;         // in
+
+    private Integer orderAsc;   // order by ... asc
+
+    private Integer orderDesc;  // order by ... desc
 
     public void startsWith(String s) {
         this.startsWith = s;

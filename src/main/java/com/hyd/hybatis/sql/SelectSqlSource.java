@@ -11,12 +11,8 @@ import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Slf4j
 public class SelectSqlSource extends HybatisSqlSource {
@@ -27,17 +23,32 @@ public class SelectSqlSource extends HybatisSqlSource {
 
     @Override
     protected BoundSql build(Object parameterObject) {
-        var tableName = parameterObject.getClass().getAnnotation(HbQuery.class).table();
+        var tableName = parameterObject.getClass().getAnnotation(HbQuery.class).table().trim();
+        if (tableName.substring(0, 7).equalsIgnoreCase("select ")) {
+            tableName = "(" + tableName + ") _tb_";
+        }
+
         var select = Sql.Select("*").From(tableName);
         Map<String, Object> parameterMap = new HashMap<>();
         Map<String, Object> additionalParameterMap = new HashMap<>();
         List<ParameterMapping> parameterMappings = new ArrayList<>();
 
-        var conditionFields = Reflections.getPojoFieldsOfType(parameterObject.getClass(), Condition.class);
+        var conditionFields = Reflections
+            .getPojoFieldsOfType(parameterObject.getClass(), Condition.class);
+
+        var conditionMappings = new HashMap<Field, Condition<?>>();
+        var columnNameMappings = new HashMap<Condition<?>, String>();
+        for (Field f : conditionFields) {
+            Condition<?> condition = getCondition(parameterObject, f);
+            columnNameMappings.put(condition, getColumnName(f));
+            conditionMappings.put(f, condition);
+        }
+
         for (Field conditionField : conditionFields) {
-            var condition = getCondition(parameterObject, conditionField);
+            var condition = conditionMappings.get(conditionField);
             var fieldName = conditionField.getName();
-            var columnName = getColumnName(conditionField);
+            var columnName = columnNameMappings.get(condition);
+
             if (condition != null) {
                 if (condition.getStartsWith() != null) {
                     var paramName = fieldName + ":startsWith";
@@ -121,9 +132,6 @@ public class SelectSqlSource extends HybatisSqlSource {
                 }
                 if (condition.getIn() != null) {
                     var value = condition.getIn();
-                    var marks = IntStream.range(0, value.size())
-                        .mapToObj(i -> "?").collect(Collectors.joining(","));
-
                     select.And(columnName + " in ?", value);
 
                     for (int i = 0; i < value.size(); i++) {
@@ -136,6 +144,13 @@ public class SelectSqlSource extends HybatisSqlSource {
                 }
             }
         }
+
+        String orderBy = conditionMappings.values().stream()
+            .filter(c -> c != null && (c.getOrderAsc() != null || c.getOrderDesc() != null))
+            .sorted(Comparator.comparing(c -> c.getOrderAsc() == null ? c.getOrderDesc() : c.getOrderAsc()))
+            .map(c -> columnNameMappings.get(c) + (c.getOrderAsc() == null ? " desc" : " asc"))
+            .collect(Collectors.joining(","));
+        select.OrderBy(orderBy);
 
         SqlCommand sqlCommand = select.toCommand();
         log.info(sqlCommand.toString());
