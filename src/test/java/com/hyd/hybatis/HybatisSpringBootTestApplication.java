@@ -1,16 +1,25 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.entity.User;
 import com.hyd.hybatis.entity.UserQuery;
 import com.hyd.hybatis.mappers.UserMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 @SpringBootApplication
 @Import(HybatisConfigurator.class)
+@Slf4j
 public class HybatisSpringBootTestApplication {
 
     static {
@@ -34,11 +43,26 @@ public class HybatisSpringBootTestApplication {
             userMapper.insertUser(2L, "Li Si");
             userMapper.insertUser(3L, "Wang wu");
             userMapper.insertUser(4L, null);
-
-            UserQuery userQuery = new UserQuery();
-            userQuery.userId().in(1L, 3L, 4L);
-
-            userMapper.selectByQuery(userQuery).forEach(System.out::println);
+            log.info("Users created.");
         };
     }
+
+    @RestController
+    @RequestMapping("/users")
+    public static class UserController {
+
+        @Autowired
+        private UserMapper userMapper;
+
+        @GetMapping("/query")
+        public List<User> getUsers(UserQuery userQuery) {
+            return userMapper.selectByQuery(userQuery);
+        }
+
+        @GetMapping("/queryMap")
+        public List<Map<String, Object>> getUsersMap(UserQuery userQuery) {
+            return userMapper.selectMapByQuery(userQuery);
+        }
+    }
+
 }

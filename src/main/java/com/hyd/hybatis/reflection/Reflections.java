@@ -5,6 +5,7 @@ import org.apache.ibatis.reflection.TypeParameterResolver;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +37,12 @@ public class Reflections {
         var type = TypeParameterResolver.resolveReturnType(method, method.getDeclaringClass());
         if (type instanceof ParameterizedType) {
             var parameterizedType = (ParameterizedType) type;
-            return (Class<?>) parameterizedType.getActualTypeArguments()[0];
+            Type args0 = parameterizedType.getActualTypeArguments()[0];
+            if (args0 instanceof ParameterizedType) {
+                return (Class<?>) ((ParameterizedType) args0).getRawType();
+            } else {
+                return (Class<?>) args0;
+            }
         } else {
             return (Class<?>) type;
         }

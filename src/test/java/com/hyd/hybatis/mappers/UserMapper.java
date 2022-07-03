@@ -5,6 +5,7 @@ import com.hyd.hybatis.entity.UserQuery;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface UserMapper {
@@ -20,6 +21,9 @@ public interface UserMapper {
 
     // Generate MappedStatement automatically for this method
     List<User> selectByQuery(UserQuery userQuery);
+
+    // Generate MappedStatement automatically for this method
+    List<Map<String, Object>> selectMapByQuery(UserQuery userQuery);
 
     // Ignore this method
     void anotherMethod();

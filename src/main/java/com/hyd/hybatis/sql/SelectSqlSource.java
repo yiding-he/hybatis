@@ -39,34 +39,44 @@ public class SelectSqlSource extends HybatisSqlSource {
             var columnName = getColumnName(fieldName);
             if (condition != null) {
                 if (condition.getStartsWith() != null) {
+                    var paramName = fieldName + ":startsWith";
                     var value = condition.getStartsWith() + "%";
                     select.And(columnName + " like ?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getEndsWith() != null) {
+                    var paramName = fieldName + ":endsWith";
                     var value = "%" + condition.getEndsWith();
                     select.And(columnName + " like ?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getContains() != null) {
+                    var paramName = fieldName + ":contains";
                     var value = "%" + condition.getContains() + "%";
                     select.And(columnName + " like ?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getEq() != null) {
+                    var paramName = fieldName + ":eq";
                     var value = condition.getEq();
                     select.And(columnName + "=?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getNe() != null) {
+                    var paramName = fieldName + ":ne";
                     var value = condition.getNe();
                     select.And(columnName + "<>?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getNull() != null) {
                     var value = condition.getNull();
@@ -77,35 +87,43 @@ public class SelectSqlSource extends HybatisSqlSource {
                     }
                 }
                 if (condition.getLt() != null) {
+                    var paramName = fieldName + ":lt";
                     var value = condition.getLt();
                     select.And(columnName + "<?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getLte() != null) {
+                    var paramName = fieldName + ":lte";
                     var value = condition.getLte();
                     select.And(columnName + "<=?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getGt() != null) {
+                    var paramName = fieldName + ":gt";
                     var value = condition.getGt();
                     select.And(columnName + ">?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getGte() != null) {
+                    var paramName = fieldName + ":gte";
                     var value = condition.getGte();
                     select.And(columnName + ">=?", value);
-                    parameterMap.put(fieldName, value);
-                    parameterMappings.add(getParameterMapping(fieldName, value));
+                    parameterMap.put(paramName, value);
+                    parameterMappings.add(getParameterMapping(paramName, value));
+                    additionalParameterMap.put(paramName, value);
                 }
                 if (condition.getIn() != null) {
                     var value = condition.getIn();
                     var marks = IntStream.range(0, value.size())
                         .mapToObj(i -> "?").collect(Collectors.joining(","));
 
-                    select.And(columnName + " in (" + marks + ")");
+                    select.And(columnName + " in ?", value);
 
                     for (int i = 0; i < value.size(); i++) {
                         Object o = value.get(i);
