@@ -9,5 +9,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface HbQuery {
 
-    public String table();
+    String table();
+
+    Class<?> entity();
 }

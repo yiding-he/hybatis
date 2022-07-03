@@ -1,5 +1,6 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.entity.UserQuery;
 import com.hyd.hybatis.mappers.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -31,7 +32,12 @@ public class HybatisSpringBootTestApplication {
             userMapper.createUserTable();
             userMapper.insertUser(1L, "Zhang San");
             userMapper.insertUser(2L, "Li Si");
-            userMapper.selectAll().forEach(System.out::println);
+            userMapper.insertUser(3L, "Wang wu");
+
+            UserQuery userQuery = new UserQuery();
+            userQuery.userId().eq(2L);
+
+            userMapper.selectByQuery(userQuery).forEach(System.out::println);
         };
     }
 }

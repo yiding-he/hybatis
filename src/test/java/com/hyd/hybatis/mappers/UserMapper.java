@@ -19,8 +19,6 @@ public interface UserMapper {
     List<User> selectAll();
 
     // Generate MappedStatement automatically for this method
-    List<User> selectBySample(User user);
-
     List<User> selectByQuery(UserQuery userQuery);
 
     // Ignore this method

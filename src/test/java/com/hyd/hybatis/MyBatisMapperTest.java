@@ -19,7 +19,6 @@ public class MyBatisMapperTest {
         try (var sqlSession = sqlSessionFactory.openSession()) {
             var userMapper = sqlSession.getMapper(UserMapper.class);
             userMapper.selectAll().forEach(System.out::println);
-            userMapper.selectBySample(new User()).forEach(System.out::println);
         }
     }
 }
