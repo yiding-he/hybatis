@@ -17,14 +17,22 @@ import org.springframework.context.event.EventListener;
 public class HybatisConfigurator {
 
     @Bean
-    Hybatis hybatis(HybatisConfiguration configuration) {
-        return new Hybatis(configuration);
+    HybatisCore hybatisCore(HybatisConfiguration configuration) {
+        return new HybatisCore(configuration);
+    }
+
+    @Bean
+    Hybatis hybatis(
+        HybatisConfiguration configuration,
+        SqlSessionFactory sqlSessionFactory
+    ) {
+        return new Hybatis(configuration, sqlSessionFactory);
     }
 
     @EventListener
     public void onContextRefreshed(ContextRefreshedEvent event) {
-        var hybatis = event.getApplicationContext().getBean(Hybatis.class);
         var sqlSessionFactory = event.getApplicationContext().getBean(SqlSessionFactory.class);
-        hybatis.process(sqlSessionFactory.getConfiguration());
+        var hybatisCore = event.getApplicationContext().getBean(HybatisCore.class);
+        hybatisCore.process(sqlSessionFactory.getConfiguration());
     }
 }

@@ -1,6 +1,5 @@
 package com.hyd.hybatis;
 
-import com.hyd.hybatis.entity.User;
 import com.hyd.hybatis.mappers.UserMapper;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
@@ -10,10 +9,13 @@ public class MyBatisMapperTest {
 
     @Test
     public void test() throws Exception {
+
+        var hybatisConf = new HybatisConfiguration();
+        var hybatisCore = new HybatisCore(hybatisConf);
+
         var configuration = MyBatisConfigurationBuilder.build();
         configuration.addMapper(UserMapper.class);
-
-        new Hybatis(new HybatisConfiguration()).process(configuration);
+        hybatisCore.process(configuration);
 
         SqlSessionFactory sqlSessionFactory = new DefaultSqlSessionFactory(configuration);
         try (var sqlSession = sqlSessionFactory.openSession()) {
