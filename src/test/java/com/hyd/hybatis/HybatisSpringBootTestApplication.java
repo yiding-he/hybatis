@@ -81,6 +81,7 @@ public class HybatisSpringBootTestApplication {
             return userMapper.selectMapByQuery(userQuery);
         }
 
+        // curl "http://localhost:8080/users/insert?id=6&name=John"
         @GetMapping("/insert")
         public String insertUser(
             @RequestParam("id") Long id,
@@ -90,6 +91,13 @@ public class HybatisSpringBootTestApplication {
                 .Values("user_id", id)
                 .Values("user_name", name)
             );
+            return "OK, " + affected + " rows affected.";
+        }
+
+        // curl "http://localhost:8080/users/insert-obj?userId=6&userName=John"
+        @GetMapping("/insert-obj")
+        public String insertUser(User user) throws Exception {
+            var affected = userMapper.insertUserObject(user);
             return "OK, " + affected + " rows affected.";
         }
     }

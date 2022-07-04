@@ -10,7 +10,8 @@ import java.lang.annotation.Target;
  * 用于注解要插入的对象
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface HbTable {
-    String value();
+@Target(ElementType.METHOD)
+public @interface HbInsert {
+
+    String table();
 }

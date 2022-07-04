@@ -1,5 +1,6 @@
 package com.hyd.hybatis.mappers;
 
+import com.hyd.hybatis.annotations.HbInsert;
 import com.hyd.hybatis.entity.User;
 import com.hyd.hybatis.entity.UserCteQuery;
 import com.hyd.hybatis.entity.UserQuery;
@@ -28,6 +29,9 @@ public interface UserMapper {
 
     // Generate MappedStatement automatically for this method
     List<Map<String, Object>> selectMapByQuery(UserQuery userQuery);
+
+    @HbInsert(table = "users")
+    int insertUserObject(User user);
 
     // Ignore this method
     void anotherMethod();

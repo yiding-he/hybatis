@@ -1,11 +1,10 @@
 package com.hyd.hybatis.reflection;
 
+import com.hyd.hybatis.Condition;
+import com.hyd.hybatis.annotations.HbColumn;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,13 +15,21 @@ public class Reflections {
     /**
      * 查询 pojoType 中所有属于 fieldType 类型的成员
      */
+    public static List<Field> getPojoFields(Class<?> pojoType) {
+        return getPojoFieldsOfType(pojoType, null);
+    }
+
+    /**
+     * 查询 pojoType 中所有属于 fieldType 类型的成员
+     */
     public static List<Field> getPojoFieldsOfType(Class<?> pojoType, Class<?> fieldType) {
         List<Field> fieldList = new ArrayList<>();
         Class<?> t = pojoType;
         while (t != Object.class) {
             fieldList.addAll(
                 Stream.of(t.getDeclaredFields())
-                    .filter(f -> fieldType.isAssignableFrom(f.getType()))
+                    .filter(f -> fieldType == null || fieldType.isAssignableFrom(f.getType()))
+                    .filter(f -> !Modifier.isTransient(f.getModifiers()))
                     .collect(Collectors.toList())
             );
             t = t.getSuperclass();
@@ -48,4 +55,30 @@ public class Reflections {
         }
     }
 
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldValue(Object parameterObject, Field field) {
+        try {
+            var fieldName = field.getName();
+            Class<?> fieldType = field.getType();
+            var getterPrefix = (fieldType == boolean.class) ? "is" : "get";
+            var getterName = getterPrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+            var getterMethod = field.getDeclaringClass().getMethod(getterName);
+            if (Modifier.isPublic(getterMethod.getModifiers())) {
+                var fieldValue = getterMethod.invoke(parameterObject);
+                return (T) fieldValue;
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static String getColumnName(Field field) {
+        if (field.isAnnotationPresent(HbColumn.class)) {
+            return field.getAnnotation(HbColumn.class).value();
+        } else {
+            return field.getName().replaceAll("([A-Z])", "_$1").toLowerCase();
+        }
+    }
 }

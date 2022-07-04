@@ -1,7 +1,6 @@
 package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Condition;
-import com.hyd.hybatis.annotations.HbColumn;
 import com.hyd.hybatis.annotations.HbQuery;
 import com.hyd.hybatis.reflection.Reflections;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +9,6 @@ import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +38,7 @@ public class SelectSqlSource extends HybatisSqlSource {
         var columnNameMappings = new HashMap<Condition<?>, String>();
         for (Field f : conditionFields) {
             Condition<?> condition = getCondition(parameterObject, f);
-            columnNameMappings.put(condition, getColumnName(f));
+            columnNameMappings.put(condition, Reflections.getColumnName(f));
             conditionMappings.put(f, condition);
         }
 
@@ -179,26 +177,7 @@ public class SelectSqlSource extends HybatisSqlSource {
         return new ParameterMapping.Builder(getConfiguration(), fieldName, value.getClass()).build();
     }
 
-    private String getColumnName(Field field) {
-        if (field.isAnnotationPresent(HbColumn.class)) {
-            return field.getAnnotation(HbColumn.class).value();
-        } else {
-            return field.getName().replaceAll("([A-Z])", "_$1").toLowerCase();
-        }
-    }
-
     private Condition<?> getCondition(Object parameterObject, Field conditionField) {
-        try {
-            var fieldName = conditionField.getName();
-            var getterName = "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-            var getterMethod = conditionField.getDeclaringClass().getMethod(getterName);
-            if (Modifier.isPublic(getterMethod.getModifiers())) {
-                var fieldValue = getterMethod.invoke(parameterObject);
-                return (Condition<?>) fieldValue;
-            }
-            return null;
-        } catch (Exception e) {
-            return null;
-        }
+        return Reflections.getFieldValue(parameterObject, conditionField);
     }
 }
