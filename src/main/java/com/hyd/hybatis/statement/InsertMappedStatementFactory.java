@@ -1,8 +1,7 @@
 package com.hyd.hybatis.statement;
 
 import com.hyd.hybatis.annotations.HbInsert;
-import com.hyd.hybatis.driver.HybatisLanguageDriver;
-import com.hyd.hybatis.sql.InsertSqlSource;
+import com.hyd.hybatis.sql.SqlSourceForInsert;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
@@ -21,11 +20,9 @@ public class InsertMappedStatementFactory extends AbstractMappedStatementFactory
     @Override
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         var hbInsert = method.getAnnotation(HbInsert.class);
-        var sqlSource = new InsertSqlSource(configuration, hbInsert.table());
-        return new MappedStatement
-            .Builder(configuration, sqlId, sqlSource, SqlCommandType.INSERT)
-            .lang(new HybatisLanguageDriver())
-            .build();
+        var sqlSource = new SqlSourceForInsert(configuration, hbInsert.table());
+
+        return buildMappedStatement(configuration, sqlId, sqlSource);
 
     }
 }

@@ -6,21 +6,21 @@ import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Field;
 
-public class InsertSqlSource  extends HybatisSqlSource {
+public class SqlSourceForInsert extends HybatisSqlSource {
 
     private final String tableName;
 
-    public InsertSqlSource(Configuration configuration, String tableName) {
+    public SqlSourceForInsert(Configuration configuration, String tableName) {
         super(configuration);
         this.tableName = tableName;
     }
 
     @Override
     protected BoundSql build(Object parameterObject) {
-        var insert = Sql.Insert(tableName);
-        BoundSqlBuilder builder = new BoundSqlBuilder(getConfiguration(), insert);
 
+        var insert = Sql.Insert(tableName);
         var fields = Reflections.getPojoFields(parameterObject.getClass());
+
         for (Field field : fields) {
             var fieldValue = Reflections.getFieldValue(parameterObject, field);
             if (fieldValue != null) {
@@ -29,6 +29,6 @@ public class InsertSqlSource  extends HybatisSqlSource {
             }
         }
 
-        return builder.build();
+        return buildBoundSql(insert);
     }
 }

@@ -22,4 +22,9 @@ public abstract class HybatisSqlSource implements SqlSource {
     }
 
     protected abstract BoundSql build(Object parameterObject);
+
+    // Helper method for subclasses
+    protected BoundSql buildBoundSql(Sql<?> sql) {
+        return new BoundSqlBuilder(configuration, sql).build();
+    }
 }

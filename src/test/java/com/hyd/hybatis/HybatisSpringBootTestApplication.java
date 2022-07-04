@@ -3,6 +3,7 @@ package com.hyd.hybatis;
 import com.hyd.hybatis.entity.User;
 import com.hyd.hybatis.entity.UserCteQuery;
 import com.hyd.hybatis.entity.UserQuery;
+import com.hyd.hybatis.entity.UserUpdate;
 import com.hyd.hybatis.mappers.UserMapper;
 import com.hyd.hybatis.sql.Sql;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +13,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -99,6 +97,19 @@ public class HybatisSpringBootTestApplication {
         public String insertUser(User user) throws Exception {
             var affected = userMapper.insertUserObject(user);
             return "OK, " + affected + " rows affected.";
+        }
+
+        @GetMapping("/update")
+        public String updateUser(UserUpdate userUpdate) {
+            userMapper.updateUser(userUpdate.getQuery(), userUpdate.getUpdate());
+            return "OK";
+        }
+
+        // POST body: {"query":{"id":{"eq":1}},"update":{"userName":"Hehehehehehe"}}
+        @PostMapping("/update-json")
+        public String updateUserJson(@RequestBody UserUpdate userUpdate) {
+            userMapper.updateUser(userUpdate.getQuery(), userUpdate.getUpdate());
+            return "OK";
         }
     }
 

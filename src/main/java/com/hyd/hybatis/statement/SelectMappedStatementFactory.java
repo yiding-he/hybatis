@@ -1,15 +1,12 @@
 package com.hyd.hybatis.statement;
 
-import com.hyd.hybatis.driver.HybatisLanguageDriver;
 import com.hyd.hybatis.reflection.Reflections;
-import com.hyd.hybatis.sql.SelectSqlSource;
+import com.hyd.hybatis.sql.SqlSourceForSelect;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 
 public class SelectMappedStatementFactory extends AbstractMappedStatementFactory {
 
@@ -23,15 +20,7 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
     @Override
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         Class<?> entityType = Reflections.getReturnEntityType(method);
-
-        ResultMap resultMap = new ResultMap
-            .Builder(configuration, sqlId + "_RM", entityType, Collections.emptyList(), true)
-            .build();
-
-        return new MappedStatement
-            .Builder(configuration, sqlId, new SelectSqlSource(configuration), SqlCommandType.SELECT)
-            .lang(new HybatisLanguageDriver())
-            .resultMaps(Collections.singletonList(resultMap))
-            .build();
+        SqlSourceForSelect sqlSource = new SqlSourceForSelect(configuration);
+        return buildMappedStatement(configuration, sqlId, entityType, sqlSource);
     }
 }

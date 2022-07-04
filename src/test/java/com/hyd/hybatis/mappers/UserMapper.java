@@ -21,18 +21,19 @@ public interface UserMapper {
     @Select("select * from users")
     List<User> selectAll();
 
-    // Generate MappedStatement automatically for this method
+    //////////////////////////// Generate MappedStatement automatically for these methods
+
     List<User> selectByQuery(UserQuery userQuery);
 
-    // Generate MappedStatement automatically for this method
     List<User> selectByQueryCte(UserCteQuery userQuery);
 
-    // Generate MappedStatement automatically for this method
     List<Map<String, Object>> selectMapByQuery(UserQuery userQuery);
 
     @HbInsert(table = "users")
     int insertUserObject(User user);
 
-    // Ignore this method
+    void updateUser(UserQuery query, User update);
+
+    //////////////////////////// Ignore these methods
     void anotherMethod();
 }

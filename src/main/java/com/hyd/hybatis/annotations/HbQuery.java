@@ -15,5 +15,5 @@ public @interface HbQuery {
     /**
      * 表示该查询是针对哪个表
      */
-    String table();
+    String table() default "";
 }
