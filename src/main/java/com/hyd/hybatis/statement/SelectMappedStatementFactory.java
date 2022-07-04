@@ -23,14 +23,13 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
     @Override
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         Class<?> entityType = Reflections.getReturnEntityType(method);
-        var sqlSource = new SelectSqlSource(configuration);
 
         ResultMap resultMap = new ResultMap
             .Builder(configuration, sqlId + "_RM", entityType, Collections.emptyList(), true)
             .build();
 
         return new MappedStatement
-            .Builder(configuration, sqlId, sqlSource, SqlCommandType.SELECT)
+            .Builder(configuration, sqlId, new SelectSqlSource(configuration), SqlCommandType.SELECT)
             .lang(new HybatisLanguageDriver())
             .resultMaps(Collections.singletonList(resultMap))
             .build();

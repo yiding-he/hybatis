@@ -18,11 +18,11 @@ public class HybatisLanguageDriver implements LanguageDriver {
 
     @Override
     public SqlSource createSqlSource(Configuration configuration, XNode script, Class<?> parameterType) {
-        return null;
+        throw new UnsupportedOperationException("Creating SQL source from script is not supported.");
     }
 
     @Override
     public SqlSource createSqlSource(Configuration configuration, String script, Class<?> parameterType) {
-        return null;
+        throw new UnsupportedOperationException("Creating SQL source from script is not supported.");
     }
 }

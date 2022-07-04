@@ -24,7 +24,7 @@ public class SelectSqlSource extends HybatisSqlSource {
     @Override
     protected BoundSql build(Object parameterObject) {
         var tableName = parameterObject.getClass().getAnnotation(HbQuery.class).table().trim();
-        if (tableName.substring(0, 7).equalsIgnoreCase("select ")) {
+        if (tableName.length() > 7 && tableName.substring(0, 7).equalsIgnoreCase("select ")) {
             tableName = "(" + tableName + ") _tb_";
         }
 
