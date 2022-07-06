@@ -55,6 +55,7 @@ you need to create a query class:
 
 ```java
 @Data
+@HbQuery(table = "sample")
 public class SampleQuery {
     private Condition<String> name;
     private Condition<Long> id;

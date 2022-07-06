@@ -22,7 +22,6 @@ public class InsertMappedStatementFactory extends AbstractMappedStatementFactory
         var hbInsert = method.getAnnotation(HbInsert.class);
         var sqlSource = new SqlSourceForInsert(configuration, hbInsert.table());
 
-        return buildMappedStatement(configuration, sqlId, sqlSource);
-
+        return buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.INSERT);
     }
 }

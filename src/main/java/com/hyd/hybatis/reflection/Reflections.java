@@ -1,6 +1,5 @@
 package com.hyd.hybatis.reflection;
 
-import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.annotations.HbColumn;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
@@ -59,6 +58,10 @@ public class Reflections {
     @SuppressWarnings("unchecked")
     public static <T> T getFieldValue(Object parameterObject, Field field) {
         try {
+            if (Modifier.isPublic(field.getModifiers())) {
+                return (T) field.get(parameterObject);
+            }
+
             var fieldName = field.getName();
             Class<?> fieldType = field.getType();
             var getterPrefix = (fieldType == boolean.class) ? "is" : "get";

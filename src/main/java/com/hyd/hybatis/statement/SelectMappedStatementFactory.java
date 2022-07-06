@@ -21,6 +21,6 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         Class<?> entityType = Reflections.getReturnEntityType(method);
         SqlSourceForSelect sqlSource = new SqlSourceForSelect(configuration);
-        return buildMappedStatement(configuration, sqlId, entityType, sqlSource);
+        return buildMappedStatement(configuration, sqlId, entityType, sqlSource, SqlCommandType.SELECT);
     }
 }

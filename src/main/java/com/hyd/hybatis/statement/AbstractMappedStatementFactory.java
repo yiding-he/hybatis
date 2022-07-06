@@ -29,13 +29,14 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
      * @param configuration MyBatis 配置
      * @param sqlId         sqlId
      * @param sqlSource     包含本次执行上下文但尚未动态解析的 SQL 指令
+     * @param commandType   执行类型
      *
      * @return 构建结果
      */
     protected MappedStatement buildMappedStatement(
-        Configuration configuration, String sqlId, SqlSource sqlSource
+        Configuration configuration, String sqlId, SqlSource sqlSource, SqlCommandType commandType
     ) {
-        return buildMappedStatement(configuration, sqlId, null, sqlSource);
+        return buildMappedStatement(configuration, sqlId, null, sqlSource, commandType);
     }
 
     /**
@@ -45,18 +46,19 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
      * @param sqlId         sqlId
      * @param entityType    返回值类型
      * @param sqlSource     包含本次执行上下文但尚未动态解析的 SQL 指令
+     * @param commandType   执行类型
      *
      * @return 构建结果
      */
     protected MappedStatement buildMappedStatement(
-        Configuration configuration, String sqlId, Class<?> entityType, SqlSource sqlSource
+        Configuration configuration, String sqlId, Class<?> entityType, SqlSource sqlSource, SqlCommandType commandType
     ) {
         ResultMap resultMap = entityType == null ? null : new ResultMap
             .Builder(configuration, sqlId + "_RM", entityType, Collections.emptyList(), true)
             .build();
 
         return new MappedStatement
-            .Builder(configuration, sqlId, sqlSource, SqlCommandType.SELECT)
+            .Builder(configuration, sqlId, sqlSource, commandType)
             .lang(new HybatisLanguageDriver())
             .resultMaps(resultMap == null ? new ArrayList<>() : Collections.singletonList(resultMap))
             .build();

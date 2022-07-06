@@ -21,6 +21,6 @@ public class UpdateMappedStatementFactory extends AbstractMappedStatementFactory
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         String tableName = method.getParameterTypes()[0].getAnnotation(HbQuery.class).table();
         SqlSourceForUpdate sqlSource = new SqlSourceForUpdate(configuration, tableName);
-        return buildMappedStatement(configuration, sqlId, sqlSource);
+        return buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.UPDATE);
     }
 }

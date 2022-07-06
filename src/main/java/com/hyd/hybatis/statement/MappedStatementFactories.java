@@ -19,8 +19,7 @@ public class MappedStatementFactories {
     private final List<MappedStatementFactory> mappedStatementFactories = new ArrayList<>(Arrays.asList(
         new SelectMappedStatementFactory(),
         new InsertMappedStatementFactory(),
-        new UpdateMappedStatementFactory(),
-        new DeleteMappedStatementFactory()
+        new UpdateMappedStatementFactory()
     ));
 
     public void registerMappedStatementFactory(MappedStatementFactory mappedStatementFactory) {

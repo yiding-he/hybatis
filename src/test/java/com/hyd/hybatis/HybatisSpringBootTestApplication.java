@@ -36,6 +36,9 @@ public class HybatisSpringBootTestApplication {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private Hybatis hybatis;
+
     @Bean
     public ApplicationRunner runner() {
         return args -> {
@@ -44,7 +47,18 @@ public class HybatisSpringBootTestApplication {
             userMapper.insertUser(2L, "Li Si");
             userMapper.insertUser(3L, "Wang wu");
             userMapper.insertUser(4L, null);
+
+            userMapper.insertUserObject(new User(5L, "Zhao liu"));
+            hybatis.execute(Sql.Insert("users").Values("user_id", 6L).Values("user_name", "Alice Baby"));
+
             log.info("Users created.");
+
+            var query = new UserQuery();
+            var id = new Condition<Long>();
+            id.eq(1L);
+            query.setId(id);
+            var users = userMapper.selectByQuery(query);
+            log.info("Users selected by query: {}", users);
         };
     }
 
