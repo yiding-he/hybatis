@@ -1,5 +1,8 @@
 package com.hyd.hybatis.statement;
 
+import com.hyd.hybatis.annotations.HbInsert;
+import com.hyd.hybatis.annotations.HbQuery;
+import com.hyd.hybatis.annotations.HbUpdate;
 import com.hyd.hybatis.driver.HybatisLanguageDriver;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultMap;
@@ -8,6 +11,7 @@ import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -64,4 +68,22 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
             .build();
     }
 
+    protected String getTableName(Method method) {
+        String tableName;
+
+        if (method.isAnnotationPresent(HbQuery.class)) {
+            tableName = method.getAnnotation(HbQuery.class).table();
+        } else if (method.isAnnotationPresent(HbInsert.class)) {
+            tableName = method.getAnnotation(HbInsert.class).table();
+        } else if (method.isAnnotationPresent(HbUpdate.class)) {
+            tableName = method.getAnnotation(HbUpdate.class).table();
+        } else {
+            throw new IllegalArgumentException("Method " + method.getName() + " contains no table information.");
+        }
+
+        if (tableName.length() > 7 && tableName.substring(0, 7).equalsIgnoreCase("select ")) {
+            tableName = "(" + tableName + ") _tb_";
+        }
+        return tableName;
+    }
 }

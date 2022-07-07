@@ -29,18 +29,23 @@ public class HybatisCore {
 
     private void processMapperClass(Configuration configuration, Class<?> mapperClass) {
         Stream.of(mapperClass.getDeclaredMethods()).forEach(method -> {
-            processMapperMethod(configuration, mapperClass, method);
+            try {
+                processMapperMethod(configuration, mapperClass, method);
+            } catch (Exception e) {
+                log.error("Error processing method {}", method, e);
+            }
         });
     }
 
     private void processMapperMethod(Configuration configuration, Class<?> mapperClass, Method method) {
         var sqlId = mapperClass.getName() + "." + method.getName();
         if (!configuration.hasStatement(sqlId)) {
-            log.info("MappedStatement '{}' not found.", sqlId);
-            MappedStatement ms = mappedStatementFactories
-                .createMappedStatement(configuration, sqlId, method, true);
+            MappedStatement ms = mappedStatementFactories.createMappedStatement(configuration, sqlId, method, true);
             if (ms != null) {
                 configuration.addMappedStatement(ms);
+                log.info("Created mapped statement for '{}'", sqlId);
+            } else {
+                log.info("Method '{}' not applicable for Hybatis.", sqlId);
             }
         }
     }

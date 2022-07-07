@@ -8,17 +8,14 @@ import java.lang.reflect.Field;
 
 public class SqlSourceForInsert extends HybatisSqlSource {
 
-    private final String tableName;
-
     public SqlSourceForInsert(Configuration configuration, String tableName) {
-        super(configuration);
-        this.tableName = tableName;
+        super(configuration, tableName);
     }
 
     @Override
     protected BoundSql build(Object parameterObject) {
 
-        var insert = Sql.Insert(tableName);
+        var insert = Sql.Insert(getTableName());
         var fields = Reflections.getPojoFields(parameterObject.getClass());
 
         for (Field field : fields) {

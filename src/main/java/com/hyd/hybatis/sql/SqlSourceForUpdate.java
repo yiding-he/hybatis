@@ -10,11 +10,8 @@ import java.util.List;
 
 public class SqlSourceForUpdate extends HybatisSqlSource {
 
-    private final String tableName;
-
     public SqlSourceForUpdate(Configuration configuration, String tableName) {
-        super(configuration);
-        this.tableName = tableName;
+        super(configuration, tableName);
     }
 
     @Override
@@ -27,7 +24,7 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
             throw new IllegalArgumentException("Invalid parameter type: " + parameterObject.getClass());
         }
 
-        Sql.Update updateSql = Sql.Update(tableName);
+        Sql.Update updateSql = Sql.Update(getTableName());
         SqlHelper.injectUpdateConditions(updateSql, query);
 
         List<Field> pojoFields = Reflections.getPojoFields(update.getClass());

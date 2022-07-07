@@ -6,7 +6,6 @@ import com.hyd.hybatis.annotations.HbQuery;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-@HbQuery(table = "users")
 @Data
 public class UserQuery {
 

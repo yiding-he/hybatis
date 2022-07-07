@@ -1,6 +1,9 @@
 package com.hyd.hybatis.mappers;
 
+import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.annotations.HbInsert;
+import com.hyd.hybatis.annotations.HbQuery;
+import com.hyd.hybatis.annotations.HbUpdate;
 import com.hyd.hybatis.entity.User;
 import com.hyd.hybatis.entity.UserCteQuery;
 import com.hyd.hybatis.entity.UserQuery;
@@ -23,15 +26,22 @@ public interface UserMapper {
 
     //////////////////////////// Generate MappedStatement automatically for these methods
 
+    @HbQuery(table = "users")
     List<User> selectByQuery(UserQuery userQuery);
 
+    @HbQuery(table = "select * from users where user_name is not null")
     List<User> selectByQueryCte(UserCteQuery userQuery);
 
+    @HbQuery(table = "users")
+    List<User> selectByConditions(Conditions conditions);
+
+    @HbQuery(table = "users")
     List<Map<String, Object>> selectMapByQuery(UserQuery userQuery);
 
     @HbInsert(table = "users")
     int insertUserObject(User user);
 
+    @HbUpdate(table = "users")
     void updateUser(UserQuery query, User update);
 
     //////////////////////////// Ignore these methods

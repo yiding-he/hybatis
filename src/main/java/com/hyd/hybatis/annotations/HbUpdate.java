@@ -10,9 +10,10 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({
+    ElementType.TYPE,
     ElementType.METHOD
 })
-public @interface HbQuery {
+public @interface HbUpdate {
 
     /**
      * 表示该查询是针对哪个表

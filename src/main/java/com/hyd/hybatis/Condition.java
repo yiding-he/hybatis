@@ -1,13 +1,20 @@
 package com.hyd.hybatis;
 
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Data
 public class Condition<T> {
+
+    public static <T> Condition<T> of(String column) {
+        Condition<T> c = new Condition<>();
+        c.column = column;
+        return c;
+    }
+
+    private String column;
 
     private String startsWith;  // like '...%'
 
@@ -77,6 +84,11 @@ public class Condition<T> {
 
     public void gte(T t) {
         this.gte = t;
+    }
+
+    public void between(T t1, T t2) {
+        this.gte = t1;
+        this.lte = t2;
     }
 
     public void in(List<T> tt) {

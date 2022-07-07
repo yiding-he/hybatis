@@ -8,12 +8,19 @@ public abstract class HybatisSqlSource implements SqlSource {
 
     private final Configuration configuration;
 
-    protected HybatisSqlSource(Configuration configuration) {
+    private final String tableName;
+
+    protected HybatisSqlSource(Configuration configuration, String tableName) {
         this.configuration = configuration;
+        this.tableName = tableName;
     }
 
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 
     @Override

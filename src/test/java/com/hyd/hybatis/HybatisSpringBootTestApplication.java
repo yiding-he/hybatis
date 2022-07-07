@@ -52,13 +52,6 @@ public class HybatisSpringBootTestApplication {
             hybatis.execute(Sql.Insert("users").Values("user_id", 6L).Values("user_name", "Alice Baby"));
 
             log.info("Users created.");
-
-            var query = new UserQuery();
-            var id = new Condition<Long>();
-            id.eq(1L);
-            query.setId(id);
-            var users = userMapper.selectByQuery(query);
-            log.info("Users selected by query: {}", users);
         };
     }
 
@@ -91,6 +84,15 @@ public class HybatisSpringBootTestApplication {
         @GetMapping("/queryMap")
         public List<Map<String, Object>> getUsersMap(UserQuery userQuery) {
             return userMapper.selectMapByQuery(userQuery);
+        }
+
+        // curl "http://localhost:8080/users/query-conditions"
+        @GetMapping("/query-conditions")
+        public List<User> queryByConditions() {
+            var c = new Conditions();
+            c.with("user_id").between(2L, 5L);
+            c.with("user_name").contains("a");
+            return userMapper.selectByConditions(c);
         }
 
         // curl "http://localhost:8080/users/insert?id=6&name=John"

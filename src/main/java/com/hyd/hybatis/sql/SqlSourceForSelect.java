@@ -1,5 +1,7 @@
 package com.hyd.hybatis.sql;
 
+import com.hyd.hybatis.Conditions;
+import com.hyd.hybatis.annotations.HbQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
@@ -7,13 +9,20 @@ import org.apache.ibatis.session.Configuration;
 @Slf4j
 public class SqlSourceForSelect extends HybatisSqlSource {
 
-    public SqlSourceForSelect(Configuration configuration) {
-        super(configuration);
+    public SqlSourceForSelect(Configuration configuration, String tableName) {
+        super(configuration, tableName);
     }
 
     @Override
     protected BoundSql build(Object parameterObject) {
-        Sql.Select select = SqlHelper.buildSelect(parameterObject);
+        Sql.Select select;
+
+        if (parameterObject instanceof Conditions) {
+            select = SqlHelper.buildSelectFromConditions((Conditions) parameterObject, getTableName());
+        } else {
+            select = SqlHelper.buildSelect(parameterObject, getTableName());
+        }
+
         return buildBoundSql(select);
     }
 
