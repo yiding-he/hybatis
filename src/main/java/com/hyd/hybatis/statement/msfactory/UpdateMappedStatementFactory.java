@@ -1,6 +1,5 @@
-package com.hyd.hybatis.statement;
+package com.hyd.hybatis.statement.msfactory;
 
-import com.hyd.hybatis.annotations.HbQuery;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.sql.SqlSourceForUpdate;
 import org.apache.ibatis.mapping.MappedStatement;

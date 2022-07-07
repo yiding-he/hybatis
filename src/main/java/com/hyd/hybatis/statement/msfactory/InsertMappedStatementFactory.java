@@ -1,4 +1,4 @@
-package com.hyd.hybatis.statement;
+package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.annotations.HbInsert;
 import com.hyd.hybatis.sql.SqlSourceForInsert;

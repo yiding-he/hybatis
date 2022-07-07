@@ -1,9 +1,10 @@
-package com.hyd.hybatis.statement;
+package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.annotations.HbInsert;
 import com.hyd.hybatis.annotations.HbQuery;
 import com.hyd.hybatis.annotations.HbUpdate;
 import com.hyd.hybatis.driver.HybatisLanguageDriver;
+import com.hyd.hybatis.statement.MappedStatementFactory;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.SqlCommandType;

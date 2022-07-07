@@ -1,5 +1,8 @@
 package com.hyd.hybatis.statement;
 
+import com.hyd.hybatis.statement.msfactory.InsertMappedStatementFactory;
+import com.hyd.hybatis.statement.msfactory.SelectMappedStatementFactory;
+import com.hyd.hybatis.statement.msfactory.UpdateMappedStatementFactory;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
