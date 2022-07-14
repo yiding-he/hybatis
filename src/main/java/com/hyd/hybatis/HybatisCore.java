@@ -1,5 +1,6 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.statement.MappedStatementFactories;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -39,7 +40,7 @@ public class HybatisCore {
 
     private void processMapperMethod(Configuration configuration, Class<?> mapperClass, Method method) {
         var sqlId = mapperClass.getName() + "." + method.getName();
-        if (!configuration.hasStatement(sqlId)) {
+        if (!configuration.hasStatement(sqlId) && !Reflections.hasBody(method)) {
             MappedStatement ms = mappedStatementFactories.createMappedStatement(configuration, sqlId, method, true);
             if (ms != null) {
                 configuration.addMappedStatement(ms);
@@ -49,4 +50,5 @@ public class HybatisCore {
             }
         }
     }
+
 }

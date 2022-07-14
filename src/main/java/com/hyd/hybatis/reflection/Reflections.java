@@ -92,4 +92,13 @@ public class Reflections {
             return field.getName().replaceAll("([A-Z])", "_$1").toLowerCase();
         }
     }
+
+    /**
+     * 判断一个方法是否包含执行内容
+     */
+    public static boolean hasBody(Method method) {
+        return Modifier.isStatic(method.getModifiers())
+            || method.isDefault()
+            || !Modifier.isAbstract(method.getModifiers());
+    }
 }
