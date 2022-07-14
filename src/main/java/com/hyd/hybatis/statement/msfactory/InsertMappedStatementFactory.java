@@ -20,7 +20,7 @@ public class InsertMappedStatementFactory extends AbstractMappedStatementFactory
     @Override
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         var hbInsert = method.getAnnotation(HbInsert.class);
-        var sqlSource = new SqlSourceForInsert(configuration, hbInsert.table());
+        var sqlSource = new SqlSourceForInsert(getHybatisConfiguration(), configuration, hbInsert.table());
 
         return buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.INSERT);
     }

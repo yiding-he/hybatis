@@ -6,6 +6,7 @@ import org.apache.ibatis.reflection.TypeParameterResolver;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,14 +16,16 @@ public class Reflections {
     /**
      * 查询 pojoType 中所有属于 fieldType 类型的成员
      */
-    public static List<Field> getPojoFields(Class<?> pojoType) {
-        return getPojoFieldsOfType(pojoType, null);
+    public static List<Field> getPojoFields(Class<?> pojoType, List<Class<?>> hideBeanFieldsFrom) {
+        return getPojoFieldsOfType(pojoType, null, hideBeanFieldsFrom);
     }
 
     /**
      * 查询 pojoType 中所有属于 fieldType 类型的成员
      */
-    public static List<Field> getPojoFieldsOfType(Class<?> pojoType, Class<?> fieldType) {
+    public static List<Field> getPojoFieldsOfType(
+        Class<?> pojoType, Class<?> fieldType, List<Class<?>> hideBeanFieldsFrom
+    ) {
         List<Field> fieldList = new ArrayList<>();
         Class<?> t = pojoType;
         while (t != Object.class) {
@@ -30,6 +33,7 @@ public class Reflections {
                 Stream.of(t.getDeclaredFields())
                     .filter(f -> fieldType == null || fieldType.isAssignableFrom(f.getType()))
                     .filter(f -> !Modifier.isTransient(f.getModifiers()))
+                    .filter(f -> !hideBeanFieldsFrom.contains(f.getDeclaringClass()))
                     .collect(Collectors.toList())
             );
             t = t.getSuperclass();
@@ -41,7 +45,7 @@ public class Reflections {
      * 判断指定的类是否属于查询条件。只要类中存在至少一个 Condition 类型的成员，就认为它是查询条件。
      */
     public static boolean isPojoClassQueryable(Class<?> pojoType) {
-        return getPojoFieldsOfType(pojoType, Condition.class).size() > 0;
+        return getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).size() > 0;
     }
 
     /**

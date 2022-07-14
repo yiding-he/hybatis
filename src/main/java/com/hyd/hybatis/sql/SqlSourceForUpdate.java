@@ -1,5 +1,6 @@
 package com.hyd.hybatis.sql;
 
+import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.mapping.BoundSql;
@@ -10,8 +11,8 @@ import java.util.List;
 
 public class SqlSourceForUpdate extends HybatisSqlSource {
 
-    public SqlSourceForUpdate(Configuration configuration, String tableName) {
-        super(configuration, tableName);
+    public SqlSourceForUpdate(HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName) {
+        super(hybatisConfiguration, configuration, tableName);
     }
 
     @Override
@@ -27,7 +28,10 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
         Sql.Update updateSql = Sql.Update(getTableName());
         SqlHelper.injectUpdateConditions(updateSql, query);
 
-        List<Field> pojoFields = Reflections.getPojoFields(update.getClass());
+        List<Field> pojoFields = Reflections.getPojoFields(
+            update.getClass(), getHybatisConfiguration().getHideBeanFieldsFrom()
+        );
+
         for (Field f : pojoFields) {
             var columnName = Reflections.getColumnName(f);
             Object fieldValue = Reflections.getFieldValue(update, f);

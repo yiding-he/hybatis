@@ -6,6 +6,7 @@ import com.hyd.hybatis.reflection.Reflections;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class SqlHelper {
         var select = Sql.Select("*").From(tableName);
 
         var conditionFields = Reflections
-            .getPojoFieldsOfType(queryObject.getClass(), Condition.class);
+            .getPojoFieldsOfType(queryObject.getClass(), Condition.class, Collections.emptyList());
 
         var conditionMappings = new HashMap<Field, Condition<?>>();
         for (Field f : conditionFields) {
@@ -58,7 +59,7 @@ public class SqlHelper {
 
     public static void injectUpdateConditions(Sql.Update update, Object queryObject) {
         var conditionFields = Reflections
-            .getPojoFieldsOfType(queryObject.getClass(), Condition.class);
+            .getPojoFieldsOfType(queryObject.getClass(), Condition.class, Collections.emptyList());
 
         for (Field f : conditionFields) {
             Condition<?> condition = Reflections.getFieldValue(queryObject, f);

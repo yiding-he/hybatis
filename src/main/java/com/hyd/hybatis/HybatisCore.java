@@ -2,6 +2,7 @@ package com.hyd.hybatis;
 
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.statement.MappedStatementFactories;
+import com.hyd.hybatis.statement.msfactory.AbstractMappedStatementFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
@@ -22,6 +23,12 @@ public class HybatisCore {
 
     public void process(Configuration configuration) {
         log.info("Processing mybatis configuration {}", configuration);
+
+        mappedStatementFactories.getMappedStatementFactories().forEach(f -> {
+            if (f instanceof AbstractMappedStatementFactory) {
+                ((AbstractMappedStatementFactory) f).setHybatisConfiguration(this.configuration);
+            }
+        });
 
         configuration.getMapperRegistry().getMappers().forEach(mapperClass -> {
             processMapperClass(configuration, mapperClass);

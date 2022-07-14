@@ -1,5 +1,6 @@
 package com.hyd.hybatis.statement.msfactory;
 
+import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.annotations.HbInsert;
 import com.hyd.hybatis.annotations.HbQuery;
 import com.hyd.hybatis.annotations.HbUpdate;
@@ -19,6 +20,16 @@ import java.util.Collections;
 public abstract class AbstractMappedStatementFactory implements MappedStatementFactory {
 
     private LanguageDriver languageDriver = new HybatisLanguageDriver();
+
+    private HybatisConfiguration hybatisConfiguration;
+
+    public HybatisConfiguration getHybatisConfiguration() {
+        return hybatisConfiguration;
+    }
+
+    public void setHybatisConfiguration(HybatisConfiguration hybatisConfiguration) {
+        this.hybatisConfiguration = hybatisConfiguration;
+    }
 
     public LanguageDriver getLanguageDriver() {
         return languageDriver;

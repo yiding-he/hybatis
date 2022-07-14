@@ -10,6 +10,7 @@ import org.apache.ibatis.session.Configuration;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,6 +25,10 @@ public class MappedStatementFactories {
         new InsertMappedStatementFactory(),
         new UpdateMappedStatementFactory()
     ));
+
+    public List<MappedStatementFactory> getMappedStatementFactories() {
+        return Collections.unmodifiableList(mappedStatementFactories);
+    }
 
     public void registerMappedStatementFactory(MappedStatementFactory mappedStatementFactory) {
         if (!mappedStatementFactories.contains(mappedStatementFactory)) {
