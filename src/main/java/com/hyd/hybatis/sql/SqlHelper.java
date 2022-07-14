@@ -58,6 +58,12 @@ public class SqlHelper {
     }
 
     public static void injectUpdateConditions(Sql.Update update, Object queryObject) {
+
+        if (queryObject instanceof Conditions) {
+            ((Conditions) queryObject).getConditions().forEach(c -> injectCondition(update, c));
+            return;
+        }
+
         var conditionFields = Reflections
             .getPojoFieldsOfType(queryObject.getClass(), Condition.class, Collections.emptyList());
 

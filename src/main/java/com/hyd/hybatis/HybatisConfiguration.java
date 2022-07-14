@@ -11,4 +11,6 @@ import java.util.List;
 public class HybatisConfiguration {
 
     private List<Class<?>> hideBeanFieldsFrom = Collections.emptyList();
+
+    private boolean ignoreEmptyString = true;
 }

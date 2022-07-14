@@ -1,6 +1,7 @@
 package com.hyd.hybatis.reflection;
 
 import com.hyd.hybatis.Condition;
+import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.annotations.HbColumn;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
@@ -33,7 +34,7 @@ public class Reflections {
                 Stream.of(t.getDeclaredFields())
                     .filter(f -> fieldType == null || fieldType.isAssignableFrom(f.getType()))
                     .filter(f -> !Modifier.isTransient(f.getModifiers()))
-                    .filter(f -> !hideBeanFieldsFrom.contains(f.getDeclaringClass()))
+                    .filter(f -> !isTypeToBeIgnored(hideBeanFieldsFrom, f))
                     .collect(Collectors.toList())
             );
             t = t.getSuperclass();
@@ -41,11 +42,17 @@ public class Reflections {
         return fieldList;
     }
 
+    private static boolean isTypeToBeIgnored(List<Class<?>> hideBeanFieldsFrom, Field f) {
+        return hideBeanFieldsFrom.contains(f.getDeclaringClass());
+    }
+
     /**
      * 判断指定的类是否属于查询条件。只要类中存在至少一个 Condition 类型的成员，就认为它是查询条件。
      */
     public static boolean isPojoClassQueryable(Class<?> pojoType) {
-        return getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).size() > 0;
+        return
+            Conditions.class.isAssignableFrom(pojoType) ||
+                getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).size() > 0;
     }
 
     /**
