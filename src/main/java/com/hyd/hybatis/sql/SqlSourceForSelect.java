@@ -2,7 +2,6 @@ package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
-import com.hyd.hybatis.annotations.HbQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;

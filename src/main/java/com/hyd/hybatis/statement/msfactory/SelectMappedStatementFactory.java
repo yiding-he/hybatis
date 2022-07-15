@@ -1,6 +1,6 @@
 package com.hyd.hybatis.statement.msfactory;
 
-import com.hyd.hybatis.Conditions;
+import com.hyd.hybatis.annotations.HbSelect;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.sql.SqlSourceForSelect;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -13,20 +13,9 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
 
     @Override
     public boolean match(Method method) {
-        if (method.getParameterCount() != 1) {
-            return false;
-        }
-
-        if (getSqlCommandType(method) != SqlCommandType.SELECT) {
-            return false;
-        }
-
-        Class<?> paramType = method.getParameterTypes()[0];
-        if (paramType == Conditions.class) {
-            return true;
-        }
-
-        return Reflections.isPojoClassQueryable(paramType);
+        return method.isAnnotationPresent(HbSelect.class)
+            && method.getParameterCount() == 1
+            && Reflections.isPojoClassQueryable(method.getParameterTypes()[0]);
     }
 
     @Override

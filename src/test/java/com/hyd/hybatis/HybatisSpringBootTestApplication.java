@@ -1,5 +1,6 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.annotations.HbArgument;
 import com.hyd.hybatis.entity.User;
 import com.hyd.hybatis.entity.UserCteQuery;
 import com.hyd.hybatis.entity.UserQuery;
@@ -90,11 +91,8 @@ public class HybatisSpringBootTestApplication {
 
         // curl "http://localhost:8080/users/query-conditions"
         @GetMapping("/query-conditions")
-        public List<User> queryByConditions() {
-            var c = new Conditions();
-            c.with("user_id").between(2L, 5L);
-            c.with("user_name").contains("a");
-            return userMapper.selectByConditions(c);
+        public List<User> queryByConditions(@HbArgument Conditions conditions) {
+            return userMapper.selectByConditions(conditions);
         }
 
         // curl "http://localhost:8080/users/insert?id=6&name=John"

@@ -3,6 +3,7 @@ package com.hyd.hybatis.reflection;
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.annotations.HbColumn;
+import com.hyd.hybatis.utils.Str;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
 import java.lang.reflect.*;
@@ -100,7 +101,7 @@ public class Reflections {
         if (field.isAnnotationPresent(HbColumn.class)) {
             return field.getAnnotation(HbColumn.class).value();
         } else {
-            return field.getName().replaceAll("([A-Z])", "_$1").toLowerCase();
+            return Str.camel2Underline(field.getName());
         }
     }
 

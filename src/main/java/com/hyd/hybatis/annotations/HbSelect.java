@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Target({
     ElementType.METHOD
 })
-public @interface HbQuery {
+public @interface HbSelect {
 
     /**
      * 表示该查询是针对哪个表

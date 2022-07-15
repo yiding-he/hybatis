@@ -2,7 +2,7 @@ package com.hyd.hybatis.mappers;
 
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.annotations.HbInsert;
-import com.hyd.hybatis.annotations.HbQuery;
+import com.hyd.hybatis.annotations.HbSelect;
 import com.hyd.hybatis.annotations.HbUpdate;
 import com.hyd.hybatis.entity.User;
 import com.hyd.hybatis.entity.UserCteQuery;
@@ -26,16 +26,16 @@ public interface UserMapper {
 
     //////////////////////////// Generate MappedStatement automatically for these methods
 
-    @HbQuery(table = "users")
+    @HbSelect(table = "users")
     List<User> selectByQuery(UserQuery userQuery);
 
-    @HbQuery(table = "select * from users where user_name is not null")
+    @HbSelect(table = "select * from users where user_name is not null")
     List<User> selectByQueryCte(UserCteQuery userQuery);
 
-    @HbQuery(table = "users")
+    @HbSelect(table = "users")
     List<User> selectByConditions(Conditions conditions);
 
-    @HbQuery(table = "users")
+    @HbSelect(table = "users")
     List<Map<String, Object>> selectMapByQuery(UserQuery userQuery);
 
     @HbInsert(table = "users")

@@ -2,7 +2,7 @@ package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.annotations.HbInsert;
-import com.hyd.hybatis.annotations.HbQuery;
+import com.hyd.hybatis.annotations.HbSelect;
 import com.hyd.hybatis.annotations.HbUpdate;
 import com.hyd.hybatis.driver.HybatisLanguageDriver;
 import com.hyd.hybatis.statement.MappedStatementFactory;
@@ -83,8 +83,8 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
     protected String getTableName(Method method) {
         String tableName;
 
-        if (method.isAnnotationPresent(HbQuery.class)) {
-            tableName = method.getAnnotation(HbQuery.class).table();
+        if (method.isAnnotationPresent(HbSelect.class)) {
+            tableName = method.getAnnotation(HbSelect.class).table();
         } else if (method.isAnnotationPresent(HbInsert.class)) {
             tableName = method.getAnnotation(HbInsert.class).table();
         } else if (method.isAnnotationPresent(HbUpdate.class)) {

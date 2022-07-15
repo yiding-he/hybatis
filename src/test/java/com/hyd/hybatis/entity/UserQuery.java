@@ -2,9 +2,7 @@ package com.hyd.hybatis.entity;
 
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.annotations.HbColumn;
-import com.hyd.hybatis.annotations.HbQuery;
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 @Data
 public class UserQuery {

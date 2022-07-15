@@ -12,8 +12,7 @@ public class InsertMappedStatementFactory extends AbstractMappedStatementFactory
 
     @Override
     public boolean match(Method method) {
-        return getSqlCommandType(method) == SqlCommandType.INSERT
-            && method.isAnnotationPresent(HbInsert.class)
+        return method.isAnnotationPresent(HbInsert.class)
             && method.getParameterCount() == 1;
     }
 
