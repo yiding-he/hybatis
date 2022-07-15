@@ -50,11 +50,16 @@ public class HybatisSpringBootTestApplication {
             userMapper.insertUser(2L, "Li Si");
             userMapper.insertUser(3L, "Wang wu");
             userMapper.insertUser(4L, null);
-
             userMapper.insertUserObject(new User(5L, "Zhao liu"));
             hybatis.execute(Sql.Insert("users").Values("user_id", 6L).Values("user_name", "Alice Baby"));
-
             log.info("Users created.");
+
+            // Conditions demonstration
+            Conditions conditions = new Conditions()
+                .with("user_id", c -> c.between(1, 10))
+                .with("user_name", c -> c.contains("a"));
+            List<User> users = userMapper.selectByConditions(conditions);
+            log.info("Users selected by conditions: {}", users);
         };
     }
 
@@ -75,17 +80,17 @@ public class HybatisSpringBootTestApplication {
         // curl "http://localhost:8080/users/query?id.eq=1"
         // curl "http://localhost:8080/users/query?id.eq=1"
         @GetMapping("/query")
-        public List<User> getUsers(UserQuery userQuery) {
+        public List<User> getUsers(@HbArgument UserQuery userQuery) {
             return userMapper.selectByQuery(userQuery);
         }
 
         @GetMapping("/query-cte")
-        public List<User> getUsersCte(UserCteQuery userQuery) {
+        public List<User> getUsersCte(@HbArgument UserCteQuery userQuery) {
             return userMapper.selectByQueryCte(userQuery);
         }
 
         @GetMapping("/queryMap")
-        public List<Map<String, Object>> getUsersMap(UserQuery userQuery) {
+        public List<Map<String, Object>> getUsersMap(@HbArgument UserQuery userQuery) {
             return userMapper.selectMapByQuery(userQuery);
         }
 

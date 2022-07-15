@@ -61,6 +61,10 @@ public class Reflections {
      */
     public static Class<?> getReturnEntityType(Method method) {
         var type = TypeParameterResolver.resolveReturnType(method, method.getDeclaringClass());
+        return getGenericTypeArg(type);
+    }
+
+    public static Class<?> getGenericTypeArg(Type type) {
         if (type instanceof ParameterizedType) {
             var parameterizedType = (ParameterizedType) type;
             Type args0 = parameterizedType.getActualTypeArguments()[0];
