@@ -175,6 +175,9 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
             }
         }
         valuesList.removeIf(String::isBlank);
+        if (valuesList.isEmpty()) {
+            return null;
+        }
 
         Param param = new Param();
         param.key = key;
