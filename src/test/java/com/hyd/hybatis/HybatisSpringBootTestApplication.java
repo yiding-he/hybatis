@@ -60,6 +60,10 @@ public class HybatisSpringBootTestApplication {
                 .with("user_name", c -> c.contains("a"));
             List<User> users = userMapper.selectByConditions(conditions);
             log.info("Users selected by conditions: {}", users);
+
+            // Condition demonstration
+            var users1 = userMapper.selectByCondition(Condition.of("user_id").eq(1));
+            log.info("Users selected by condition: {}", users1);
         };
     }
 

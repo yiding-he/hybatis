@@ -42,60 +42,78 @@ public class Condition<T> {
 
     private Integer orderDesc;  // order by ... desc
 
-    public void startsWith(String s) {
+    public void setBetween(List<T> values) {
+        between(values.get(0), values.get(1));
+    }
+
+    public Condition<T> startsWith(String s) {
         this.startsWith = s;
+        return this;
     }
 
-    public void endsWith(String s) {
+    public Condition<T> endsWith(String s) {
         this.endsWith = s;
+        return this;
     }
 
-    public void contains(String s) {
+    public Condition<T> contains(String s) {
         this.contains = s;
+        return this;
     }
 
-    public void eq(T t) {
+    public Condition<T> eq(T t) {
         this.eq = t;
+        return this;
     }
 
-    public void ne(T t) {
+    public Condition<T> ne(T t) {
         this.ne = t;
+        return this;
     }
 
-    public void beNull() {
+    public Condition<T> beNull() {
         this.Null = true;
+        return this;
     }
 
-    public void nonNull() {
+    public Condition<T> nonNull() {
         this.Null = false;
+        return this;
     }
 
-    public void lt(T t) {
+    public Condition<T> lt(T t) {
         this.lt = t;
+        return this;
     }
 
-    public void lte(T t) {
+    public Condition<T> lte(T t) {
         this.lte = t;
+        return this;
     }
 
-    public void gt(T t) {
+    public Condition<T> gt(T t) {
         this.gt = t;
+        return this;
     }
 
-    public void gte(T t) {
+    public Condition<T> gte(T t) {
         this.gte = t;
+        return this;
     }
 
-    public void between(T t1, T t2) {
+    public Condition<T> between(T t1, T t2) {
         this.gte = t1;
         this.lte = t2;
+        return this;
     }
 
-    public void in(List<T> tt) {
+    public Condition<T> in(List<T> tt) {
         this.in = tt;
+        return this;
     }
 
-    public void in(T... tt) {
+    public Condition<T> in(T... tt) {
         this.in = Arrays.asList(tt);
+        return this;
     }
 }

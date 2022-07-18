@@ -22,6 +22,13 @@ public class SqlHelper {
         return select;
     }
 
+    public static Sql.Select buildSelectFromCondition(Condition<?> condition, String tableName) {
+        Sql.Select select = new Sql.Select("*").From(tableName);
+        injectCondition(select, condition);
+        injectOrderBy(select, Collections.singletonList(condition));
+        return select;
+    }
+
     /**
      * 根据查询条件对象构建 Select
      *

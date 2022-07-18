@@ -1,5 +1,6 @@
 package com.hyd.hybatis.sql;
 
+import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,8 @@ public class SqlSourceForSelect extends HybatisSqlSource {
 
         if (parameterObject instanceof Conditions) {
             select = SqlHelper.buildSelectFromConditions((Conditions) parameterObject, getTableName());
+        } else if (parameterObject instanceof Condition) {
+            select = SqlHelper.buildSelectFromCondition((Condition<?>) parameterObject, getTableName());
         } else {
             select = SqlHelper.buildSelect(parameterObject, getTableName());
         }

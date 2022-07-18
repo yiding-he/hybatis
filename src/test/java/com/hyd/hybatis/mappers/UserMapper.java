@@ -1,5 +1,6 @@
 package com.hyd.hybatis.mappers;
 
+import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.annotations.HbInsert;
 import com.hyd.hybatis.annotations.HbSelect;
@@ -34,6 +35,9 @@ public interface UserMapper {
 
     @HbSelect(table = "users")
     List<User> selectByConditions(Conditions conditions);
+
+    @HbSelect(table = "users")
+    List<User> selectByCondition(Condition<?> conditions);
 
     @HbSelect(table = "users")
     List<Map<String, Object>> selectMapByQuery(UserQuery userQuery);
