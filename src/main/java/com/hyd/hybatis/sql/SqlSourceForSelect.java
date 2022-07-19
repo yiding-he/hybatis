@@ -10,8 +10,10 @@ import org.apache.ibatis.session.Configuration;
 @Slf4j
 public class SqlSourceForSelect extends HybatisSqlSource {
 
-    public SqlSourceForSelect(HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName) {
-        super(hybatisConfiguration, configuration, tableName);
+    public SqlSourceForSelect(
+        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
+    ) {
+        super(sqlId, hybatisConfiguration, configuration, tableName);
     }
 
     @Override
@@ -26,6 +28,7 @@ public class SqlSourceForSelect extends HybatisSqlSource {
             select = SqlHelper.buildSelect(parameterObject, getTableName());
         }
 
+        log.info("[{}]: {}", getSqlId(), select.toCommand());
         return buildBoundSql(select);
     }
 

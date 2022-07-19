@@ -21,7 +21,7 @@ public class UpdateMappedStatementFactory extends AbstractMappedStatementFactory
     @Override
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         SqlSourceForUpdate sqlSource = new SqlSourceForUpdate(
-            getHybatisConfiguration(), configuration, getTableName(method)
+            sqlId, getHybatisConfiguration(), configuration, getTableName(method)
         );
         return buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.UPDATE);
     }

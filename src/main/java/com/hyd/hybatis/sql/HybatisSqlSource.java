@@ -7,6 +7,8 @@ import org.apache.ibatis.session.Configuration;
 
 public abstract class HybatisSqlSource implements SqlSource {
 
+    private final String sqlId;
+
     private final Configuration configuration;
 
     private final HybatisConfiguration hybatisConfiguration;
@@ -14,11 +16,16 @@ public abstract class HybatisSqlSource implements SqlSource {
     private final String tableName;
 
     protected HybatisSqlSource(
-        HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
+        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
     ) {
+        this.sqlId = sqlId;
         this.hybatisConfiguration = hybatisConfiguration;
         this.configuration = configuration;
         this.tableName = tableName;
+    }
+
+    public String getSqlId() {
+        return sqlId;
     }
 
     public Configuration getConfiguration() {

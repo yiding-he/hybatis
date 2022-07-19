@@ -22,6 +22,8 @@ public class BoundSqlBuilder {
 
     public BoundSql build() {
         var sqlCommand = sql.toCommand();
+        log.info(sqlCommand.toString());
+
         var paramMappings = new ArrayList<ParameterMapping>();
         var paramMap = new HashMap<String, Object>();
 
@@ -35,7 +37,6 @@ public class BoundSqlBuilder {
             paramMap.put(paramKey, param);
         }
 
-        log.info(sqlCommand.toString());
         BoundSql boundSql = new BoundSql(configuration, statement, paramMappings, paramMap);
 
         // 用于 MyBatis 构建查询缓存，否则的话 MyBatis 会尝试

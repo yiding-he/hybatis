@@ -2,17 +2,19 @@ package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Field;
 
+@Slf4j
 public class SqlSourceForInsert extends HybatisSqlSource {
 
     public SqlSourceForInsert(
-        HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
+        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
     ) {
-        super(hybatisConfiguration, configuration, tableName);
+        super(sqlId, hybatisConfiguration, configuration, tableName);
     }
 
     @Override
@@ -32,6 +34,7 @@ public class SqlSourceForInsert extends HybatisSqlSource {
             }
         }
 
+        log.info("[{}]: {}", getSqlId(), insert.toCommand());
         return buildBoundSql(insert);
     }
 }

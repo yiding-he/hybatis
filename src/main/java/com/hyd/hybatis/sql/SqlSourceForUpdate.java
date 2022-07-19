@@ -2,6 +2,7 @@ package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
@@ -9,10 +10,13 @@ import org.apache.ibatis.session.Configuration;
 import java.lang.reflect.Field;
 import java.util.List;
 
+@Slf4j
 public class SqlSourceForUpdate extends HybatisSqlSource {
 
-    public SqlSourceForUpdate(HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName) {
-        super(hybatisConfiguration, configuration, tableName);
+    public SqlSourceForUpdate(
+        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
+    ) {
+        super(sqlId, hybatisConfiguration, configuration, tableName);
     }
 
     @Override
@@ -38,6 +42,7 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
             updateSql.SetIfNotNull(columnName, fieldValue);
         }
 
+        log.info("[{}]: {}", getSqlId(), updateSql.toCommand());
         return buildBoundSql(updateSql);
     }
 }
