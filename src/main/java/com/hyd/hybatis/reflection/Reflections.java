@@ -2,7 +2,9 @@ package com.hyd.hybatis.reflection;
 
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
+import com.hyd.hybatis.HybatisException;
 import com.hyd.hybatis.annotations.HbColumn;
+import com.hyd.hybatis.utils.Bean;
 import com.hyd.hybatis.utils.Str;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
@@ -89,17 +91,38 @@ public class Reflections {
             }
 
             var fieldName = field.getName();
-            Class<?> fieldType = field.getType();
+            var fieldType = field.getType();
             var getterPrefix = (fieldType == boolean.class) ? "is" : "get";
-            var getterName = getterPrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+            var getterName = getterPrefix + Str.capitalize(fieldName);
             var getterMethod = field.getDeclaringClass().getMethod(getterName);
-            if (Modifier.isPublic(getterMethod.getModifiers())) {
+            if (getterMethod.canAccess(parameterObject)) {
                 var fieldValue = getterMethod.invoke(parameterObject);
                 return (T) fieldValue;
             }
             return null;
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public static void setFieldValue(Object parameterObject, Field field, Object fieldValue) {
+        try {
+            if (Modifier.isPublic(field.getModifiers())) {
+                field.set(parameterObject, fieldValue);
+                return;
+            }
+
+            var fieldName = field.getName();
+            var fieldType = field.getType();
+            fieldValue = Bean.convertValue(fieldValue, fieldType);
+
+            var setterName = "set" + Str.capitalize(fieldName);
+            var setterMethod = field.getDeclaringClass().getMethod(setterName, fieldType);
+            if (setterMethod.canAccess(parameterObject)) {
+                setterMethod.invoke(parameterObject, fieldValue);
+            }
+        } catch (Exception e) {
+            throw new HybatisException(e);
         }
     }
 

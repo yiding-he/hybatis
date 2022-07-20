@@ -14,6 +14,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,9 +93,12 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
             }
             if (conditionFieldsMap.containsKey(param.field)) {
                 var field = conditionFieldsMap.get(param.field);
+                param.column = Reflections.getColumnName(field);
+
                 Condition condition = Reflections.getFieldValue(t, field);
                 if (condition == null) {
-                    return;
+                    condition = new Condition();
+                    Reflections.setFieldValue(t, field, condition);
                 }
                 injectCondition(param, condition, getGenericTypeArg(field.getGenericType()));
             }

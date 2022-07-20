@@ -1,6 +1,6 @@
 package com.hyd.hybatis;
 
-import com.hyd.hybatis.entity.User;
+import com.hyd.hybatis.entity.Employee;
 import org.apache.ibatis.builder.SqlSourceBuilder;
 import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.session.Configuration;
@@ -28,7 +28,7 @@ public class MyBatisBaseTest {
         Class<?> parameterType = Integer.class;
         Object parameterValue = 1;
 
-        Class<?> resultType = User.class;
+        Class<?> resultType = Employee.class;
 
         //////////////////////////
 

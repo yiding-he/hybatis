@@ -18,4 +18,9 @@ public class Str {
         }
         return sb.toString();
     }
+
+    public static String capitalize(String s) {
+        return s == null ? null : s.length() == 0 ? "" :
+            Character.toUpperCase(s.charAt(0)) + s.substring(1);
+    }
 }
