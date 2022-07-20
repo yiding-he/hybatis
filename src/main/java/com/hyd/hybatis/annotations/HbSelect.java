@@ -18,4 +18,9 @@ public @interface HbSelect {
      * 表示该查询是针对哪个表
      */
     String table();
+
+    /**
+     * 表示查询哪些字段
+     */
+    String[] fields() default {};
 }

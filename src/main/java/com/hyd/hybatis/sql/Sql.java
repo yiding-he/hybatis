@@ -604,7 +604,7 @@ public abstract class Sql<T extends Sql<?>> {
      */
     public static class Select extends Sql<Select> {
 
-        private final String columns;
+        private String columns;
 
         private String from;
 
@@ -622,6 +622,11 @@ public abstract class Sql<T extends Sql<?>> {
 
         public Select(String... columns) {
             this.columns = String.join(",", columns);
+        }
+
+        public Select Columns(String[] columns) {
+            this.columns = String.join(",", columns);
+            return this;
         }
 
         public Select From(String from) {

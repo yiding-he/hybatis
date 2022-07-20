@@ -21,8 +21,15 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
     @Override
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         Class<?> returnEntityType = Reflections.getReturnEntityType(method);
+        var fields = method.getAnnotation(HbSelect.class).fields();
+
         SqlSourceForSelect sqlSource = new SqlSourceForSelect(
             sqlId, getHybatisConfiguration(), configuration, getTableName(method));
+
+        if (fields.length > 0) {
+            sqlSource.setFields(fields);
+        }
+
         return buildMappedStatement(configuration, sqlId, returnEntityType, sqlSource, SqlCommandType.SELECT);
     }
 }

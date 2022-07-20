@@ -36,7 +36,7 @@ public interface UserMapper {
     @HbSelect(table = "users")
     List<User> selectByConditions(Conditions conditions);
 
-    @HbSelect(table = "users")
+    @HbSelect(table = "users", fields = "userName")  // returns 'user_name' only
     List<User> selectByCondition(Condition<?> conditions);
 
     @HbSelect(table = "users")

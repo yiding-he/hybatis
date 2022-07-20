@@ -51,6 +51,9 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
+        if (Conditions.class.isAssignableFrom(parameter.getParameterType())) {
+            return true;
+        }
         if (!parameter.hasParameterAnnotation(HbArgument.class)) {
             log.warn("No @HbArgument annotation found on parameter {}", parameter);
             return false;

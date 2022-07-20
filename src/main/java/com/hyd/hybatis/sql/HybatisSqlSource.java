@@ -15,6 +15,8 @@ public abstract class HybatisSqlSource implements SqlSource {
 
     private final String tableName;
 
+    private String[] fields;
+
     protected HybatisSqlSource(
         String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
     ) {
@@ -22,6 +24,14 @@ public abstract class HybatisSqlSource implements SqlSource {
         this.hybatisConfiguration = hybatisConfiguration;
         this.configuration = configuration;
         this.tableName = tableName;
+    }
+
+    public String[] getFields() {
+        return fields;
+    }
+
+    public void setFields(String[] fields) {
+        this.fields = fields;
     }
 
     public String getSqlId() {
