@@ -94,7 +94,7 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
         }
 
         if (tableName.length() > 7 && tableName.substring(0, 7).equalsIgnoreCase("select ")) {
-            tableName = "(" + tableName + ") _tb_";
+            tableName = "(" + tableName + ") _hybatis_table_wrapper_";
         }
         return tableName;
     }

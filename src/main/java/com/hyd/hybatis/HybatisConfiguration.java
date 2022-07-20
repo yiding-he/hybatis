@@ -10,6 +10,9 @@ import java.util.List;
 @Data
 public class HybatisConfiguration {
 
+    /**
+     * 在解析 Java Bean 对象属性时，忽略来自哪些父类的属性
+     */
     private List<Class<?>> hideBeanFieldsFrom = Collections.emptyList();
 
     private boolean ignoreEmptyString = true;
