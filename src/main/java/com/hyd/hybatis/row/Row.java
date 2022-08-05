@@ -3,6 +3,9 @@ package com.hyd.hybatis.row;
 import com.hyd.hybatis.HybatisException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -189,5 +192,20 @@ public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, O
         } else {
             return value.toString();
         }
+    }
+
+    //////////////////////////////////////////
+
+    public static Row fromResultSet(ResultSet rs) throws SQLException {
+        var metaData = rs.getMetaData();
+        var columnCount = metaData.getColumnCount();
+        var row = new Row();
+
+        for (int i = 1; i <= columnCount; i++) {
+            var columnLabel = metaData.getColumnLabel(i);
+            row.put(columnLabel, rs.getObject(i));
+        }
+
+        return row;
     }
 }

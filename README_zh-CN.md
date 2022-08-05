@@ -36,6 +36,10 @@ Hybatis 的目的是简化 Mybatis 中的 insert/update/select 操作。
 
 ### 使用步骤
 
+_示例数据库打包在 `src/test/data/employees.7z` 文件中，将文件内容解压到项目根目录下的
+`.local/` 文件夹下（请自行创建 .local 文件夹）即可运行 src/test/java 下的
+`HybatisSpringBootTestApplication` 类。_
+
 #### 1. 在 `@SpringBootApplication` 类上面加上 `@Import(HybatisConfigurator.class)` 注解:
 
 ```java

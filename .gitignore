@@ -1,5 +1,6 @@
 #gitignore文件的内容
 
+.local
 .DS_Store
 .project
 *.prefs
