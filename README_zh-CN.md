@@ -34,6 +34,8 @@ Hybatis 的目的是简化 Mybatis 中的 insert/update/select 操作。
 3. 带上 `@HbInsert` 注解的方法只有一个参数，参数类型为 JavaBean 类；
 4. 带上 `@HbUpdate` 注解的方法有两个参数，第一个参数满足条件 2，第二个参数满足条件 3；
 
+_另：如果一个方法带上 @HbSelect 注解，且返回值为数字类型时，Hybatis 会认为这是一个 count 方法，将生成 `select count(1) from ...` 这样的 SQL。_
+
 ### 使用步骤
 
 _示例数据库打包在 `src/test/data/employees.7z` 文件中，将文件内容解压到项目根目录下的
