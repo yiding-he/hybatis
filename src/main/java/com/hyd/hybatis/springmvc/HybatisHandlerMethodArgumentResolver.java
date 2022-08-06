@@ -3,7 +3,6 @@ package com.hyd.hybatis.springmvc;
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
-import com.hyd.hybatis.annotations.HbArgument;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.utils.Str;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,6 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,11 +53,8 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
         if (Conditions.class.isAssignableFrom(parameter.getParameterType())) {
             return true;
         }
-        if (!parameter.hasParameterAnnotation(HbArgument.class)) {
-            log.warn("No @HbArgument annotation found on parameter {}", parameter);
-            return false;
-        }
-        return true;
+        Class<?> parameterType = parameter.getParameterType();
+        return Reflections.isPojoClassQueryable(parameterType);
     }
 
     @Override

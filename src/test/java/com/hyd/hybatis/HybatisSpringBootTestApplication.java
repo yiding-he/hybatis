@@ -1,9 +1,9 @@
 package com.hyd.hybatis;
 
-import com.hyd.hybatis.annotations.HbArgument;
 import com.hyd.hybatis.entity.Employee;
 import com.hyd.hybatis.entity.EmployeeQuery;
 import com.hyd.hybatis.entity.EmployeeUpdate;
+import com.hyd.hybatis.mappers.DepartmentMapper;
 import com.hyd.hybatis.mappers.EmployeeMapper;
 import com.hyd.hybatis.row.Row;
 import com.hyd.hybatis.sql.Sql;
@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @SpringBootApplication
 @Import(HybatisConfigurator.class)
@@ -26,6 +25,27 @@ public class HybatisSpringBootTestApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(HybatisSpringBootTestApplication.class, args);
+    }
+
+    @RestController
+    @RequestMapping("/dep")
+    public static class DepartmentController {
+
+        @Autowired
+        private DepartmentMapper departmentMapper;
+
+        @Autowired
+        private Hybatis hybatis;
+
+        @GetMapping("/tables")
+        public List<Row> showTables() throws Exception {
+            return hybatis.queryList("show tables");
+        }
+
+        @GetMapping("/query")
+        public List<Row> queryDepartments(Conditions conditions) {
+            return departmentMapper.selectList(conditions);
+        }
     }
 
     @RestController
@@ -40,23 +60,23 @@ public class HybatisSpringBootTestApplication {
 
         // curl "http://localhost:8080/emp/query?id.eq=1"
         @GetMapping("/query")
-        public List<Employee> getUsers(@HbArgument EmployeeQuery employeeQuery) {
+        public List<Employee> getUsers(EmployeeQuery employeeQuery) {
             return employeeMapper.selectByQuery(employeeQuery);
         }
 
         @GetMapping("/query-cte")
-        public List<Employee> getUsersCte(@HbArgument EmployeeQuery employeeQuery) {
+        public List<Employee> getUsersCte(EmployeeQuery employeeQuery) {
             return employeeMapper.selectByQueryCte(employeeQuery);
         }
 
         @GetMapping("/queryMap")
-        public List<Row> getUsersMap(@HbArgument EmployeeQuery employeeQuery) {
+        public List<Row> getUsersMap(EmployeeQuery employeeQuery) {
             return employeeMapper.selectRowsByQuery(employeeQuery);
         }
 
         // curl "http://localhost:8080/users/query-conditions"
         @GetMapping("/query-conditions")
-        public List<Employee> queryByConditions(@HbArgument Conditions conditions) {
+        public List<Employee> queryByConditions(Conditions conditions) {
             return employeeMapper.selectByConditions(conditions);
         }
 

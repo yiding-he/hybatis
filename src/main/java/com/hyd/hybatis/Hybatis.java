@@ -8,6 +8,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -43,9 +44,13 @@ public class Hybatis {
     }
 
     public void query(Sql.Select select, RowConsumer rowConsumer) throws SQLException {
+        query(select.toCommand(), rowConsumer);
+    }
+
+    public void query(SqlCommand command, RowConsumer rowConsumer) throws SQLException {
         try (
             var conn = getConnection();
-            var ps = prepareStatement(conn, select.toCommand());
+            var ps = prepareStatement(conn, command);
             var rs = ps.executeQuery()
         ) {
             while (rs.next()) {
@@ -53,6 +58,29 @@ public class Hybatis {
                 rowConsumer.accept(row);
             }
         }
+    }
+
+    public List<Row> queryList(String sql, Object... params) throws SQLException {
+        return queryList(new SqlCommand(sql, Arrays.asList(params)));
+    }
+
+    public List<Row> queryList(Sql.Select select) throws SQLException {
+        return queryList(select.toCommand());
+    }
+
+    public List<Row> queryList(SqlCommand command) throws SQLException {
+        List<Row> rowList = new ArrayList<>();
+        try (
+            var conn = getConnection();
+            var ps = prepareStatement(conn, command);
+            var rs = ps.executeQuery()
+        ) {
+            while (rs.next()) {
+                var row = Row.fromResultSet(rs);
+                rowList.add(row);
+            }
+        }
+        return rowList;
     }
 
     public long execute(Sql.Update update) throws SQLException {
