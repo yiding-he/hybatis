@@ -2,7 +2,9 @@ package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
+import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
+import lombok.Data;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -13,8 +15,19 @@ import java.util.stream.Collectors;
 
 public class SqlHelper {
 
-    public static Sql.Select buildSelectFromConditions(Conditions conditions, String tableName) {
-        Sql.Select select = new Sql.Select("*").From(tableName);
+    @Data
+    public static class Context {
+
+        private final Object paramObject;
+
+        private final String tableName;
+
+        private final HybatisConfiguration config;
+    }
+
+    public static Sql.Select buildSelectFromConditions(Context context) {
+        Conditions conditions = (Conditions) context.paramObject;
+        Sql.Select select = new Sql.Select("*").From(context.tableName);
         for (Condition<?> condition : conditions.getConditions()) {
             injectCondition(select, condition);
         }
@@ -22,21 +35,17 @@ public class SqlHelper {
         return select;
     }
 
-    public static Sql.Select buildSelectFromCondition(Condition<?> condition, String tableName) {
-        Sql.Select select = new Sql.Select("*").From(tableName);
+    public static Sql.Select buildSelectFromCondition(Context context) {
+        Condition<?> condition = (Condition<?>) context.paramObject;
+        Sql.Select select = new Sql.Select("*").From(context.tableName);
         injectCondition(select, condition);
         injectOrderBy(select, Collections.singletonList(condition));
         return select;
     }
 
-    /**
-     * 根据查询条件对象构建 Select
-     *
-     * @param queryObject 查询条件
-     *
-     * @return Select 对象
-     */
-    public static Sql.Select buildSelect(Object queryObject, String tableName) {
+    public static Sql.Select buildSelect(Context context) {
+        var tableName = context.tableName;
+        var queryObject = context.paramObject;
         var select = Sql.Select("*").From(tableName);
 
         var conditionFields = Reflections

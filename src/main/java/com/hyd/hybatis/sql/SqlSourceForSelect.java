@@ -19,14 +19,17 @@ public class SqlSourceForSelect extends HybatisSqlSource {
 
     @Override
     protected BoundSql build(Object parameterObject) {
-        Sql.Select select;
 
+        var context = new SqlHelper.Context(
+            parameterObject, getTableName(), getHybatisConfiguration());
+
+        Sql.Select select;
         if (parameterObject instanceof Conditions) {
-            select = SqlHelper.buildSelectFromConditions((Conditions) parameterObject, getTableName());
+            select = SqlHelper.buildSelectFromConditions(context);
         } else if (parameterObject instanceof Condition) {
-            select = SqlHelper.buildSelectFromCondition((Condition<?>) parameterObject, getTableName());
+            select = SqlHelper.buildSelectFromCondition(context);
         } else {
-            select = SqlHelper.buildSelect(parameterObject, getTableName());
+            select = SqlHelper.buildSelect(context);
         }
 
         var fields = getFields();

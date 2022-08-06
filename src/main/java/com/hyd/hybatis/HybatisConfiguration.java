@@ -11,9 +11,12 @@ import java.util.List;
 public class HybatisConfiguration {
 
     /**
-     * 在解析 Java Bean 对象属性时，忽略来自哪些父类的属性
+     * Ignore bean properties which comes from specified types
      */
     private List<Class<?>> hideBeanFieldsFrom = Collections.emptyList();
 
+    /**
+     * Whether empty string should be ignored and not put into conditions
+     */
     private boolean ignoreEmptyString = true;
 }

@@ -42,10 +42,10 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
         private List<String> parsedValues;
     }
 
-    private final HybatisConfiguration hybatisConfiguration;
+    private final HybatisConfiguration config;
 
-    public HybatisHandlerMethodArgumentResolver(HybatisConfiguration hybatisConfiguration) {
-        this.hybatisConfiguration = hybatisConfiguration;
+    public HybatisHandlerMethodArgumentResolver(HybatisConfiguration config) {
+        this.config = config;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
     private <T> T buildJavaBeanObject(Class<T> parameterType, NativeWebRequest webRequest) {
 
         var conditionFields = Reflections.getPojoFieldsOfType(
-            parameterType, Condition.class, hybatisConfiguration.getHideBeanFieldsFrom()
+            parameterType, Condition.class, config.getHideBeanFieldsFrom()
         );
         var conditionFieldsMap = new HashMap<String, Field>();
         for (var field : conditionFields) {
@@ -176,7 +176,11 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
                 valuesList.add(v);
             }
         }
-        valuesList.removeIf(String::isBlank);
+
+        if (config.isIgnoreEmptyString()) {
+            valuesList.removeIf(String::isBlank);
+        }
+
         if (valuesList.isEmpty()) {
             return null;
         }
