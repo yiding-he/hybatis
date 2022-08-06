@@ -11,10 +11,20 @@ import org.apache.ibatis.session.Configuration;
 @Slf4j
 public class SqlSourceForSelect extends HybatisSqlSource {
 
+    private boolean counting;
+
     public SqlSourceForSelect(
         String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
     ) {
         super(sqlId, hybatisConfiguration, configuration, tableName);
+    }
+
+    public void setCounting(boolean counting) {
+        this.counting = counting;
+    }
+
+    public boolean isCounting() {
+        return counting;
     }
 
     @Override
@@ -32,13 +42,17 @@ public class SqlSourceForSelect extends HybatisSqlSource {
             select = SqlHelper.buildSelect(context);
         }
 
-        var fields = getFields();
-        if (fields != null && fields.length > 0) {
-            var columns = new String[fields.length];
-            for (int i = 0; i < fields.length; i++) {
-                columns[i] = Str.camel2Underline(fields[i]);
+        if (!counting) {
+            var fields = getFields();
+            if (fields != null && fields.length > 0) {
+                var columns = new String[fields.length];
+                for (int i = 0; i < fields.length; i++) {
+                    columns[i] = Str.camel2Underline(fields[i]);
+                }
+                select.Columns(columns);
             }
-            select.Columns(columns);
+        } else {
+            select.Columns("count(1)");
         }
 
         log.info("[{}]: {}", getSqlId(), select.toCommand());

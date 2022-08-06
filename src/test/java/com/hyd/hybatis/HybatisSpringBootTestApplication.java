@@ -40,14 +40,6 @@ public class HybatisSpringBootTestApplication {
         @Autowired
         private DepartmentMapper departmentMapper;
 
-        @Autowired
-        private Hybatis hybatis;
-
-        @GetMapping("/tables")
-        public List<Row> showTables() throws Exception {
-            return hybatis.queryList("show tables");
-        }
-
         @GetMapping("/query")
         public List<Row> queryDepartments(Conditions conditions) {
             return departmentMapper.selectList(conditions);
@@ -89,12 +81,18 @@ public class HybatisSpringBootTestApplication {
             private final int pages;
         }
 
-        // curl "http://localhost:8080/emp/query?id.eq=1"
+        // curl "http://localhost:8080/emp/query?firstName.eq=Bikash"
         @GetMapping("/query")
         public RealPage queryEmployees(EmployeeQuery employeeQuery) {
             startPage();
             var page = employeeMapper.selectByQuery(employeeQuery);
             return new RealPage(page, (int) page.getTotal(), page.getPages());
+        }
+
+        // curl "http://localhost:8080/emp/count?hire_date.gt=1994-12-31"
+        @GetMapping("/count")
+        public long countEmployees(Conditions conditions) {
+            return employeeMapper.countByConditions(conditions);
         }
     }
 

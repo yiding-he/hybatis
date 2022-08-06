@@ -624,7 +624,7 @@ public abstract class Sql<T extends Sql<?>> {
             this.columns = String.join(",", columns);
         }
 
-        public Select Columns(String[] columns) {
+        public Select Columns(String... columns) {
             this.columns = String.join(",", columns);
             return this;
         }

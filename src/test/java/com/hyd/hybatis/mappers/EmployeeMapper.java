@@ -14,18 +14,30 @@ import java.util.List;
 @Mapper
 public interface EmployeeMapper {
 
-    @HbSelect(table = "EMPLOYEES")
+    /////////////////////////////////////////////////////////////////// Query
+
+    @HbSelect(table = "EMPLOYEES", fields = {"empNo", "firstName", "lastName", "hireDate"})
     Page<Employee> selectByQuery(EmployeeQuery query);
-
-    @HbSelect(table = "select * from EMPLOYEES")
-    List<Employee> selectByQueryCte(EmployeeQuery query);
-
-    @HbSelect(table = "EMPLOYEES")
-    List<Row> selectRowsByQuery(EmployeeQuery query);
 
     @HbSelect(table = "EMPLOYEES")
     List<Employee> selectByConditions(Conditions conditions);
 
+    @HbSelect(table = "EMPLOYEES")
+    long countByConditions(Conditions conditions);
+
+    @HbSelect(table = "select * from EMPLOYEES where GENDER='F'")
+    List<Employee> selectFromFemales(EmployeeQuery query);
+
+    @HbSelect(table = "EMPLOYEES")
+    List<Row> selectRowsByQuery(EmployeeQuery query);
+
+    /////////////////////////////////////////////////////////////////// Update
+
     @HbUpdate(table = "EMPLOYEES")
     void updateEmployee(Conditions query, Row update);
+
+    // Simplified version of updateEmployee(Conditions query, Row update)
+    default void updateEmployee(long empNo, Row update) {
+        updateEmployee(new Conditions().with("empNo", c -> c.eq(empNo)), update);
+    }
 }
