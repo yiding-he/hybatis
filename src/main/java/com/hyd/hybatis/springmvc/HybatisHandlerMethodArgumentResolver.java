@@ -150,6 +150,10 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
             c.gt(convertValue(param.values[0], type));
         } else if (param.condition.equals("gte")) {
             c.gte(convertValue(param.values[0], type));
+        } else if (param.condition.equals("orderAsc")) {
+            c.setOrderAsc(Integer.parseInt(param.values[0]));
+        } else if (param.condition.equals("orderDesc")) {
+            c.setOrderDesc(Integer.parseInt(param.values[0]));
         }
     }
 

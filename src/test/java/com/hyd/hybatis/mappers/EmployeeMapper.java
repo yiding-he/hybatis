@@ -1,5 +1,6 @@
 package com.hyd.hybatis.mappers;
 
+import com.github.pagehelper.Page;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.annotations.HbSelect;
 import com.hyd.hybatis.annotations.HbUpdate;
@@ -13,18 +14,18 @@ import java.util.List;
 @Mapper
 public interface EmployeeMapper {
 
-    @HbSelect(table = "employee")
-    List<Employee> selectByQuery(EmployeeQuery query);
+    @HbSelect(table = "EMPLOYEES")
+    Page<Employee> selectByQuery(EmployeeQuery query);
 
-    @HbSelect(table = "select employeeid,firstname,lastname from employee")
+    @HbSelect(table = "select * from EMPLOYEES")
     List<Employee> selectByQueryCte(EmployeeQuery query);
 
-    @HbSelect(table = "employee")
+    @HbSelect(table = "EMPLOYEES")
     List<Row> selectRowsByQuery(EmployeeQuery query);
 
-    @HbSelect(table = "employee")
+    @HbSelect(table = "EMPLOYEES")
     List<Employee> selectByConditions(Conditions conditions);
 
-    @HbUpdate(table = "employee")
+    @HbUpdate(table = "EMPLOYEES")
     void updateEmployee(Conditions query, Row update);
 }

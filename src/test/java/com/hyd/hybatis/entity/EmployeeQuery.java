@@ -1,25 +1,23 @@
 package com.hyd.hybatis.entity;
 
 import com.hyd.hybatis.Condition;
-import com.hyd.hybatis.annotations.HbColumn;
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 public class EmployeeQuery {
 
-    @HbColumn("employeeid")
-    private Condition<Integer> employeeId;
+    private Condition<Integer> empNo;
 
-    @HbColumn("firstname")
+    private Condition<Date> birthDate;
+
     private Condition<String> firstName;
 
-    @HbColumn("lastname")
     private Condition<String> lastName;
 
-    private Condition<String> title;
+    private Condition<String> gender;
 
-    private Condition<String> email;
-
-    private Condition<String> address;
+    private Condition<Date> hireDate;
 
 }

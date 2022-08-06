@@ -1,20 +1,22 @@
 package com.hyd.hybatis.entity;
 
-import com.hyd.hybatis.annotations.HbColumn;
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 public class Employee extends BaseEntity {
 
-    private Integer employeeId;
+    private Integer empNo;
+
+    private Date birthDate;
 
     private String firstName;
 
     private String lastName;
 
-    private String title;
+    private String gender;
 
-    private String email;
+    private Date hireDate;
 
-    private String address;
 }

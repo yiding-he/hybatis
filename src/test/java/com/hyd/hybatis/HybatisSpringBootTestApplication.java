@@ -1,21 +1,27 @@
 package com.hyd.hybatis;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.hyd.hybatis.entity.Employee;
 import com.hyd.hybatis.entity.EmployeeQuery;
-import com.hyd.hybatis.entity.EmployeeUpdate;
 import com.hyd.hybatis.mappers.DepartmentMapper;
 import com.hyd.hybatis.mappers.EmployeeMapper;
 import com.hyd.hybatis.row.Row;
-import com.hyd.hybatis.sql.Sql;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static org.springframework.util.StringUtils.hasText;
 
 @SpringBootApplication
 @Import(HybatisConfigurator.class)
@@ -56,49 +62,39 @@ public class HybatisSpringBootTestApplication {
         private EmployeeMapper employeeMapper;
 
         @Autowired
-        private Hybatis hybatis;
+        private HttpServletRequest request;
+
+        /**
+         * Integrate with <a href="https://github.com/pagehelper/Mybatis-PageHelper">Mybatis-PageHelper</a>
+         */
+        @SuppressWarnings("resource")
+        private void startPage() {
+            if (!hasText(request.getParameter("pageIndex")) || !hasText(request.getParameter("pageSize"))) {
+                PageHelper.startPage(1, 10);
+            } else {
+                PageHelper.startPage(
+                    Integer.parseInt(request.getParameter("pageIndex")),
+                    Integer.parseInt(request.getParameter("pageSize"))
+                );
+            }
+        }
+
+        @Data
+        private static class RealPage {
+
+            private final Page<?> list;
+
+            private final int total;
+
+            private final int pages;
+        }
 
         // curl "http://localhost:8080/emp/query?id.eq=1"
         @GetMapping("/query")
-        public List<Employee> getUsers(EmployeeQuery employeeQuery) {
-            return employeeMapper.selectByQuery(employeeQuery);
-        }
-
-        @GetMapping("/query-cte")
-        public List<Employee> getUsersCte(EmployeeQuery employeeQuery) {
-            return employeeMapper.selectByQueryCte(employeeQuery);
-        }
-
-        @GetMapping("/queryMap")
-        public List<Row> getUsersMap(EmployeeQuery employeeQuery) {
-            return employeeMapper.selectRowsByQuery(employeeQuery);
-        }
-
-        // curl "http://localhost:8080/users/query-conditions"
-        @GetMapping("/query-conditions")
-        public List<Employee> queryByConditions(Conditions conditions) {
-            return employeeMapper.selectByConditions(conditions);
-        }
-
-        // curl "http://localhost:8080/users/insert?id=6&name=John"
-        @GetMapping("/insert")
-        public String insertUser(
-            @RequestParam("id") Long id,
-            @RequestParam(value = "name", required = false) String name
-        ) throws Exception {
-            var affected = hybatis.execute(Sql.Insert("users")
-                .Values("user_id", id)
-                .Values("user_name", name)
-            );
-            return "OK, " + affected + " rows affected.";
-        }
-
-
-        // POST body: {"query":{"id":{"eq":1}},"update":{"userName":"Hehehehehehe"}}
-        @PostMapping("/update-json")
-        public String updateUserJson(@RequestBody EmployeeUpdate update) {
-            employeeMapper.updateEmployee(update.getQuery(), update.getUpdate());
-            return "OK";
+        public RealPage queryEmployees(EmployeeQuery employeeQuery) {
+            startPage();
+            var page = employeeMapper.selectByQuery(employeeQuery);
+            return new RealPage(page, (int) page.getTotal(), page.getPages());
         }
     }
 
