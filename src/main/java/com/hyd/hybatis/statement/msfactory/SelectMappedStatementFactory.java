@@ -35,7 +35,7 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
         return buildMappedStatement(mybatisConf, sqlId, returnEntityType, sqlSource, SqlCommandType.SELECT);
     }
 
-    private static boolean isCounting(Method method) {
+    public static boolean isCounting(Method method) {
         Class<?> returnType = method.getReturnType();
         return returnType == Integer.TYPE ||
             returnType == Long.TYPE ||

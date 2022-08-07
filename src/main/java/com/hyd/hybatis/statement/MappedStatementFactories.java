@@ -24,14 +24,20 @@ public class MappedStatementFactories {
     public MappedStatement createMappedStatement(
         Configuration configuration, String sqlId, Method method, boolean ignoreInvalidMethodName
     ) {
-        var factory = mappedStatementFactories
-            .stream().filter(f -> f.match(method)).findFirst().orElse(null);
+        MappedStatementFactory factory = getMappedStatementFactory(method);
+        return factory == null ? null : factory.createMappedStatement(configuration, sqlId, method);
 
-        if (factory == null) {
-            return null;
-        }
-
-        return factory.createMappedStatement(configuration, sqlId, method);
     }
 
+    /**
+     * Check whether a given method can be processed by Hybatis
+     */
+    public boolean isValidHybatisMethod(Method method) {
+        return getMappedStatementFactory(method) != null;
+    }
+
+    public MappedStatementFactory getMappedStatementFactory(Method method) {
+        return mappedStatementFactories
+            .stream().filter(f -> f.match(method)).findFirst().orElse(null);
+    }
 }

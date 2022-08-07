@@ -8,7 +8,20 @@ import java.util.function.Consumer;
 
 public class Conditions {
 
+    /**
+     * query conditions
+     */
     private final Map<String, Condition<?>> data = new HashMap<>();
+
+    /**
+     * 0 means return all rows
+     */
+    private int pageSize;
+
+    /**
+     * starts with 0
+     */
+    private int pageIndex;
 
     public Condition<Object> with(String column) {
         var c = new Condition<>();
@@ -24,5 +37,21 @@ public class Conditions {
 
     public List<Condition<?>> getConditions() {
         return new ArrayList<>(data.values());
+    }
+
+    public void setPageIndex(int pageIndex) {
+        this.pageIndex = pageIndex;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public int getPageIndex() {
+        return pageIndex;
+    }
+
+    public int getPageSize() {
+        return pageSize;
     }
 }

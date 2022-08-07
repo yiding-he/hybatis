@@ -1,6 +1,7 @@
 package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.HybatisConfiguration;
+import com.hyd.hybatis.page.Pagination;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.Configuration;
@@ -52,6 +53,7 @@ public abstract class HybatisSqlSource implements SqlSource {
 
     @Override
     public BoundSql getBoundSql(Object parameterObject) {
+        Pagination.Context.clear();
         return build(parameterObject);
     }
 

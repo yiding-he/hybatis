@@ -7,6 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * 用于注解实体类
+ *
+ * @deprecated This interface is still in development.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({

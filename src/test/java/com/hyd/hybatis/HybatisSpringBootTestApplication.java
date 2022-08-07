@@ -1,6 +1,5 @@
 package com.hyd.hybatis;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.hyd.hybatis.entity.Employee;
 import com.hyd.hybatis.entity.EmployeeQuery;
@@ -72,9 +71,9 @@ public class HybatisSpringBootTestApplication {
         }
 
         @Data
-        private static class RealPage {
+        private static class PageHelperPage {
 
-            private final Page<?> list;
+            private final com.github.pagehelper.Page<?> list;
 
             private final int total;
 
@@ -83,10 +82,16 @@ public class HybatisSpringBootTestApplication {
 
         // curl "http://localhost:8080/emp/query?firstName.eq=Bikash"
         @GetMapping("/query")
-        public RealPage queryEmployees(EmployeeQuery employeeQuery) {
+        public PageHelperPage queryEmployees(EmployeeQuery employeeQuery) {
             startPage();
             var page = employeeMapper.selectByQuery(employeeQuery);
-            return new RealPage(page, (int) page.getTotal(), page.getPages());
+            return new PageHelperPage(page, (int) page.getTotal(), page.getPages());
+        }
+
+        @GetMapping("/query-hybatis-pagination")
+        public Page<Employee> queryEmployees2(EmployeeQuery employeeQuery) {
+            var employees = employeeMapper.selectByQuery(employeeQuery);
+            return new Page<>(employees);
         }
 
         // curl "http://localhost:8080/emp/count?hire_date.gt=1994-12-31"
