@@ -32,9 +32,10 @@ public class Reflections {
     ) {
         List<Field> fieldList = new ArrayList<>();
         Class<?> t = pojoType;
-        while (t != Object.class) {
+        while (t != Object.class && t != null) {
+            var declaredFields = t.getDeclaredFields();
             fieldList.addAll(
-                Stream.of(t.getDeclaredFields())
+                Stream.of(declaredFields)
                     .filter(f -> fieldType == null || fieldType.isAssignableFrom(f.getType()))
                     .filter(f -> !Modifier.isTransient(f.getModifiers()))
                     .filter(f -> !isTypeToBeIgnored(hideBeanFieldsFrom, f))

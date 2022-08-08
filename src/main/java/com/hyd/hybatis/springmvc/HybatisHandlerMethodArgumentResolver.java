@@ -54,7 +54,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
             return true;
         }
         Class<?> parameterType = parameter.getParameterType();
-        return Reflections.isPojoClassQueryable(parameterType);
+        return !parameterType.isPrimitive() && Reflections.isPojoClassQueryable(parameterType);
     }
 
     @Override
