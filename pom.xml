@@ -6,7 +6,7 @@
 
   <groupId>com.hyd</groupId>
   <artifactId>hybatis</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.3-SNAPSHOT</version>
 
   <name>hybatis</name>
   <description>A MyBatis extension for SpringBoot projects</description>
@@ -119,6 +119,16 @@
       <groupId>com.github.pagehelper</groupId>
       <artifactId>pagehelper-spring-boot-starter</artifactId>
       <version>1.4.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!--
+      IntelliJ Bug
+      https://youtrack.jetbrains.com/issue/IDEA-183168/20173-JUnit-5-dependency-resolution-via-Maven-ignores-Maven-settings
+      -->
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>1.9.0</version>
       <scope>test</scope>
     </dependency>
 

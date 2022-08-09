@@ -4,13 +4,12 @@ import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
+import com.hyd.hybatis.utils.Bean;
+import com.hyd.hybatis.utils.Str;
 import lombok.Data;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SqlHelper {
@@ -73,24 +72,34 @@ public class SqlHelper {
         return select;
     }
 
-    public static void injectUpdateConditions(Sql.Update update, Object queryObject) {
+    /**
+     * 分析 queryObject，将查询条件放入 update 中，返回条件字段列表
+     */
+    public static List<String> injectUpdateConditions(Sql.Update update, Object queryObject) {
 
+        var result = new ArrayList<String>();
         if (queryObject instanceof Conditions) {
-            ((Conditions) queryObject).getConditions().forEach(c -> injectCondition(update, c));
-            return;
+            ((Conditions) queryObject).getConditions().forEach(c -> {
+                result.add(c.getColumn());
+                injectCondition(update, c);
+            });
+            return result;
         }
 
         var conditionFields = Reflections
             .getPojoFieldsOfType(queryObject.getClass(), Condition.class, Collections.emptyList());
 
         for (Field f : conditionFields) {
-            Condition<?> condition = Reflections.getFieldValue(queryObject, f);
-            if (condition == null) {
+            Condition<?> c = Reflections.getFieldValue(queryObject, f);
+            if (c == null) {
                 continue;
             }
 
-            injectCondition(update, condition);
+            result.add(c.getColumn());
+            injectCondition(update, c);
         }
+
+        return result;
     }
 
     ///////////////////////////////////////////////////////////////////

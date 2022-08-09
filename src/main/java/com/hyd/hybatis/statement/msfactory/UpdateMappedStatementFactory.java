@@ -13,15 +13,21 @@ public class UpdateMappedStatementFactory extends AbstractMappedStatementFactory
 
     @Override
     public boolean match(Method method) {
-        return method.isAnnotationPresent(HbUpdate.class)
-            && method.getParameterCount() == 2
-            && Reflections.isPojoClassQueryable(method.getParameterTypes()[0]);
+        return method.isAnnotationPresent(HbUpdate.class) &&
+            ((
+                method.getParameterCount() == 2 &&
+                    Reflections.isPojoClassQueryable(method.getParameterTypes()[0])
+            ) || (
+                method.getParameterCount() == 1 &&
+                    method.getAnnotation(HbUpdate.class).key().length > 0
+            ));
     }
 
     @Override
     public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
         SqlSourceForUpdate sqlSource = new SqlSourceForUpdate(
-            sqlId, getHybatisConfiguration(), configuration, getTableName(method)
+            sqlId, getHybatisConfiguration(), configuration, getTableName(method),
+            method.getAnnotation(HbUpdate.class).key()
         );
         return buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.UPDATE);
     }

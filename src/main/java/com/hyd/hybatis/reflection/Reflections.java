@@ -32,9 +32,10 @@ public class Reflections {
     ) {
         List<Field> fieldList = new ArrayList<>();
         Class<?> t = pojoType;
-        while (t != Object.class) {
+        while (t != Object.class && t != null) {
+            var declaredFields = t.getDeclaredFields();
             fieldList.addAll(
-                Stream.of(t.getDeclaredFields())
+                Stream.of(declaredFields)
                     .filter(f -> fieldType == null || fieldType.isAssignableFrom(f.getType()))
                     .filter(f -> !Modifier.isTransient(f.getModifiers()))
                     .filter(f -> !isTypeToBeIgnored(hideBeanFieldsFrom, f))
@@ -82,24 +83,33 @@ public class Reflections {
         }
     }
 
+    public static <T> T getFieldValue(Object parameterObject, Field field) {
+        return getFieldValue(parameterObject, field, null);
+    }
 
     @SuppressWarnings("unchecked")
-    public static <T> T getFieldValue(Object parameterObject, Field field) {
+    public static <T> T getFieldValue(Object parameterObject, Field field, Class<T> expectedType) {
         try {
+            T result = null;
             if (Modifier.isPublic(field.getModifiers())) {
-                return (T) field.get(parameterObject);
+                result = (T) field.get(parameterObject);
+            } else {
+                var fieldName = field.getName();
+                var fieldType = field.getType();
+                var getterPrefix = (fieldType == boolean.class) ? "is" : "get";
+                var getterName = getterPrefix + Str.capitalize(fieldName);
+                var getterMethod = field.getDeclaringClass().getMethod(getterName);
+                if (getterMethod.canAccess(parameterObject)) {
+                    var fieldValue = getterMethod.invoke(parameterObject);
+                    result = (T) fieldValue;
+                }
             }
 
-            var fieldName = field.getName();
-            var fieldType = field.getType();
-            var getterPrefix = (fieldType == boolean.class) ? "is" : "get";
-            var getterName = getterPrefix + Str.capitalize(fieldName);
-            var getterMethod = field.getDeclaringClass().getMethod(getterName);
-            if (getterMethod.canAccess(parameterObject)) {
-                var fieldValue = getterMethod.invoke(parameterObject);
-                return (T) fieldValue;
+            if (result != null && expectedType != null && !expectedType.isAssignableFrom(result.getClass())) {
+                result = null;
             }
-            return null;
+
+            return result;
         } catch (Exception e) {
             return null;
         }

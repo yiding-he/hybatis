@@ -19,4 +19,9 @@ public @interface HbUpdate {
      * 表示该查询是针对哪个表
      */
     String table();
+
+    /**
+     * 表示表的主键是哪几个列，当 Mapper 方法第一个参数是查询参数时，忽略本属性
+     */
+    String[] key() default {};
 }
