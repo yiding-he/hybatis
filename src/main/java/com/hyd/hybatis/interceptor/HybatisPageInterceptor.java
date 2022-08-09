@@ -33,6 +33,7 @@ public class HybatisPageInterceptor implements Interceptor {
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
 
+        // TODO 这里搞错了，invocation.getMethod() 拿到的不是 Mapper 方法
         Boolean isPaginationSelect = Pagination.isPaginationSelect(
             invocation.getMethod(), core.getMappedStatementFactories()
         );
