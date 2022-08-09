@@ -93,7 +93,7 @@ public class HybatisSpringBootTestApplication {
             return employeeMapper.countByConditions(conditions);
         }
 
-        @PostMapping(value = "/update", consumes = "application/json")
+        @PostMapping("/update")
         public String updateEmployee(@RequestBody Employee update) {
             employeeMapper.updateEmployee(update);
             return "ok";
