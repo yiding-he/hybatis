@@ -16,19 +16,19 @@ public interface EmployeeMapper {
 
     /////////////////////////////////////////////////////////////////// Query
 
-    @HbSelect(table = "EMPLOYEES", fields = {"empNo", "firstName", "lastName", "hireDate"})
+    @HbSelect(table = "EMPLOYEES", fields = {"empNo", "firstName", "lastName", "hireDate"}, pagination = true)
     Page<Employee> selectByQuery(EmployeeQuery query);
 
-    @HbSelect(table = "EMPLOYEES")
+    @HbSelect(table = "EMPLOYEES", pagination = true)
     List<Employee> selectByConditions(Conditions conditions);
 
     @HbSelect(table = "EMPLOYEES")
     long countByConditions(Conditions conditions);
 
-    @HbSelect(table = "select * from EMPLOYEES where GENDER='F'")
+    @HbSelect(table = "select * from EMPLOYEES where GENDER='F'", pagination = true)
     List<Employee> selectFromFemales(EmployeeQuery query);
 
-    @HbSelect(table = "EMPLOYEES")
+    @HbSelect(table = "EMPLOYEES", pagination = true)
     List<Row> selectRowsByQuery(EmployeeQuery query);
 
     /////////////////////////////////////////////////////////////////// Update

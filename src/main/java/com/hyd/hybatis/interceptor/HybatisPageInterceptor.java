@@ -19,12 +19,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-@Intercepts(
-    {
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}),
-    }
-)
+@Intercepts({
+    @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+    @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}),
+})
 public class HybatisPageInterceptor implements Interceptor {
 
     private final HybatisCore core;
@@ -66,9 +64,9 @@ public class HybatisPageInterceptor implements Interceptor {
     }
 
     private void processPagination(Invocation invocation) {
-        var arg = invocation.getArgs()[1];
+        var method = invocation.getMethod();
 
-        Pagination.parsePageParams(core.getConf(), arg);
+        Pagination.parsePageParams(method, core.getConf());
         var context = Pagination.Context.getInstance();
         int pageSize = context.getPageSize();
         int pageIndex = context.getPageIndex();

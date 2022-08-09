@@ -1,11 +1,13 @@
 package com.hyd.hybatis.page;
 
 import com.hyd.hybatis.HybatisConfiguration;
-import com.hyd.hybatis.annotations.HbPageQuery;
+import com.hyd.hybatis.annotations.HbSelect;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.lang.reflect.Method;
 
 
 public class Pagination {
@@ -43,29 +45,16 @@ public class Pagination {
 
     ///////////////////////////////////////////
 
-    public static void parsePageParams(HybatisConfiguration conf, Object arg) {
-        int pageSize, pageIndex;
-        String pageSizeParamName, pageIndexParamName;
-        var annotated = arg.getClass().isAnnotationPresent(HbPageQuery.class);
-
-        if (annotated) {
-            var hbPageQuery = arg.getClass().getAnnotation(HbPageQuery.class);
-
-            if (hbPageQuery.pageIndexParamName().equals(DEFAULT_PAGE_INDEX_NAME)) {
-                pageIndexParamName = conf.getPageIndexParamName();
-            } else {
-                pageIndexParamName = hbPageQuery.pageIndexParamName();
-            }
-
-            if (hbPageQuery.pageSizeParamName().equals(DEFAULT_PAGE_SIZE_NAME)) {
-                pageSizeParamName = conf.getPageSizeParamName();
-            } else {
-                pageSizeParamName = hbPageQuery.pageSizeParamName();
-            }
-        } else {
-            pageIndexParamName = conf.getPageIndexParamName();
-            pageSizeParamName = conf.getPageSizeParamName();
+    public static void parsePageParams(Method method, HybatisConfiguration conf) {
+        var pagination = method.getAnnotation(HbSelect.class).pagination();
+        if (!pagination) {
+            return;
         }
+
+        int pageSize, pageIndex;
+
+        String pageIndexParamName = conf.getPageIndexParamName();
+        String pageSizeParamName = conf.getPageSizeParamName();
 
         // Extract page size and page index parameter values
         var ra = RequestContextHolder.getRequestAttributes();
@@ -79,12 +68,10 @@ public class Pagination {
             pageIndex = 0;
         }
 
-        // 'Annotated' means pagination parameters are optional.
+        // Pagination parameters are optional.
         // When they are not present, use default values instead.
-        if (annotated) {
-            pageIndex = Math.max(pageIndex, DEFAULT_PAGE_INDEX);
-            pageSize = Math.max(pageSize, DEFAULT_PAGE_SIZE);
-        }
+        pageIndex = Math.max(pageIndex, DEFAULT_PAGE_INDEX);
+        pageSize = Math.max(pageSize, DEFAULT_PAGE_SIZE);
 
         var context = Context.getInstance();
         context.setPageSize(pageSize);
