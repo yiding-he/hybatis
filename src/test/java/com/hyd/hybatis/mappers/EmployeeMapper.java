@@ -16,7 +16,7 @@ public interface EmployeeMapper {
 
     /////////////////////////////////////////////////////////////////// Query
 
-    @HbSelect(table = "EMPLOYEES", fields = {"empNo", "firstName", "lastName", "hireDate"}, pagination = true)
+    @HbSelect(table = "EMPLOYEES", fields = {"empNo", "firstName", "lastName", "hireDate"})
     Page<Employee> selectByQuery(EmployeeQuery query);
 
     @HbSelect(table = "EMPLOYEES", pagination = true)

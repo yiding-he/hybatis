@@ -3,6 +3,7 @@ package com.hyd.hybatis.statement.msfactory;
 import com.hyd.hybatis.annotations.HbSelect;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.sql.SqlSourceForSelect;
+import com.hyd.hybatis.statement.MappedStatementHelper;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
@@ -25,14 +26,16 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
         var counting = isCounting(method);
         var hybatisConf = getHybatisConfiguration();
 
-        SqlSourceForSelect sqlSource = new SqlSourceForSelect(sqlId, hybatisConf, mybatisConf, getTableName(method));
+        SqlSourceForSelect sqlSource = new SqlSourceForSelect(sqlId, getCore(), mybatisConf, getTableName(method));
         sqlSource.setCounting(counting);
 
         if (fields.length > 0) {
             sqlSource.setFields(fields);
         }
 
-        return buildMappedStatement(mybatisConf, sqlId, returnEntityType, sqlSource, SqlCommandType.SELECT);
+        return MappedStatementHelper.buildMappedStatement(
+            mybatisConf, sqlId, returnEntityType, sqlSource, SqlCommandType.SELECT
+        );
     }
 
     public static boolean isCounting(Method method) {

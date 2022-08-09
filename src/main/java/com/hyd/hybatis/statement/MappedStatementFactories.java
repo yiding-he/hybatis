@@ -1,5 +1,7 @@
 package com.hyd.hybatis.statement;
 
+import com.hyd.hybatis.HybatisCore;
+import com.hyd.hybatis.statement.msfactory.AbstractMappedStatementFactory;
 import com.hyd.hybatis.statement.msfactory.InsertMappedStatementFactory;
 import com.hyd.hybatis.statement.msfactory.SelectMappedStatementFactory;
 import com.hyd.hybatis.statement.msfactory.UpdateMappedStatementFactory;
@@ -19,6 +21,18 @@ public class MappedStatementFactories {
 
     public List<MappedStatementFactory> getMappedStatementFactories() {
         return Collections.unmodifiableList(mappedStatementFactories);
+    }
+
+    public MappedStatementFactories(HybatisCore core) {
+        this.init(core);
+    }
+
+    private void init(HybatisCore core) {
+        this.mappedStatementFactories.forEach(f -> {
+            if (f instanceof AbstractMappedStatementFactory) {
+                ((AbstractMappedStatementFactory) f).setCore(core);
+            }
+        });
     }
 
     public MappedStatement createMappedStatement(

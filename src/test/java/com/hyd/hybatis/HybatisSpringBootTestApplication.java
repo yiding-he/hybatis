@@ -86,6 +86,7 @@ public class HybatisSpringBootTestApplication {
             return new PageHelperPage(page, (int) page.getTotal(), page.getPages());
         }
 
+        // curl "http://localhost:8080/emp/query-hybatis-pagination?firstName.eq=Bikash"
         @GetMapping("/query-hybatis-pagination")
         public Page<Employee> queryEmployees2(EmployeeQuery employeeQuery) {
             var employees = employeeMapper.selectByQuery(employeeQuery);

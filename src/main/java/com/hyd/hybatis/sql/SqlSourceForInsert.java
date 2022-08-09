@@ -1,6 +1,7 @@
 package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.HybatisConfiguration;
+import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.utils.Str;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +15,9 @@ import java.util.Map;
 public class SqlSourceForInsert extends HybatisSqlSource {
 
     public SqlSourceForInsert(
-        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
+        String sqlId, HybatisCore core, Configuration configuration, String tableName
     ) {
-        super(sqlId, hybatisConfiguration, configuration, tableName);
+        super(sqlId, core, configuration, tableName);
     }
 
     @SuppressWarnings("unchecked")

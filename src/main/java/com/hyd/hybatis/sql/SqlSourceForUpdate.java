@@ -2,6 +2,7 @@ package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
+import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.utils.Bean;
 import com.hyd.hybatis.utils.Str;
@@ -20,10 +21,10 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
     private final String[] key;
 
     public SqlSourceForUpdate(
-        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration,
+        String sqlId, HybatisCore core, Configuration configuration,
         String tableName, String[] key
     ) {
-        super(sqlId, hybatisConfiguration, configuration, tableName);
+        super(sqlId, core, configuration, tableName);
         this.key = key;
     }
 

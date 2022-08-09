@@ -2,12 +2,17 @@ package com.hyd.hybatis.page;
 
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.annotations.HbSelect;
+import com.hyd.hybatis.statement.MappedStatementFactories;
+import com.hyd.hybatis.statement.msfactory.SelectMappedStatementFactory;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 
 public class Pagination {
@@ -33,6 +38,8 @@ public class Pagination {
             instance.remove();
         }
 
+        private boolean enabled;
+
         private int totalRows;
 
         private int totalPages;
@@ -41,9 +48,30 @@ public class Pagination {
 
         private int pageSize;
 
+        public void updateTotal(Long count) {
+            this.totalRows = count.intValue();
+            this.totalPages = this.pageSize == 0 ? 0 : ((this.totalRows + 1) / this.pageSize);
+        }
     }
 
     ///////////////////////////////////////////
+
+    private static final Map<Method, Boolean> checkResultCache = Collections.synchronizedMap(new WeakHashMap<>());
+
+    public static Boolean isPaginationSelect(Method method, MappedStatementFactories factories) {
+        var valid = checkResultCache.get(method);
+        if (valid == null) {
+            var factory =
+                factories.getMappedStatementFactory(method);
+
+            valid = factory instanceof SelectMappedStatementFactory
+                && !SelectMappedStatementFactory.isCounting(method);
+
+            checkResultCache.put(method, valid);
+        }
+        return valid;
+    }
+
 
     public static void parsePageParams(Method method, HybatisConfiguration conf) {
         var pagination = method.getAnnotation(HbSelect.class).pagination();

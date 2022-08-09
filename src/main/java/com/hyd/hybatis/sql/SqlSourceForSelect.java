@@ -3,6 +3,8 @@ package com.hyd.hybatis.sql;
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
+import com.hyd.hybatis.HybatisCore;
+import com.hyd.hybatis.page.Pagination;
 import com.hyd.hybatis.utils.Str;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.BoundSql;
@@ -14,9 +16,9 @@ public class SqlSourceForSelect extends HybatisSqlSource {
     private boolean counting;
 
     public SqlSourceForSelect(
-        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
+        String sqlId, HybatisCore core, Configuration configuration, String tableName
     ) {
-        super(sqlId, hybatisConfiguration, configuration, tableName);
+        super(sqlId, core, configuration, tableName);
     }
 
     public void setCounting(boolean counting) {
@@ -42,7 +44,9 @@ public class SqlSourceForSelect extends HybatisSqlSource {
             select = SqlHelper.buildSelect(context);
         }
 
-        if (!counting) {
+        if (counting) {
+            select.Columns("count(1)");
+        } else {
             var fields = getFields();
             if (fields != null && fields.length > 0) {
                 var columns = new String[fields.length];
@@ -51,12 +55,20 @@ public class SqlSourceForSelect extends HybatisSqlSource {
                 }
                 select.Columns(columns);
             }
-        } else {
-            select.Columns("count(1)");
         }
 
         log.info("[{}]: {}", getSqlId(), select.toCommand());
         return buildBoundSql(select);
     }
 
+    /**
+     * 创建一个同样查询条件，但只返回记录数的 SqlSource 对象
+     */
+    public SqlSourceForSelect newCountingSqlSource() {
+        var clone = new SqlSourceForSelect(
+            this.getSqlId(), this.getCore(), this.getConfiguration(), this.getTableName()
+        );
+        clone.setCounting(true);
+        return clone;
+    }
 }

@@ -1,7 +1,9 @@
 package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.HybatisConfiguration;
+import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.page.Pagination;
+import com.hyd.hybatis.statement.MappedStatementFactories;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.Configuration;
@@ -12,17 +14,17 @@ public abstract class HybatisSqlSource implements SqlSource {
 
     private final Configuration configuration;
 
-    private final HybatisConfiguration hybatisConfiguration;
+    private final HybatisCore core;
 
     private final String tableName;
 
     private String[] fields;
 
     protected HybatisSqlSource(
-        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
+        String sqlId, HybatisCore core, Configuration configuration, String tableName
     ) {
         this.sqlId = sqlId;
-        this.hybatisConfiguration = hybatisConfiguration;
+        this.core = core;
         this.configuration = configuration;
         this.tableName = tableName;
     }
@@ -48,7 +50,11 @@ public abstract class HybatisSqlSource implements SqlSource {
     }
 
     public HybatisConfiguration getHybatisConfiguration() {
-        return hybatisConfiguration;
+        return this.core.getConf();
+    }
+
+    public MappedStatementFactories getMappedStatementFactories() {
+        return this.core.getMappedStatementFactories();
     }
 
     @Override
@@ -62,5 +68,9 @@ public abstract class HybatisSqlSource implements SqlSource {
     // Helper method for subclasses
     protected BoundSql buildBoundSql(Sql<?> sql) {
         return new BoundSqlBuilder(configuration, sql).build();
+    }
+
+    protected HybatisCore getCore() {
+        return this.core;
     }
 }

@@ -2,11 +2,13 @@ package com.hyd.hybatis.interceptor;
 
 import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.page.Pagination;
-import com.hyd.hybatis.statement.msfactory.SelectMappedStatementFactory;
+import com.hyd.hybatis.sql.SqlSourceForSelect;
+import com.hyd.hybatis.statement.MappedStatementHelper;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
@@ -14,10 +16,7 @@ import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 @Intercepts({
     @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
@@ -27,8 +26,6 @@ public class HybatisPageInterceptor implements Interceptor {
 
     private final HybatisCore core;
 
-    private final Map<Method, Boolean> checkResultCache = Collections.synchronizedMap(new WeakHashMap<>());
-
     public HybatisPageInterceptor(HybatisCore core) {
         this.core = core;
     }
@@ -36,7 +33,10 @@ public class HybatisPageInterceptor implements Interceptor {
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
 
-        Boolean isPaginationSelect = checkWithCache(invocation);
+        Boolean isPaginationSelect = Pagination.isPaginationSelect(
+            invocation.getMethod(), core.getMappedStatementFactories()
+        );
+
         if (isPaginationSelect) {
             // Do a counting query if necessary
             processPagination(invocation);
@@ -45,27 +45,10 @@ public class HybatisPageInterceptor implements Interceptor {
         return invocation.proceed();
     }
 
-    private Boolean checkWithCache(Invocation invocation) {
-        var method = invocation.getMethod();
-        var valid = checkResultCache.get(method);
-        if (valid == null) {
-            valid = isPaginationSelect(method);
-            checkResultCache.put(method, valid);
-        }
-        return valid;
-    }
-
-    private boolean isPaginationSelect(Method method) {
-        var factory =
-            core.getMappedStatementFactories().getMappedStatementFactory(method);
-
-        return factory instanceof SelectMappedStatementFactory
-            && !SelectMappedStatementFactory.isCounting(method);
-    }
-
     private void processPagination(Invocation invocation) {
         var method = invocation.getMethod();
 
+        // TODO 这个时候才判断是否是分页查询，可能已经太晚了，因为 BoundSql 已经生成
         Pagination.parsePageParams(method, core.getConf());
         var context = Pagination.Context.getInstance();
         int pageSize = context.getPageSize();
@@ -75,7 +58,29 @@ public class HybatisPageInterceptor implements Interceptor {
             return;
         }
 
-        // TODO execute counting query
+        var executor = (Executor) invocation.getTarget();
+        var ms = (MappedStatement) invocation.getArgs()[0];
+        var sqlSource = ms.getSqlSource();
+
+        if (sqlSource instanceof SqlSourceForSelect) {
+            var countingSqlSource = ((SqlSourceForSelect) sqlSource).newCountingSqlSource();
+
+            var resultMap = new ResultMap
+                .Builder(ms.getConfiguration(), ms.getId(), Long.class, Collections.emptyList())
+                .build();
+
+            var countingMs = MappedStatementHelper
+                .cloneWithNewSqlSourceAndResultMap(ms, countingSqlSource, resultMap, "_cnt");
+
+            Pagination.Context.getInstance().updateTotal(
+                executeCount(executor, countingMs, invocation.getArgs())
+            );
+        }
+    }
+
+    private Long executeCount(Executor executor, MappedStatement countingMs, Object[] invocationArgs) {
+        // TODO 执行 count 查询
+        return 0L;
     }
 
 }
