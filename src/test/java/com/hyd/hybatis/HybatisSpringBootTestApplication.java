@@ -93,6 +93,14 @@ public class HybatisSpringBootTestApplication {
             return employeeMapper.countByConditions(conditions);
         }
 
+        // curl --request POST \
+        //  --url http://localhost:8080/emp/update \
+        //  --header 'Content-Type: application/json' \
+        //  --data '{
+        //	"empNo": 1,
+        //	"firstName": "Hybatis",
+        //	"lastName": "Smith"
+        //}'
         @PostMapping("/update")
         public String updateEmployee(@RequestBody Employee update) {
             employeeMapper.updateEmployee(update);
