@@ -33,11 +33,14 @@ public interface EmployeeMapper {
 
     /////////////////////////////////////////////////////////////////// Update
 
-    @HbUpdate(table = "EMPLOYEES")
-    void updateEmployee(Conditions query, Row update);
+    @HbUpdate(table = "EMPLOYEES", key = "emp_no")
+    void updateEmployeeMap(Conditions query, Row update);
+
+    @HbUpdate(table = "EMPLOYEES", key = "emp_no")
+    void updateEmployee(Employee employee);
 
     // Simplified version of updateEmployee(Conditions query, Row update)
     default void updateEmployee(long empNo, Row update) {
-        updateEmployee(new Conditions().with("empNo", c -> c.eq(empNo)), update);
+        updateEmployeeMap(new Conditions().with("emp_no", c -> c.eq(empNo)), update);
     }
 }

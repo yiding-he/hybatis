@@ -114,6 +114,16 @@
       <version>1.4.3</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <!--
+      IntelliJ Bug
+      https://youtrack.jetbrains.com/issue/IDEA-183168/20173-JUnit-5-dependency-resolution-via-Maven-ignores-Maven-settings
+      -->
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>1.9.0</version>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>

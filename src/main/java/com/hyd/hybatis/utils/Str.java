@@ -19,6 +19,23 @@ public class Str {
         return sb.toString();
     }
 
+    public static String underline2Camel(String underline) {
+        if (underline == null || underline.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < underline.length(); i++) {
+            char c = underline.charAt(i);
+            if (c == '_') {
+                i++;
+                sb.append(Character.toUpperCase(underline.charAt(i)));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
     public static String capitalize(String s) {
         return s == null ? null : s.length() == 0 ? "" :
             Character.toUpperCase(s.charAt(0)) + s.substring(1);

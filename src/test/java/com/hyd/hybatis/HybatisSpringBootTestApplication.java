@@ -14,9 +14,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -93,6 +91,12 @@ public class HybatisSpringBootTestApplication {
         @GetMapping("/count")
         public long countEmployees(Conditions conditions) {
             return employeeMapper.countByConditions(conditions);
+        }
+
+        @PostMapping(value = "/update", consumes = "application/json")
+        public String updateEmployee(@RequestBody Employee update) {
+            employeeMapper.updateEmployee(update);
+            return "ok";
         }
     }
 

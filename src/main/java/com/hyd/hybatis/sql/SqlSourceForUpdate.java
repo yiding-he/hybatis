@@ -15,10 +15,14 @@ import java.util.Map;
 @Slf4j
 public class SqlSourceForUpdate extends HybatisSqlSource {
 
+    private final String[] key;
+
     public SqlSourceForUpdate(
-        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration, String tableName
+        String sqlId, HybatisConfiguration hybatisConfiguration, Configuration configuration,
+        String tableName, String[] key
     ) {
         super(sqlId, hybatisConfiguration, configuration, tableName);
+        this.key = key;
     }
 
     @SuppressWarnings("unchecked")
@@ -29,11 +33,17 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
             query = ((MapperMethod.ParamMap<?>) parameterObject).get("arg0");
             update = ((MapperMethod.ParamMap<?>) parameterObject).get("arg1");
         } else {
-            throw new IllegalArgumentException("Invalid parameter type: " + parameterObject.getClass());
+            // Use `key` instead of `query` object
+            query = null;
+            update = parameterObject;
         }
 
         Sql.Update updateSql = Sql.Update(getTableName());
-        SqlHelper.injectUpdateConditions(updateSql, query);
+        if (query != null) {
+            SqlHelper.injectUpdateConditions(updateSql, query);
+        } else {
+            SqlHelper.injectUpdateConditionsByKey(updateSql, key, update);
+        }
 
         if (update instanceof Map) {
             buildUpdateByMapObject(updateSql, (Map<String, Object>) update);

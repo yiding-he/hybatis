@@ -93,9 +93,16 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
             throw new IllegalArgumentException("Method " + method.getName() + " contains no table information.");
         }
 
-        if (tableName.length() > 7 && tableName.substring(0, 7).equalsIgnoreCase("select ")) {
+        var isSubQuery = tableName.length() > 7 && tableName.substring(0, 7).equalsIgnoreCase("select ");
+
+        if (isSubQuery && method.isAnnotationPresent(HbUpdate.class)) {
+            throw new IllegalArgumentException("Update method does not support sub query.");
+        } else if (isSubQuery && method.isAnnotationPresent(HbInsert.class)) {
+            throw new IllegalArgumentException("Insert method does not support sub query.");
+        } else if (isSubQuery) {
             tableName = "(" + tableName + ") _hybatis_table_wrapper_";
         }
+
         return tableName;
     }
 }

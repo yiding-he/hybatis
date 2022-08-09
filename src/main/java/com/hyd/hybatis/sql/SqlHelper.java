@@ -4,6 +4,8 @@ import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
+import com.hyd.hybatis.utils.Bean;
+import com.hyd.hybatis.utils.Str;
 import lombok.Data;
 
 import java.lang.reflect.Field;
@@ -90,6 +92,15 @@ public class SqlHelper {
             }
 
             injectCondition(update, condition);
+        }
+    }
+
+    public static void injectUpdateConditionsByKey(Sql.Update updateSql, String[] key, Object update) {
+        for (String s : key) {
+            var columnName = Str.camel2Underline(s);
+            var fieldName = Str.underline2Camel(s);
+            var fieldValue = Bean.getValue(update, fieldName);
+            updateSql.And(columnName + "=?", fieldValue);
         }
     }
 
