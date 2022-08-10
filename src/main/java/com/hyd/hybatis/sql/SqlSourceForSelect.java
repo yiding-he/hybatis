@@ -67,7 +67,7 @@ public class SqlSourceForSelect extends HybatisSqlSource {
             if (selectMode == SelectMode.PaginationItems) {
                 var pageIndex = Pagination.Context.getInstance().getPageIndex();
                 var pageSize = Pagination.Context.getInstance().getPageSize();
-                select.Skip((long) pageIndex * pageSize).Limit(pageSize);
+                select.Offset((long) pageIndex * pageSize).Limit(pageSize);
             }
         }
 
@@ -79,7 +79,7 @@ public class SqlSourceForSelect extends HybatisSqlSource {
      * 创建一个同样查询条件，但只返回记录数的 SqlSource 对象
      */
     public SqlSourceForSelect asAnotherSelectMode(SelectMode selectMode) {
-        var newSqlId = this.sqlId + "-" + selectMode.name();
+        var newSqlId = this.sqlId + "-" + selectMode.ordinal();
         return new SqlSourceForSelect(
             newSqlId, this.core, this.configuration, this.tableName,
             selectMode, this.mapperMethod
@@ -93,6 +93,9 @@ public class SqlSourceForSelect extends HybatisSqlSource {
         return asAnotherSelectMode(SelectMode.PaginationCount);
     }
 
+    /**
+     * 创建一个同样查询条件，但只返回当前页记录的 SqlSource 对象
+     */
     public SqlSourceForSelect asPaginationItemsSqlSource() {
         return asAnotherSelectMode(SelectMode.PaginationItems);
     }

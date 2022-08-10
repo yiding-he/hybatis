@@ -110,8 +110,8 @@ public class Pagination {
 
         // Pagination parameters are optional.
         // When they are not present, use default values instead.
-        pageIndex = Math.max(pageIndex, DEFAULT_PAGE_INDEX);
-        pageSize = Math.max(pageSize, DEFAULT_PAGE_SIZE);
+        pageIndex = pageIndex <= 0? DEFAULT_PAGE_INDEX: pageIndex;
+        pageSize = pageSize <= 0? DEFAULT_PAGE_SIZE: pageSize;
 
         var context = Context.getInstance();
         context.setPageSize(pageSize);

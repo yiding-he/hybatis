@@ -4,6 +4,7 @@ import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.page.Pagination;
 import com.hyd.hybatis.sql.SqlSourceForSelect;
 import com.hyd.hybatis.statement.MappedStatementHelper;
+import com.hyd.hybatis.utils.Bean;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -63,8 +64,7 @@ public class HybatisPageInterceptor implements Interceptor {
     }
 
     private Object processPagination(Invocation invocation, Method mapperMethod)
-        throws SQLException, InvocationTargetException, IllegalAccessException
-    {
+        throws SQLException, InvocationTargetException, IllegalAccessException, CloneNotSupportedException {
 
         // 解析分页参数并存储在 Pagination.Context 实例中
         Pagination.parsePageParams(mapperMethod, core.getConf());
@@ -90,40 +90,39 @@ public class HybatisPageInterceptor implements Interceptor {
         return Arrays.copyOf(invocation.getArgs(), invocation.getArgs().length);
     }
 
-    private Long executeQueryCount(Executor executor, Object[] args) throws SQLException {
+    private Long executeQueryCount(Executor executor, Object[] args) throws SQLException, CloneNotSupportedException {
 
         var ms = (MappedStatement) args[0];
         var sqlSource = (SqlSourceForSelect) ms.getSqlSource();
         var countingSqlSource = sqlSource.asPaginationCountSqlSource();
 
         var resultMap = new ResultMap
-            .Builder(ms.getConfiguration(), ms.getId(), Long.class, Collections.emptyList())
+            .Builder(ms.getConfiguration(), ms.getId() + "-cnt", Long.class, Collections.emptyList())
             .build();
 
         args[0] = MappedStatementHelper.cloneWithNewSqlSourceAndResultMap(ms, countingSqlSource, resultMap, "-cnt");
         List<?> queryResult = invokeExecutor(executor, args);
 
-        return 0L;
-        // todo implement HybatisPageInterceptor.executeQueryCount()
+        return queryResult.isEmpty()? 0L: Bean.convertValue(queryResult.get(0), Long.class);
     }
 
-    private List<?> executeQueryItems(Executor executor, Object[] args) throws SQLException {
+    private List<?> executeQueryItems(Executor executor, Object[] args) throws SQLException, CloneNotSupportedException {
 
         var ms = (MappedStatement) args[0];
         var sqlSource = (SqlSourceForSelect) ms.getSqlSource();
         var itemsSqlSource = sqlSource.asPaginationItemsSqlSource();
 
         args[0] = MappedStatementHelper.cloneWithNewSqlSource(ms, itemsSqlSource, "-items");
-        List<?> queryResult = invokeExecutor(executor, args);
-        return queryResult;
+        return invokeExecutor(executor, args);
     }
 
-    private List<?> invokeExecutor(Executor executor, Object[] args) throws SQLException {
+    private List<?> invokeExecutor(Executor executor, Object[] args) throws SQLException, CloneNotSupportedException {
         if (args.length == 4) {
             return executor.query(
                 (MappedStatement) args[0], args[1], (RowBounds) args[2], (ResultHandler<?>) args[3]
             );
         } else if (args.length == 6) {
+            args[4] = newCacheKey((CacheKey) args[4], ((MappedStatement) args[0]).getId());
             args[5] = ((MappedStatement) args[0]).getBoundSql(args[1]);
             return executor.query(
                 (MappedStatement) args[0], args[1], (RowBounds) args[2], (ResultHandler<?>) args[3],
@@ -132,6 +131,14 @@ public class HybatisPageInterceptor implements Interceptor {
         } else {
             throw new IllegalStateException("Shouldn't be here");
         }
+    }
+
+    private CacheKey newCacheKey(
+        CacheKey cacheKey, String mappedStatementId
+    ) throws CloneNotSupportedException {
+        CacheKey result = cacheKey.clone();
+        result.update(mappedStatementId);
+        return result;
     }
 
 }

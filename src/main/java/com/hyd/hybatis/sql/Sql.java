@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 /**
  * Dynamic SQL generator
- *
+ * <p>
  * 本类中的有些方法命名以大写字母开头，这是因为考虑到 SQL 属于
  * 不同语种，即使是用 Java 语法来模拟 SQL，也应该保持这种感觉
  *
@@ -612,7 +612,7 @@ public abstract class Sql<T extends Sql<?>> {
 
         private String groupBy;
 
-        private long skip = -1;
+        private long offset = -1;
 
         private long limit = -1;
 
@@ -649,8 +649,8 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
-        public Select Skip(long skip) {
-            this.skip = skip;
+        public Select Offset(long offset) {
+            this.offset = offset;
             return this;
         }
 
@@ -667,8 +667,8 @@ public abstract class Sql<T extends Sql<?>> {
             this.statement += generateWhereBlock();
             this.statement += generateGroupBy();
             this.statement += generateOrderBy();
-            this.statement += this.skip > 0 ? (" skip " + this.skip + " ") : "";
             this.statement += this.limit > 0 ? (" limit " + this.limit + " ") : "";
+            this.statement += this.offset > 0 ? (" offset " + this.offset + " ") : "";
             return new SqlCommand(this.statement, this.params);
         }
 

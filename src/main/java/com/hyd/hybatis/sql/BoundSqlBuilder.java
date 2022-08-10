@@ -22,7 +22,6 @@ public class BoundSqlBuilder {
 
     public BoundSql build() {
         var sqlCommand = sql.toCommand();
-        log.info(sqlCommand.toString());
 
         var paramMappings = new ArrayList<ParameterMapping>();
         var paramMap = new HashMap<String, Object>();
