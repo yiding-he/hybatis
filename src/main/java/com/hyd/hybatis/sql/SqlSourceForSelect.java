@@ -55,7 +55,6 @@ public class SqlSourceForSelect extends HybatisSqlSource {
         if (selectMode == SelectMode.Count || selectMode == SelectMode.PaginationCount) {
             select.Columns("count(1)");
         } else {
-            var fields = getFields();
             if (fields != null && fields.length > 0) {
                 var columns = new String[fields.length];
                 for (int i = 0; i < fields.length; i++) {
@@ -80,10 +79,12 @@ public class SqlSourceForSelect extends HybatisSqlSource {
      */
     public SqlSourceForSelect asAnotherSelectMode(SelectMode selectMode) {
         var newSqlId = this.sqlId + "-" + selectMode.ordinal();
-        return new SqlSourceForSelect(
+        SqlSourceForSelect result = new SqlSourceForSelect(
             newSqlId, this.core, this.configuration, this.tableName,
             selectMode, this.mapperMethod
         );
+        result.setFields(this.fields);
+        return result;
     }
 
     /**
