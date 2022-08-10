@@ -16,7 +16,12 @@ import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Intercepts({
     @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
@@ -33,55 +38,100 @@ public class HybatisPageInterceptor implements Interceptor {
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
 
-        // TODO 这里搞错了，invocation.getMethod() 拿到的不是 Mapper 方法
-        Boolean isPaginationSelect = Pagination.isPaginationSelect(
-            invocation.getMethod(), core.getMappedStatementFactories()
-        );
+        Pagination.Context.clear();
+
+        var ms = (MappedStatement) invocation.getArgs()[0];
+        var ss = ms.getSqlSource();
+
+        boolean isPaginationSelect;
+        Method mapperMethod = null;
+
+        if (!(ss instanceof SqlSourceForSelect)) {
+            isPaginationSelect = false;
+        } else {
+            mapperMethod = ((SqlSourceForSelect) ss).getMapperMethod();
+            isPaginationSelect = Pagination.isPaginationSelect(mapperMethod, core.getMappedStatementFactories());
+        }
 
         if (isPaginationSelect) {
             // Do a counting query if necessary
-            processPagination(invocation);
+            Pagination.Context.getInstance().setEnabled(true);
+            return processPagination(invocation, mapperMethod);
+        } else {
+            return invocation.proceed();
         }
-
-        return invocation.proceed();
     }
 
-    private void processPagination(Invocation invocation) {
-        var method = invocation.getMethod();
+    private Object processPagination(Invocation invocation, Method mapperMethod)
+        throws SQLException, InvocationTargetException, IllegalAccessException
+    {
 
-        // TODO 这个时候才判断是否是分页查询，可能已经太晚了，因为 BoundSql 已经生成
-        Pagination.parsePageParams(method, core.getConf());
-        var context = Pagination.Context.getInstance();
-        int pageSize = context.getPageSize();
-        int pageIndex = context.getPageIndex();
-
-        if (pageSize <= 0) {
-            return;
-        }
+        // 解析分页参数并存储在 Pagination.Context 实例中
+        Pagination.parsePageParams(mapperMethod, core.getConf());
 
         var executor = (Executor) invocation.getTarget();
-        var ms = (MappedStatement) invocation.getArgs()[0];
-        var sqlSource = ms.getSqlSource();
+        var context = Pagination.Context.getInstance();
+        int pageSize = context.getPageSize();
 
-        if (sqlSource instanceof SqlSourceForSelect) {
-            var countingSqlSource = ((SqlSourceForSelect) sqlSource).newCountingSqlSource();
-
-            var resultMap = new ResultMap
-                .Builder(ms.getConfiguration(), ms.getId(), Long.class, Collections.emptyList())
-                .build();
-
-            var countingMs = MappedStatementHelper
-                .cloneWithNewSqlSourceAndResultMap(ms, countingSqlSource, resultMap, "_cnt");
-
-            Pagination.Context.getInstance().updateTotal(
-                executeCount(executor, countingMs, invocation.getArgs())
-            );
+        // 如果 pageSize 不正确，仍然不看作是分页查询
+        if (pageSize <= 0) {
+            return invocation.proceed();
         }
+
+        ////////////////////////// 1. 构建并执行 count 查询
+        var totalCount = executeQueryCount(executor, copyOfArgs(invocation));
+        Pagination.Context.getInstance().updateTotal(totalCount);
+
+        ////////////////////////// 2. 构建并执行 limit 查询
+        return executeQueryItems(executor, copyOfArgs(invocation));
     }
 
-    private Long executeCount(Executor executor, MappedStatement countingMs, Object[] invocationArgs) {
-        // TODO 执行 count 查询
+    private static Object[] copyOfArgs(Invocation invocation) {
+        return Arrays.copyOf(invocation.getArgs(), invocation.getArgs().length);
+    }
+
+    private Long executeQueryCount(Executor executor, Object[] args) throws SQLException {
+
+        var ms = (MappedStatement) args[0];
+        var sqlSource = (SqlSourceForSelect) ms.getSqlSource();
+        var countingSqlSource = sqlSource.asPaginationCountSqlSource();
+
+        var resultMap = new ResultMap
+            .Builder(ms.getConfiguration(), ms.getId(), Long.class, Collections.emptyList())
+            .build();
+
+        args[0] = MappedStatementHelper.cloneWithNewSqlSourceAndResultMap(ms, countingSqlSource, resultMap, "-cnt");
+        List<?> queryResult = invokeExecutor(executor, args);
+
         return 0L;
+        // todo implement HybatisPageInterceptor.executeQueryCount()
+    }
+
+    private List<?> executeQueryItems(Executor executor, Object[] args) throws SQLException {
+
+        var ms = (MappedStatement) args[0];
+        var sqlSource = (SqlSourceForSelect) ms.getSqlSource();
+        var itemsSqlSource = sqlSource.asPaginationItemsSqlSource();
+
+        args[0] = MappedStatementHelper.cloneWithNewSqlSource(ms, itemsSqlSource, "-items");
+        List<?> queryResult = invokeExecutor(executor, args);
+        return queryResult;
+    }
+
+    private List<?> invokeExecutor(Executor executor, Object[] args) throws SQLException {
+        if (args.length == 4) {
+            return executor.query(
+                (MappedStatement) args[0], args[1], (RowBounds) args[2], (ResultHandler<?>) args[3]
+            );
+        } else if (args.length == 6) {
+            args[5] = ((MappedStatement) args[0]).getBoundSql(args[1]);
+            return executor.query(
+                (MappedStatement) args[0], args[1], (RowBounds) args[2], (ResultHandler<?>) args[3],
+                (CacheKey) args[4], (BoundSql) args[5]
+            );
+        } else {
+            throw new IllegalStateException("Shouldn't be here");
+        }
     }
 
 }

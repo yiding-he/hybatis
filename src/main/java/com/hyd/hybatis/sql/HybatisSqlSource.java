@@ -10,15 +10,15 @@ import org.apache.ibatis.session.Configuration;
 
 public abstract class HybatisSqlSource implements SqlSource {
 
-    private final String sqlId;
+    protected final String sqlId;
 
-    private final Configuration configuration;
+    protected final Configuration configuration;
 
-    private final HybatisCore core;
+    protected final HybatisCore core;
 
-    private final String tableName;
+    protected final String tableName;
 
-    private String[] fields;
+    protected String[] fields;
 
     protected HybatisSqlSource(
         String sqlId, HybatisCore core, Configuration configuration, String tableName
@@ -59,7 +59,6 @@ public abstract class HybatisSqlSource implements SqlSource {
 
     @Override
     public BoundSql getBoundSql(Object parameterObject) {
-        Pagination.Context.clear();
         return build(parameterObject);
     }
 

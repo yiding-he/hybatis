@@ -1,7 +1,9 @@
 package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.annotations.HbSelect;
+import com.hyd.hybatis.page.Pagination;
 import com.hyd.hybatis.reflection.Reflections;
+import com.hyd.hybatis.sql.SelectMode;
 import com.hyd.hybatis.sql.SqlSourceForSelect;
 import com.hyd.hybatis.statement.MappedStatementHelper;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -24,10 +26,10 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
         Class<?> returnEntityType = Reflections.getReturnEntityType(method);
         var fields = method.getAnnotation(HbSelect.class).fields();
         var counting = isCounting(method);
-        var hybatisConf = getHybatisConfiguration();
+        var selectMode = counting ? SelectMode.Count : SelectMode.Normal;
 
-        SqlSourceForSelect sqlSource = new SqlSourceForSelect(sqlId, getCore(), mybatisConf, getTableName(method));
-        sqlSource.setCounting(counting);
+        SqlSourceForSelect sqlSource = new SqlSourceForSelect(
+            sqlId, getCore(), mybatisConf, getTableName(method), selectMode, method);
 
         if (fields.length > 0) {
             sqlSource.setFields(fields);
@@ -38,6 +40,9 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
         );
     }
 
+    /**
+     * 判断一个 Mapper 方法是否只返回记录数
+     */
     public static boolean isCounting(Method method) {
         Class<?> returnType = method.getReturnType();
         return returnType == Integer.TYPE ||

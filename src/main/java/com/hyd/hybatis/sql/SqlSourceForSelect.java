@@ -2,7 +2,6 @@ package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
-import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.page.Pagination;
 import com.hyd.hybatis.utils.Str;
@@ -10,23 +9,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 
+import java.lang.reflect.Method;
+
 @Slf4j
 public class SqlSourceForSelect extends HybatisSqlSource {
 
-    private boolean counting;
+    /**
+     * 查询分页模式，非分页查询则为 None，否则为其他两种模式之一
+     */
+    protected final SelectMode selectMode;
+
+    /**
+     * 拦截器自身无法得知执行的是哪个 Mapper 方法，需要在这里记下来
+     */
+    protected final Method mapperMethod;
 
     public SqlSourceForSelect(
-        String sqlId, HybatisCore core, Configuration configuration, String tableName
+        String sqlId, HybatisCore core, Configuration configuration, String tableName,
+        SelectMode selectMode, Method mapperMethod
     ) {
         super(sqlId, core, configuration, tableName);
+        this.selectMode = selectMode;
+        this.mapperMethod = mapperMethod;
     }
 
-    public void setCounting(boolean counting) {
-        this.counting = counting;
-    }
-
-    public boolean isCounting() {
-        return counting;
+    public Method getMapperMethod() {
+        return mapperMethod;
     }
 
     @Override
@@ -44,7 +52,7 @@ public class SqlSourceForSelect extends HybatisSqlSource {
             select = SqlHelper.buildSelect(context);
         }
 
-        if (counting) {
+        if (selectMode == SelectMode.Count || selectMode == SelectMode.PaginationCount) {
             select.Columns("count(1)");
         } else {
             var fields = getFields();
@@ -55,6 +63,12 @@ public class SqlSourceForSelect extends HybatisSqlSource {
                 }
                 select.Columns(columns);
             }
+
+            if (selectMode == SelectMode.PaginationItems) {
+                var pageIndex = Pagination.Context.getInstance().getPageIndex();
+                var pageSize = Pagination.Context.getInstance().getPageSize();
+                select.Skip((long) pageIndex * pageSize).Limit(pageSize);
+            }
         }
 
         log.info("[{}]: {}", getSqlId(), select.toCommand());
@@ -64,11 +78,22 @@ public class SqlSourceForSelect extends HybatisSqlSource {
     /**
      * 创建一个同样查询条件，但只返回记录数的 SqlSource 对象
      */
-    public SqlSourceForSelect newCountingSqlSource() {
-        var clone = new SqlSourceForSelect(
-            this.getSqlId(), this.getCore(), this.getConfiguration(), this.getTableName()
+    public SqlSourceForSelect asAnotherSelectMode(SelectMode selectMode) {
+        var newSqlId = this.sqlId + "-" + selectMode.name();
+        return new SqlSourceForSelect(
+            newSqlId, this.core, this.configuration, this.tableName,
+            selectMode, this.mapperMethod
         );
-        clone.setCounting(true);
-        return clone;
+    }
+
+    /**
+     * 创建一个同样查询条件，但只返回记录数的 SqlSource 对象
+     */
+    public SqlSourceForSelect asPaginationCountSqlSource() {
+        return asAnotherSelectMode(SelectMode.PaginationCount);
+    }
+
+    public SqlSourceForSelect asPaginationItemsSqlSource() {
+        return asAnotherSelectMode(SelectMode.PaginationItems);
     }
 }

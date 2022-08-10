@@ -25,6 +25,10 @@ public class Pagination {
 
     public static final String DEFAULT_PAGE_SIZE_NAME = "pageSize";
 
+    public enum Mode {
+        None, Count, Items
+    }
+
     @Data
     public static class Context {
 
@@ -61,12 +65,20 @@ public class Pagination {
     public static Boolean isPaginationSelect(Method method, MappedStatementFactories factories) {
         var valid = checkResultCache.get(method);
         if (valid == null) {
-            var factory =
-                factories.getMappedStatementFactory(method);
-
-            valid = factory instanceof SelectMappedStatementFactory
-                && !SelectMappedStatementFactory.isCounting(method);
-
+            var factory = factories.getMappedStatementFactory(method);
+            if (factory instanceof SelectMappedStatementFactory) {
+                var hbSelect = method.getAnnotation(HbSelect.class);
+                if (!hbSelect.pagination()) {
+                    valid = false;
+                } else {
+                    if (SelectMappedStatementFactory.isCounting(method)) {
+                        throw new IllegalStateException("Pagination cannot be applied to counting method " + method);
+                    }
+                    valid = true;
+                }
+            } else {
+                valid = false;
+            }
             checkResultCache.put(method, valid);
         }
         return valid;

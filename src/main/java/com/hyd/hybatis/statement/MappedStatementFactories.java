@@ -19,10 +19,6 @@ public class MappedStatementFactories {
         new UpdateMappedStatementFactory()
     ));
 
-    public List<MappedStatementFactory> getMappedStatementFactories() {
-        return Collections.unmodifiableList(mappedStatementFactories);
-    }
-
     public MappedStatementFactories(HybatisCore core) {
         this.init(core);
     }
@@ -41,13 +37,6 @@ public class MappedStatementFactories {
         MappedStatementFactory factory = getMappedStatementFactory(method);
         return factory == null ? null : factory.createMappedStatement(configuration, sqlId, method);
 
-    }
-
-    /**
-     * Check whether a given method can be processed by Hybatis
-     */
-    public boolean isValidHybatisMethod(Method method) {
-        return getMappedStatementFactory(method) != null;
     }
 
     public MappedStatementFactory getMappedStatementFactory(Method method) {

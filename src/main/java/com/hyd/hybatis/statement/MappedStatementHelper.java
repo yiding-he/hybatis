@@ -65,4 +65,17 @@ public class MappedStatementHelper {
             .resultMaps(newResultMap == null ? new ArrayList<>() : Collections.singletonList(newResultMap))
             .build();
     }
+
+    /**
+     * 从现有的 MappedStatement 创建一个克隆对象，但使用新的 SqlSource
+     */
+    public static MappedStatement cloneWithNewSqlSource(
+        MappedStatement src, SqlSource newSource, String suffix
+    ) {
+        return new MappedStatement
+            .Builder(src.getConfiguration(), src.getId() + suffix, newSource, src.getSqlCommandType())
+            .lang(new HybatisLanguageDriver())
+            .resultMaps(src.getResultMaps())
+            .build();
+    }
 }
