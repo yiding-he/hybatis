@@ -25,10 +25,6 @@ public class Pagination {
 
     public static final String DEFAULT_PAGE_SIZE_NAME = "pageSize";
 
-    public enum Mode {
-        None, Count, Items
-    }
-
     @Data
     public static class Context {
 
@@ -41,8 +37,6 @@ public class Pagination {
         public static void clear() {
             instance.remove();
         }
-
-        private boolean enabled;
 
         private int totalRows;
 
@@ -91,7 +85,13 @@ public class Pagination {
             return;
         }
 
-        int pageSize, pageIndex;
+        var context = Context.getInstance();
+        int pageSize = context.getPageSize(), pageIndex;
+
+        if (pageSize > 0) {
+            // Page params already set up, won't replace them with HTTP parameter values.
+            return;
+        }
 
         String pageIndexParamName = conf.getPageIndexParamName();
         String pageSizeParamName = conf.getPageSizeParamName();
@@ -113,7 +113,6 @@ public class Pagination {
         pageIndex = pageIndex <= 0? DEFAULT_PAGE_INDEX: pageIndex;
         pageSize = pageSize <= 0? DEFAULT_PAGE_SIZE: pageSize;
 
-        var context = Context.getInstance();
         context.setPageSize(pageSize);
         context.setPageIndex(pageIndex);
     }
@@ -123,5 +122,11 @@ public class Pagination {
             return 0;
         }
         return Integer.parseInt(s);
+    }
+
+    public static void setup(int pageSize, int pageIndex) {
+        var c = Context.getInstance();
+        c.setPageIndex(pageIndex);
+        c.setPageSize(pageSize);
     }
 }

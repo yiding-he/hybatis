@@ -38,9 +38,10 @@ public class HybatisPageInterceptor implements Interceptor {
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
+        return intercept0(invocation);
+    }
 
-        Pagination.Context.clear();
-
+    private Object intercept0(Invocation invocation) throws SQLException, InvocationTargetException, IllegalAccessException, CloneNotSupportedException {
         var ms = (MappedStatement) invocation.getArgs()[0];
         var ss = ms.getSqlSource();
 
@@ -56,7 +57,6 @@ public class HybatisPageInterceptor implements Interceptor {
 
         if (isPaginationSelect) {
             // Do a counting query if necessary
-            Pagination.Context.getInstance().setEnabled(true);
             return processPagination(invocation, mapperMethod);
         } else {
             return invocation.proceed();
