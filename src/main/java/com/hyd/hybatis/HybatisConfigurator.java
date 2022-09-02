@@ -1,5 +1,6 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.springmvc.HybatisBeanPostProcessor;
 import com.hyd.hybatis.springmvc.HybatisMvcConfigurer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -14,17 +15,15 @@ import org.springframework.context.annotation.Import;
 @Slf4j
 @Configuration
 @EnableConfigurationProperties(HybatisConfiguration.class)
-@Import(HybatisMvcConfigurer.class)
+@Import({
+    HybatisBeanPostProcessor.class,
+    HybatisMvcConfigurer.class
+})
 public class HybatisConfigurator {
 
     @Bean
-    HybatisCore hybatisCore(
-        HybatisConfiguration configuration,
-        SqlSessionFactory sqlSessionFactory
-    ) {
-        var hybatisCore = new HybatisCore(configuration);
-        hybatisCore.process(sqlSessionFactory.getConfiguration());
-        return hybatisCore;
+    HybatisCore hybatisCore(HybatisConfiguration configuration) {
+        return new HybatisCore(configuration);
     }
 
     @Bean

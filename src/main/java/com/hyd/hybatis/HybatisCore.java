@@ -29,19 +29,7 @@ public class HybatisCore {
         return mappedStatementFactories;
     }
 
-    public void process(Configuration configuration) {
-        log.info("Processing mybatis configuration {}...", configuration);
-
-        // Create MappedStatement for appropriate Mapper methods
-        configuration.getMapperRegistry().getMappers().forEach(mapperClass -> {
-            processMapperClass(configuration, mapperClass);
-        });
-
-        // Add interceptor for pagination queries
-        configuration.addInterceptor(new HybatisPageInterceptor(this));
-    }
-
-    private void processMapperClass(Configuration configuration, Class<?> mapperClass) {
+    public void processMapperClass(Configuration configuration, Class<?> mapperClass) {
         Stream.of(mapperClass.getDeclaredMethods()).forEach(method -> {
             try {
                 processMapperMethod(configuration, mapperClass, method);
