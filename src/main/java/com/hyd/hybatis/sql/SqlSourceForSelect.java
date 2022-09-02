@@ -3,7 +3,6 @@ package com.hyd.hybatis.sql;
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisCore;
-import com.hyd.hybatis.page.Pagination;
 import com.hyd.hybatis.utils.Str;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.mapping.BoundSql;
@@ -52,7 +51,7 @@ public class SqlSourceForSelect extends HybatisSqlSource {
             select = SqlHelper.buildSelect(context);
         }
 
-        if (selectMode == SelectMode.Count || selectMode == SelectMode.PaginationCount) {
+        if (selectMode == SelectMode.Count) {
             select.Columns("count(1)");
         } else {
             if (fields != null && fields.length > 0) {
@@ -61,12 +60,6 @@ public class SqlSourceForSelect extends HybatisSqlSource {
                     columns[i] = Str.camel2Underline(fields[i]);
                 }
                 select.Columns(columns);
-            }
-
-            if (selectMode == SelectMode.PaginationItems) {
-                var pageIndex = Pagination.Context.getInstance().getPageIndex();
-                var pageSize = Pagination.Context.getInstance().getPageSize();
-                select.Offset((long) pageIndex * pageSize).Limit(pageSize);
             }
         }
 
@@ -85,19 +78,5 @@ public class SqlSourceForSelect extends HybatisSqlSource {
         );
         result.setFields(this.fields);
         return result;
-    }
-
-    /**
-     * 创建一个同样查询条件，但只返回记录数的 SqlSource 对象
-     */
-    public SqlSourceForSelect asPaginationCountSqlSource() {
-        return asAnotherSelectMode(SelectMode.PaginationCount);
-    }
-
-    /**
-     * 创建一个同样查询条件，但只返回当前页记录的 SqlSource 对象
-     */
-    public SqlSourceForSelect asPaginationItemsSqlSource() {
-        return asAnotherSelectMode(SelectMode.PaginationItems);
     }
 }

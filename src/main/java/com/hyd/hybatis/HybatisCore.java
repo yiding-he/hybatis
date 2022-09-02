@@ -1,6 +1,5 @@
 package com.hyd.hybatis;
 
-import com.hyd.hybatis.interceptor.HybatisPageInterceptor;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.statement.MappedStatementFactories;
 import lombok.extern.slf4j.Slf4j;

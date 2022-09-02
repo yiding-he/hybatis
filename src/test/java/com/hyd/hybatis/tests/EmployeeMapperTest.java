@@ -1,13 +1,9 @@
 package com.hyd.hybatis.tests;
 
 import com.hyd.hybatis.Condition;
-import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
-import com.hyd.hybatis.Page;
-import com.hyd.hybatis.entity.Employee;
 import com.hyd.hybatis.entity.EmployeeQuery;
 import com.hyd.hybatis.mappers.EmployeeMapper;
-import com.hyd.hybatis.page.Pagination;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,16 +34,4 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
         assertNotNull(employee.getLastName());
     }
 
-    @Test
-    public void testSelectPageByConditions() throws Exception {
-        var conditions = new Conditions().with("emp_no", c -> c.lt(10100));
-        var page = new Page<>(employeeMapper.selectPageByConditions(conditions));
-        assertFalse(page.getList().isEmpty());
-        assertEquals(99, page.getTotalRows());
-
-        Pagination.setup(10, 3);
-        page = new Page<>(employeeMapper.selectPageByConditions(conditions));
-        assertFalse(page.getList().isEmpty());
-        assertEquals(10, page.getList().size());
-    }
 }

@@ -1,7 +1,6 @@
 package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.annotations.HbSelect;
-import com.hyd.hybatis.page.Pagination;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.sql.SelectMode;
 import com.hyd.hybatis.sql.SqlSourceForSelect;

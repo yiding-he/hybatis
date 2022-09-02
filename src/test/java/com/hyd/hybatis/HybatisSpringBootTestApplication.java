@@ -86,25 +86,6 @@ public class HybatisSpringBootTestApplication {
             return new PageHelperPage(page, (int) page.getTotal(), page.getPages());
         }
 
-        // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash"
-        @GetMapping("/select-page-by-query")
-        public Page<Employee> selectPageByQuery(EmployeeQuery employeeQuery) {
-            var employees = employeeMapper.selectPageByQuery(employeeQuery);
-            return new Page<>(employees);
-        }
-
-        // curl "http://localhost:8080/emp/select-page-by-conditions?firstName.eq=Bikash&pageSize=10&pageIndex=8"
-        @GetMapping("/select-page-by-conditions")
-        public Page<Employee> selectByConditions(Conditions conditions) {
-            return new Page<>(employeeMapper.selectPageByConditions(conditions));
-        }
-
-        // curl "http://localhost:8080/emp/select-row-page-by-query?firstName.eq=Bikash&pageSize=10&pageIndex=8"
-        @GetMapping("/select-row-page-by-query")
-        public Page<Row> selectRowPageByQuery(EmployeeQuery query) {
-            return new Page<>(employeeMapper.selectRowPageByQuery(query));
-        }
-
         // curl "http://localhost:8080/emp/count?hire_date.gt=1994-12-31"
         @GetMapping("/count")
         public long countEmployees(Conditions conditions) {

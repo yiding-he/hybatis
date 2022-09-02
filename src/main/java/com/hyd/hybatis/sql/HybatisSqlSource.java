@@ -2,7 +2,6 @@ package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.HybatisCore;
-import com.hyd.hybatis.page.Pagination;
 import com.hyd.hybatis.statement.MappedStatementFactories;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.SqlSource;

@@ -24,8 +24,4 @@ public @interface HbSelect {
      */
     String[] fields() default {};
 
-    /**
-     * 是否分页查询
-     */
-    boolean pagination() default false;
 }
