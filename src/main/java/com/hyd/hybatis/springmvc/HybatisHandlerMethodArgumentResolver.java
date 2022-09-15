@@ -112,6 +112,12 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
             Condition c = conditions.with(param.column);
             injectCondition(param, c, String.class);
         });
+
+        var limit = webRequest.getParameter("limit");
+        if (limit != null) {
+            conditions.limit(Integer.parseInt(limit));
+        }
+
         return conditions;
     }
 

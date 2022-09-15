@@ -13,6 +13,17 @@ public class Conditions {
      */
     private final Map<String, Condition<?>> data = new HashMap<>();
 
+    private int limit = -1;
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public Conditions limit(int limit) {
+        this.limit = limit;
+        return this;
+    }
+
     public Condition<Object> with(String column) {
         var c = new Condition<>();
         c.setColumn(column);

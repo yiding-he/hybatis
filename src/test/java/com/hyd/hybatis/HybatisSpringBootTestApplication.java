@@ -17,8 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-
-import static org.springframework.util.StringUtils.hasText;
+import java.util.function.Supplier;
 
 @SpringBootApplication
 @Import(HybatisConfigurator.class)
@@ -56,20 +55,19 @@ public class HybatisSpringBootTestApplication {
         /**
          * Integrate with <a href="https://github.com/pagehelper/Mybatis-PageHelper">Mybatis-PageHelper</a>
          */
-        @SuppressWarnings("resource")
-        private void startPage() {
-            if (!hasText(request.getParameter("pageIndex")) || !hasText(request.getParameter("pageSize"))) {
-                PageHelper.startPage(1, 10);
-            } else {
-                PageHelper.startPage(
-                    Integer.parseInt(request.getParameter("pageIndex")),
-                    Integer.parseInt(request.getParameter("pageSize"))
-                );
-            }
-        }
-
         @Data
         private static class PageHelperPage {
+
+            @SuppressWarnings("resource")
+            public PageHelperPage(HttpServletRequest request, Supplier<com.github.pagehelper.Page<?>> pageSupplier) {
+                var pageNum = request.getParameter("pageIndex") == null ? 1 : Integer.parseInt(request.getParameter("pageIndex"));
+                var pageSize = request.getParameter("pageSize") == null ? 10 : Integer.parseInt(request.getParameter("pageSize"));
+                PageHelper.startPage(pageNum, pageSize);
+                var page = pageSupplier.get();
+                this.list = page;
+                this.total = (int) page.getTotal();
+                this.pages = page.getPages();
+            }
 
             private final com.github.pagehelper.Page<?> list;
 
@@ -78,12 +76,17 @@ public class HybatisSpringBootTestApplication {
             private final int pages;
         }
 
-        // curl "http://localhost:8080/emp/select-by-query?firstName.eq=Bikash"
-        @GetMapping("/select-by-query")
+        // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash"
+        @GetMapping("/select-page-by-query")
         public PageHelperPage selectByQuery(EmployeeQuery employeeQuery) {
-            startPage();
-            var page = employeeMapper.selectByQuery(employeeQuery);
-            return new PageHelperPage(page, (int) page.getTotal(), page.getPages());
+            return new PageHelperPage(request, () -> employeeMapper.selectByQuery(employeeQuery));
+        }
+
+        // curl "http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4"
+        @GetMapping("/select-by-conditions")
+        public List<Row> selectByConditions(Conditions conditions) {
+            conditions.limit(Math.min(conditions.getLimit(), 50));
+            return employeeMapper.selectByConditions(conditions);
         }
 
         // curl "http://localhost:8080/emp/count?hire_date.gt=1994-12-31"

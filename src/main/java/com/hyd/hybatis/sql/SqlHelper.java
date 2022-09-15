@@ -31,6 +31,10 @@ public class SqlHelper {
             injectCondition(select, condition);
         }
         injectOrderBy(select, conditions.getConditions());
+
+        if (conditions.getLimit() >= 0) {
+            select.Limit(conditions.getLimit());
+        }
         return select;
     }
 

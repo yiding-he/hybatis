@@ -22,6 +22,9 @@ public interface EmployeeMapper {
     @HbSelect(table = "EMPLOYEES")
     long countByConditions(Conditions conditions);
 
+    @HbSelect(table = "EMPLOYEES", fields = {"empNo", "firstName", "lastName", "hireDate"})
+    List<Row> selectByConditions(Conditions conditions);
+
     @HbSelect(table = "select * from EMPLOYEES where GENDER='F'")
     List<Employee> selectFromFemales(EmployeeQuery query);
 
