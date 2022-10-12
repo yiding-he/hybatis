@@ -8,6 +8,72 @@ import java.util.function.Consumer;
 
 public class Conditions {
 
+    public class Wrapper {
+
+        private final String column;
+
+        public Wrapper(String column) {
+            this.column = column;
+        }
+
+        public Conditions startWith(String s) {
+            return Conditions.this.with(column, c -> c.startsWith(s));
+        }
+
+        public Conditions endsWith(String s) {
+            return Conditions.this.with(column, c -> c.endsWith(s));
+        }
+
+        public Conditions contains(String s) {
+            return Conditions.this.with(column, c -> c.contains(s));
+        }
+
+        public Conditions eq(Object o) {
+            return Conditions.this.with(column, c -> c.eq(o));
+        }
+
+        public Conditions ne(Object o) {
+            return Conditions.this.with(column, c -> c.ne(o));
+        }
+
+        public Conditions beNull() {
+            return Conditions.this.with(column, c -> c.beNull());
+        }
+
+        public Conditions nonNull() {
+            return Conditions.this.with(column, c -> c.nonNull());
+        }
+
+        public Conditions lt(Object o) {
+            return Conditions.this.with(column, c -> c.lt(o));
+        }
+
+        public Conditions lte(Object o) {
+            return Conditions.this.with(column, c -> c.lte(o));
+        }
+
+        public Conditions gt(Object o) {
+            return Conditions.this.with(column, c -> c.gt(o));
+        }
+
+        public Conditions gte(Object o) {
+            return Conditions.this.with(column, c -> c.gte(o));
+        }
+
+        public Conditions between(Object o1, Object o2) {
+            return Conditions.this.with(column, c -> c.between(o1, o2));
+        }
+
+        public Conditions in(List<?> tt) {
+            return Conditions.this.with(column, c -> c.in(tt));
+        }
+
+        @SafeVarargs
+        public final <T> Conditions in(T... tt) {
+            return Conditions.this.with(column, c -> c.in(tt));
+        }
+    }
+
     /**
      * query conditions
      */
@@ -34,6 +100,10 @@ public class Conditions {
     public Conditions with(String column, Consumer<Condition<Object>> consumer) {
         consumer.accept(with(column));
         return this;
+    }
+
+    public Wrapper withColumn(String column) {
+        return new Wrapper(column);
     }
 
     public List<Condition<?>> getConditions() {

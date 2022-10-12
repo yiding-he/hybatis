@@ -26,7 +26,13 @@ public interface EmployeeMapper {
     List<Row> selectByConditions(Conditions conditions);
 
     @HbSelect(table = "select * from EMPLOYEES where GENDER='F'")
-    List<Employee> selectFromFemales(EmployeeQuery query);
+    List<Employee> selectFemales(EmployeeQuery query);
+
+    default List<Row> selectFemales() {
+        return selectByConditions(new Conditions()
+            .withColumn("GENDER").eq("F")
+        );
+    }
 
     @HbSelect(table = "EMPLOYEES", fields = {"emp_no", "first_name", "last_name"})
     List<Row> selectRowsByQuery(EmployeeQuery query);
