@@ -32,15 +32,14 @@ public class MappedStatementFactories {
     }
 
     public MappedStatement createMappedStatement(
-        Configuration configuration, String sqlId, Method method, boolean ignoreInvalidMethodName
+        Configuration configuration, String sqlId, Class<?> mapperClass, Method method, boolean ignoreInvalidMethodName
     ) {
-        MappedStatementFactory factory = getMappedStatementFactory(method);
-        return factory == null ? null : factory.createMappedStatement(configuration, sqlId, method);
-
+        MappedStatementFactory factory = getMappedStatementFactory(mapperClass, method);
+        return factory == null ? null : factory.createMappedStatement(configuration, sqlId, mapperClass, method);
     }
 
-    public MappedStatementFactory getMappedStatementFactory(Method method) {
+    public MappedStatementFactory getMappedStatementFactory(Class<?> mapperClass, Method method) {
         return mappedStatementFactories
-            .stream().filter(f -> f.match(method)).findFirst().orElse(null);
+            .stream().filter(f -> f.match(mapperClass, method)).findFirst().orElse(null);
     }
 }

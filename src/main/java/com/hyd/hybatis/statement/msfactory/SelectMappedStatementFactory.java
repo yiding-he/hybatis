@@ -1,6 +1,7 @@
 package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.annotations.HbSelect;
+import com.hyd.hybatis.mapper.CrudMapper;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.sql.SelectMode;
 import com.hyd.hybatis.sql.SqlSourceForSelect;
@@ -14,21 +15,28 @@ import java.lang.reflect.Method;
 public class SelectMappedStatementFactory extends AbstractMappedStatementFactory {
 
     @Override
-    public boolean match(Method method) {
+    public boolean match(Class<?> mapperClass, Method method) {
         return method.isAnnotationPresent(HbSelect.class)
             && method.getParameterCount() == 1
             && Reflections.isPojoClassQueryable(method.getParameterTypes()[0]);
     }
 
     @Override
-    public MappedStatement createMappedStatement(Configuration mybatisConf, String sqlId, Method method) {
-        Class<?> returnEntityType = Reflections.getReturnEntityType(method);
+    public MappedStatement createMappedStatement(
+        Configuration mybatisConf, String sqlId, Class<?> mapperClass, Method method
+    ) {
+        Class<?> returnEntityType;
+        if (CrudMapper.class.isAssignableFrom(mapperClass)) {
+            returnEntityType = Reflections.getGenericTypeArg(mapperClass);
+        } else {
+            returnEntityType = Reflections.getReturnEntityType(method);
+        }
         var fields = method.getAnnotation(HbSelect.class).fields();
         var counting = isCounting(method);
         var selectMode = counting ? SelectMode.Count : SelectMode.Normal;
 
         SqlSourceForSelect sqlSource = new SqlSourceForSelect(
-            sqlId, getCore(), mybatisConf, getTableName(method), selectMode, method);
+            sqlId, getCore(), mybatisConf, getTableName(mapperClass, method).getOrThrow(), selectMode, method);
 
         if (fields.length > 0) {
             sqlSource.setFields(fields);

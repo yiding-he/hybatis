@@ -1,21 +1,16 @@
 package com.hyd.hybatis.mappers;
 
 import com.hyd.hybatis.Conditions;
-import com.hyd.hybatis.annotations.HbSelect;
 import com.hyd.hybatis.entity.Department;
-import com.hyd.hybatis.row.Row;
+import com.hyd.hybatis.mapper.CrudMapper;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
 @Mapper
-public interface DepartmentMapper {
+public interface DepartmentMapper extends CrudMapper<Department> {
 
-    @HbSelect(table = "DEPARTMENTS")
-    List<Row> selectList(Conditions conditions);
-
-    @Select("select * from DEPARTMENTS where DEPT_NO=#{deptNo} limit 1")
-    Department selectOneById(@Param("deptNo") String deptNo);
+    default List<Department> selectAll() {
+        return selectList(new Conditions());
+    }
 }

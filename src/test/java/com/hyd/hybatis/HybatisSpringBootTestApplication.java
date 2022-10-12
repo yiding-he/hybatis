@@ -1,6 +1,7 @@
 package com.hyd.hybatis;
 
 import com.github.pagehelper.PageHelper;
+import com.hyd.hybatis.entity.Department;
 import com.hyd.hybatis.entity.Employee;
 import com.hyd.hybatis.entity.EmployeeQuery;
 import com.hyd.hybatis.mappers.DepartmentMapper;
@@ -36,8 +37,9 @@ public class HybatisSpringBootTestApplication {
         @Autowired
         private DepartmentMapper departmentMapper;
 
+        // curl "http://localhost:8080/dep/query?deptNo.gt=d004"
         @GetMapping("/query")
-        public List<Row> queryDepartments(Conditions conditions) {
+        public List<Department> queryDepartments(Conditions conditions) {
             return departmentMapper.selectList(conditions);
         }
     }
@@ -76,7 +78,7 @@ public class HybatisSpringBootTestApplication {
             private final int pages;
         }
 
-        // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash"
+        // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5"
         @GetMapping("/select-page-by-query")
         public PageHelperPage selectByQuery(EmployeeQuery employeeQuery) {
             return new PageHelperPage(request, () -> employeeMapper.selectByQuery(employeeQuery));

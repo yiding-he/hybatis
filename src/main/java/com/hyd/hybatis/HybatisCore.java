@@ -7,6 +7,7 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -29,7 +30,8 @@ public class HybatisCore {
     }
 
     public void processMapperClass(Configuration configuration, Class<?> mapperClass) {
-        Stream.of(mapperClass.getDeclaredMethods()).forEach(method -> {
+        var nonDefaultMethods = Reflections.getMapperNonDefaultMethods(mapperClass);
+        nonDefaultMethods.forEach(method -> {
             try {
                 processMapperMethod(configuration, mapperClass, method);
             } catch (Exception e) {
@@ -38,10 +40,11 @@ public class HybatisCore {
         });
     }
 
-    private void processMapperMethod(Configuration configuration, Class<?> mapperClass, Method method) {
-        var sqlId = mapperClass.getName() + "." + method.getName();
-        if (!configuration.hasStatement(sqlId) && !Reflections.hasBody(method)) {
-            MappedStatement ms = mappedStatementFactories.createMappedStatement(configuration, sqlId, method, true);
+    private void processMapperMethod(Configuration configuration, Class<?> mapperClass, Method abstractMethod) {
+        var sqlId = mapperClass.getName() + "." + abstractMethod.getName();
+        if (!configuration.hasStatement(sqlId)) {
+            MappedStatement ms = mappedStatementFactories
+                .createMappedStatement(configuration, sqlId, mapperClass, abstractMethod, true);
             if (ms != null) {
                 configuration.addMappedStatement(ms);
                 log.info("Created mapped statement for '{}'", sqlId);

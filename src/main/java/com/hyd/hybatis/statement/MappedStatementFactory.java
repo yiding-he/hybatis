@@ -17,7 +17,8 @@ public interface MappedStatementFactory {
             .orElse(null);
     }
 
-    boolean match(Method method);
+    boolean match(Class<?> mapperClass, Method method);
 
-    MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method);
+    MappedStatement createMappedStatement(
+        Configuration configuration, String sqlId, Class<?> mapperClass, Method method);
 }
