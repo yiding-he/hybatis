@@ -1,10 +1,7 @@
 package com.hyd.hybatis.statement;
 
 import com.hyd.hybatis.HybatisCore;
-import com.hyd.hybatis.statement.msfactory.AbstractMappedStatementFactory;
-import com.hyd.hybatis.statement.msfactory.InsertMappedStatementFactory;
-import com.hyd.hybatis.statement.msfactory.SelectMappedStatementFactory;
-import com.hyd.hybatis.statement.msfactory.UpdateMappedStatementFactory;
+import com.hyd.hybatis.statement.msfactory.*;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 
@@ -13,11 +10,13 @@ import java.util.*;
 
 public class MappedStatementFactories {
 
-    private final List<MappedStatementFactory> mappedStatementFactories = new ArrayList<>(Arrays.asList(
-        new SelectMappedStatementFactory(),
-        new InsertMappedStatementFactory(),
-        new UpdateMappedStatementFactory()
-    ));
+    private final List<? extends MappedStatementFactory> mappedStatementFactories =
+        new ArrayList<>(List.of(
+            new SelectMappedStatementFactory(),
+            new InsertMappedStatementFactory(),
+            new UpdateMappedStatementFactory(),
+            new DeleteMappedStatementFactory()
+        ));
 
     public MappedStatementFactories(HybatisCore core) {
         this.init(core);

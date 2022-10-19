@@ -34,4 +34,10 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
         departmentMapper.insert(department);
         departmentMapper.selectAll().forEach(System.out::println);
     }
+
+    @Test
+    public void testDelete() throws Exception {
+        int count = departmentMapper.delete(new Conditions().withColumn("dept_no").eq("d010"));
+        System.out.println("count = " + count);
+    }
 }

@@ -18,22 +18,12 @@ public class SqlSourceForSelect extends HybatisSqlSource {
      */
     protected final SelectMode selectMode;
 
-    /**
-     * 拦截器自身无法得知执行的是哪个 Mapper 方法，需要在这里记下来
-     */
-    protected final Method mapperMethod;
-
     public SqlSourceForSelect(
         String sqlId, HybatisCore core, Configuration configuration, String tableName,
         SelectMode selectMode, Method mapperMethod
     ) {
-        super(sqlId, core, configuration, tableName);
+        super(sqlId, core, configuration, tableName, mapperMethod);
         this.selectMode = selectMode;
-        this.mapperMethod = mapperMethod;
-    }
-
-    public Method getMapperMethod() {
-        return mapperMethod;
     }
 
     @Override
@@ -63,7 +53,7 @@ public class SqlSourceForSelect extends HybatisSqlSource {
             }
         }
 
-        log.info("[{}]: {}", getSqlId(), select.toCommand());
+        log.debug("[{}]: {}", getSqlId(), select.toCommand());
         return buildBoundSql(select);
     }
 

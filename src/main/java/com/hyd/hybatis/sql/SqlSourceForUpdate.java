@@ -12,6 +12,7 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +23,9 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
 
     public SqlSourceForUpdate(
         String sqlId, HybatisCore core, Configuration configuration,
-        String tableName, String[] key
+        String tableName, Method mapperMethod, String[] key
     ) {
-        super(sqlId, core, configuration, tableName);
+        super(sqlId, core, configuration, tableName, mapperMethod);
         this.key = key;
     }
 
@@ -50,7 +51,7 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
             buildUpdateByBeanObject(updateSql, conditionColumns, update);
         }
 
-        log.info("[{}]: {}", getSqlId(), updateSql.toCommand());
+        log.debug("[{}]: {}", getSqlId(), updateSql.toCommand());
         return buildBoundSql(updateSql);
     }
 

@@ -1,10 +1,7 @@
 package com.hyd.hybatis.mapper;
 
 import com.hyd.hybatis.Conditions;
-import com.hyd.hybatis.annotations.HbEntity;
-import com.hyd.hybatis.annotations.HbInsert;
-import com.hyd.hybatis.annotations.HbSelect;
-import com.hyd.hybatis.annotations.HbUpdate;
+import com.hyd.hybatis.annotations.*;
 import com.hyd.hybatis.reflection.Reflections;
 
 import java.util.List;
@@ -24,6 +21,9 @@ public interface CrudMapper<T> {
 
     @HbSelect(table = "")
     List<T> selectList(Conditions conditions);
+
+    @HbDelete(table = "")
+    int delete(Conditions conditions);
 
     default T selectOne(Conditions conditions) {
         return selectList(conditions.limit(1)).stream().findFirst().orElse(null);

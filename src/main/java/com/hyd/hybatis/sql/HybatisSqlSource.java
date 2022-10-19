@@ -7,7 +7,14 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.Configuration;
 
+import java.lang.reflect.Method;
+
 public abstract class HybatisSqlSource implements SqlSource {
+
+    /**
+     * 拦截器自身无法得知执行的是哪个 Mapper 方法，需要在这里记下来
+     */
+    protected final Method mapperMethod;
 
     protected final String sqlId;
 
@@ -20,12 +27,17 @@ public abstract class HybatisSqlSource implements SqlSource {
     protected String[] fields;
 
     protected HybatisSqlSource(
-        String sqlId, HybatisCore core, Configuration configuration, String tableName
+        String sqlId, HybatisCore core, Configuration configuration, String tableName, Method mapperMethod
     ) {
         this.sqlId = sqlId;
         this.core = core;
         this.configuration = configuration;
         this.tableName = tableName;
+        this.mapperMethod = mapperMethod;
+    }
+
+    public Method getMapperMethod() {
+        return mapperMethod;
     }
 
     public String[] getFields() {

@@ -7,8 +7,6 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.stream.Stream;
 
 @Slf4j
 public class HybatisCore {

@@ -1,6 +1,5 @@
 package com.hyd.hybatis.sql;
 
-import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.utils.Str;
@@ -9,15 +8,16 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 @Slf4j
 public class SqlSourceForInsert extends HybatisSqlSource {
 
     public SqlSourceForInsert(
-        String sqlId, HybatisCore core, Configuration configuration, String tableName
+        String sqlId, HybatisCore core, Configuration configuration, String tableName, Method mapperMethod
     ) {
-        super(sqlId, core, configuration, tableName);
+        super(sqlId, core, configuration, tableName, mapperMethod);
     }
 
     @SuppressWarnings("unchecked")
@@ -32,7 +32,7 @@ public class SqlSourceForInsert extends HybatisSqlSource {
             buildInsertByBeanObject(insertSql, insert);
         }
 
-        log.info("[{}]: {}", getSqlId(), insertSql.toCommand());
+        log.debug("[{}]: {}", getSqlId(), insertSql.toCommand());
         return buildBoundSql(insertSql);
     }
 
