@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class HybatisSpringBootTestApplicationTest {
 
     @Autowired
-    private Hybatis hybatis;
+    protected Hybatis hybatis;
 
     @Test
     public void testInitialized() throws Exception {

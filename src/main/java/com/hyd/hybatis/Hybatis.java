@@ -3,15 +3,16 @@ package com.hyd.hybatis;
 import com.hyd.hybatis.row.Row;
 import com.hyd.hybatis.sql.Sql;
 import com.hyd.hybatis.sql.SqlCommand;
-import org.apache.ibatis.executor.resultset.ResultSetHandler;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class Hybatis {
 
@@ -70,16 +71,7 @@ public class Hybatis {
 
     public List<Row> queryList(SqlCommand command) throws SQLException {
         List<Row> rowList = new ArrayList<>();
-        try (
-            var conn = getConnection();
-            var ps = prepareStatement(conn, command);
-            var rs = ps.executeQuery()
-        ) {
-            while (rs.next()) {
-                var row = Row.fromResultSet(rs);
-                rowList.add(row);
-            }
-        }
+        query(command, rowList::add);
         return rowList;
     }
 
