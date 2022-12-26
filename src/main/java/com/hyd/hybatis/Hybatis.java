@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Hybatis {
 
@@ -146,29 +147,27 @@ public class Hybatis {
     }
 
     public int execute(BatchCommand batchCommand) throws SQLException {
-        return withConnection(conn -> {
-            var counter = new AtomicInteger();
-            try (PreparedStatement ps = conn.prepareStatement(batchCommand.getStatement())) {
-                batchCommand.forEachBatch(batchParams -> {
-                    for (List<Object> batchParam : batchParams) {
-                        setupParameters(ps, batchParam);
-                        ps.addBatch();
-                    }
-                    counter.addAndGet(IntStream.of(ps.executeBatch()).sum());
-                });
-            }
-            return counter.get();
-        });
+        return executeBatch(batchCommand.getStatement(), batchCommand.getParams());
     }
 
     public int executeBatch(String statement, List<List<Object>> batchParams) throws SQLException {
+        return executeBatch(statement, batchParams.stream());
+    }
+
+    public int executeBatch(String statement, Stream<List<Object>> batchParams) throws SQLException {
         return withConnection(conn -> {
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
-                for (List<Object> batchParam : batchParams) {
-                    setupParameters(ps, batchParam);
-                    ps.addBatch();
-                }
+                batchParams.forEach(batchParam -> {
+                    try {
+                        setupParameters(ps, batchParam);
+                        ps.addBatch();
+                    } catch (SQLException e) {
+                        throw SQLExceptionWrapper.wrap(e);
+                    }
+                });
                 return IntStream.of(ps.executeBatch()).sum();
+            } catch (SQLExceptionWrapper w) {
+                throw w.unwrap();
             }
         });
     }
