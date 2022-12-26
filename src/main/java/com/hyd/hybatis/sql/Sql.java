@@ -53,6 +53,8 @@ public abstract class Sql<T extends Sql<?>> {
 
     protected List<Join> joins = new ArrayList<>();
 
+    protected String suffix;
+
     public String getSql() {
         return toCommand().getStatement();
     }
@@ -404,7 +406,7 @@ public abstract class Sql<T extends Sql<?>> {
         public Pair(Joint joint, String statement, Object... args) {
             this.joint = joint;
             this.statement = statement.trim();
-            this.args = args == null? Collections.emptyList(): Arrays.asList(args);
+            this.args = args == null ? Collections.emptyList() : Arrays.asList(args);
         }
 
         public Pair(Joint joint, String statement, List<Object> args) {
@@ -503,11 +505,17 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
+        public Insert OnDuplicateKeyUpdate() {
+            this.suffix = " on duplicate key update";
+            return this;
+        }
+
         @Override
         public SqlCommand toCommand() {
             this.statement = "insert into " + table +
                 "(" + Pair.joinPairName(pairs) + ") values " +
-                "(" + Pair.joinPairHolder(pairs) + ")";
+                "(" + Pair.joinPairHolder(pairs) + ")" +
+                (suffix == null ? "" : suffix);
             this.params = Pair.joinPairValue(pairs);
 
             return new SqlCommand(statement, params);
