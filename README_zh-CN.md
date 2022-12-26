@@ -12,14 +12,14 @@ Hybatis 提供的主要功能：
 
 ## 0. 启用 Hybatis
 
-启用 Hybatis 需要:
+启用 Hybatis 需要先编译本项目然后包含到你的项目依赖关系中。如果你用 Maven，则可以直接用 `mvn install -maven.test.skip=true` 来安装到本地 Maven 库。
 
-1. 编译本项目然后包含到你的项目依赖关系中，如果你用 Maven，则可以直接用 `mvn install -maven.test.skip=true` 来安装到本地 Maven 库；
-2. 在包含了 MyBatis 框架的 Spring Boot 项目中的启动配置类（即加注了 `@SpringBootApplication` 或 `@Configuration` 的类）上添加下面的注解即可：
+#### 将 Hybatis 加入项目
 
-```java
-@Import(HybatisConfigurator.class)
-```
+可以使用两种方式之一：
+
+1. 在包含了 MyBatis 框架的 Spring Boot 项目中的配置类上添加注解 `@Import(HybatisConfigurator.class)` 即可；
+2. 自己创建 Hybatis 对象：`new Hybatis(dataSource)`
 
 ## 1. 执行 SQL
 
