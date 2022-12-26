@@ -56,6 +56,10 @@ public class Hybatis {
         void run() throws SQLException;
     }
 
+    public Hybatis(DataSource dataSource) {
+        this(new HybatisConfiguration(), dataSource);
+    }
+
     public Hybatis(HybatisConfiguration configuration, ConnectionSupplier connectionSupplier) {
         this.configuration = configuration;
         this.connectionSupplier = connectionSupplier;
