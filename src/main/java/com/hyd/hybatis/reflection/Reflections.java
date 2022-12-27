@@ -9,9 +9,7 @@ import com.hyd.hybatis.utils.Str;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,7 +67,7 @@ public class Reflections {
     }
 
     public static Class<?> getGenericTypeArg(Type type) {
-        if (type instanceof Class && ((Class<?>)type).getGenericInterfaces().length > 0) {
+        if (type instanceof Class && ((Class<?>) type).getGenericInterfaces().length > 0) {
             var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
             return (Class<?>) genericInterface.getActualTypeArguments()[0];
         } else if (type instanceof ParameterizedType) {
@@ -160,22 +158,23 @@ public class Reflections {
      * 查找 Mapper 接口及其父接口中定义的非 default 方法
      */
     public static List<Method> getMapperNonDefaultMethods(Class<?> mapperClass) {
-        List<Method> list = new ArrayList<>();
+        ArrayList<Method> nonDefaultMethods = new ArrayList<>();
         if (!mapperClass.isInterface()) {
-            return list;
+            return nonDefaultMethods;
         }
 
-        list.addAll(getNonDefaultMethods(mapperClass));
-
-        Stream.of(mapperClass.getInterfaces())
-            .forEach(i -> list.addAll(getNonDefaultMethods(i)));
-
-        return list;
+        scanInterfaceAndAddMethod(mapperClass, nonDefaultMethods);
+        return nonDefaultMethods;
     }
 
-    private static List<Method> getNonDefaultMethods(Class<?> iface) {
-        return Stream.of(iface.getDeclaredMethods())
+    private static void scanInterfaceAndAddMethod(
+        Class<?> interfaceClass, ArrayList<Method> nonDefaultMethods
+    ) {
+        Stream.of(interfaceClass.getDeclaredMethods())
             .filter(m -> !hasBody(m))
-            .collect(Collectors.toList());
+            .forEach(nonDefaultMethods::add);
+
+        Stream.of(interfaceClass.getInterfaces())
+            .forEach(i -> scanInterfaceAndAddMethod(i, nonDefaultMethods));
     }
 }

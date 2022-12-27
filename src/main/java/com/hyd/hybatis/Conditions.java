@@ -1,13 +1,16 @@
 package com.hyd.hybatis;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public class Conditions {
+public class Conditions implements Serializable {
 
+    @SuppressWarnings({"Convert2MethodRef", "unused"})
     public class Wrapper {
 
         private final String column;
@@ -74,6 +77,8 @@ public class Conditions {
         }
     }
 
+    private static final long serialVersionUID = 43210L;
+
     /**
      * query conditions
      */
@@ -100,6 +105,35 @@ public class Conditions {
     public Conditions with(String column, Consumer<Condition<Object>> consumer) {
         consumer.accept(with(column));
         return this;
+    }
+
+    public Conditions orderAsc(String... ascColumns) {
+        var index = new AtomicInteger(getMaxOrderIndex());
+        for (String column : ascColumns) {
+            var c = new Condition<>();
+            c.setColumn(column);
+            c.setOrderAsc(index.incrementAndGet());
+            this.data.put(column, c);
+        }
+        return this;
+    }
+
+    public Conditions orderDesc(String... ascColumns) {
+        var index = new AtomicInteger(getMaxOrderIndex());
+        for (String column : ascColumns) {
+            var c = new Condition<>();
+            c.setColumn(column);
+            c.setOrderDesc(index.incrementAndGet());
+            this.data.put(column, c);
+        }
+        return this;
+    }
+
+    private int getMaxOrderIndex() {
+        return this.data.values().stream()
+            .filter(c -> c.getOrderAsc() != null || c.getOrderDesc() != null)
+            .mapToInt(c -> c.getOrderAsc() == null ? c.getOrderDesc() : c.getOrderAsc())
+            .max().orElse(0);
     }
 
     public Wrapper withColumn(String column) {

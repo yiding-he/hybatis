@@ -5,7 +5,9 @@ import com.hyd.hybatis.entity.Department;
 import com.hyd.hybatis.entity.Employee;
 import com.hyd.hybatis.entity.EmployeeQuery;
 import com.hyd.hybatis.mappers.DepartmentMapper;
+import com.hyd.hybatis.mappers.EmployeeCrudMapper;
 import com.hyd.hybatis.mappers.EmployeeMapper;
+import com.hyd.hybatis.pagination.PageHelperPage;
 import com.hyd.hybatis.row.Row;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -52,36 +54,21 @@ public class HybatisSpringBootTestApplication {
         private EmployeeMapper employeeMapper;
 
         @Autowired
+        private EmployeeCrudMapper employeeCrudMapper;
+
+        @Autowired
         private HttpServletRequest request;
-
-        /**
-         * Integrate with <a href="https://github.com/pagehelper/Mybatis-PageHelper">Mybatis-PageHelper</a>
-         */
-        @Data
-        private static class PageHelperPage {
-
-            @SuppressWarnings("resource")
-            public PageHelperPage(HttpServletRequest request, Supplier<com.github.pagehelper.Page<?>> pageSupplier) {
-                var pageNum = request.getParameter("pageIndex") == null ? 1 : Integer.parseInt(request.getParameter("pageIndex"));
-                var pageSize = request.getParameter("pageSize") == null ? 10 : Integer.parseInt(request.getParameter("pageSize"));
-                PageHelper.startPage(pageNum, pageSize);
-                var page = pageSupplier.get();
-                this.list = page;
-                this.total = (int) page.getTotal();
-                this.pages = page.getPages();
-            }
-
-            private final com.github.pagehelper.Page<?> list;
-
-            private final int total;
-
-            private final int pages;
-        }
 
         // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5"
         @GetMapping("/select-page-by-query")
-        public PageHelperPage selectByQuery(EmployeeQuery employeeQuery) {
-            return new PageHelperPage(request, () -> employeeMapper.selectByQuery(employeeQuery));
+        public PageHelperPage<Employee> selectPageByQuery(EmployeeQuery employeeQuery) {
+            return new PageHelperPage<>(request, () -> employeeMapper.selectByQuery(employeeQuery));
+        }
+
+        // curl "http://localhost:8080/emp/select-page-by-query-2?firstName.eq=Bikash&pageIndex=3&pageSize=5"
+        @GetMapping("/select-page-by-query-2")
+        public PageHelperPage<Employee> selectPageByQuery2(Conditions conditions) {
+            return employeeCrudMapper.selectPage(conditions, request);
         }
 
         // curl "http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4"
@@ -100,11 +87,7 @@ public class HybatisSpringBootTestApplication {
         // curl --request POST \
         //  --url http://localhost:8080/emp/update \
         //  --header 'Content-Type: application/json' \
-        //  --data '{
-        //	"empNo": 1,
-        //	"firstName": "Hybatis",
-        //	"lastName": "Smith"
-        //}'
+        //  --data '{"empNo":1, "firstName":"Hybatis", "lastName":"Smith"}'
         @PostMapping("/update")
         public String updateEmployee(@RequestBody Employee update) {
             employeeMapper.updateEmployee(update);

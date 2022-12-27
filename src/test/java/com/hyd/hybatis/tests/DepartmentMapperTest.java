@@ -7,6 +7,8 @@ import com.hyd.hybatis.mappers.DepartmentMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
 
     @Autowired
@@ -14,8 +16,25 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
 
     @Test
     public void testSelectList() {
-        var departments = departmentMapper.selectList(new Conditions());
+        var departments = departmentMapper.selectList(
+            new Conditions()
+                .orderAsc("dept_name")
+                .limit(5)
+        );
         departments.forEach(System.out::println);
+    }
+
+    @Test
+    void testSelectOne() {
+        var department = departmentMapper.selectOne(
+            new Conditions().withColumn("dept_no").eq("d005"));
+        assertNotNull(department);
+        assertEquals("d005", department.getDeptNo());
+        assertEquals("Development", department.getDeptName());
+
+        department = departmentMapper.selectOne(
+            new Conditions().withColumn("dept_no").eq("d999"));
+        assertNull(department);
     }
 
     @Test
@@ -37,7 +56,9 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
 
     @Test
     public void testDelete() throws Exception {
-        int count = departmentMapper.delete(new Conditions().withColumn("dept_no").eq("d010"));
+        int count = departmentMapper.delete(
+            new Conditions().withColumn("dept_no").eq("d010")
+        );
         System.out.println("count = " + count);
     }
 }
