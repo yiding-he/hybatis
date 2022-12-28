@@ -71,7 +71,7 @@ public class HybatisSpringBootTestApplication {
             return employeeCrudMapper.selectPage(conditions, request);
         }
 
-        // curl "http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4"
+        // curl "http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4&projection=empNo,firstName,lastName,hireDate"
         @GetMapping("/select-by-conditions")
         public List<Row> selectByConditions(Conditions conditions) {
             conditions.limit(Math.min(conditions.getLimit(), 50));

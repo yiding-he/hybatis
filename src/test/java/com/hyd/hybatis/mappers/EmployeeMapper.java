@@ -16,13 +16,13 @@ public interface EmployeeMapper {
 
     /////////////////////////////////////////////////////////////////// Query
 
-    @HbSelect(table = "EMPLOYEES", fields = {"empNo", "firstName", "lastName", "hireDate"})
+    @HbSelect(table = "EMPLOYEES")
     Page<Employee> selectByQuery(EmployeeQuery query);
 
     @HbSelect(table = "EMPLOYEES")
     long countByConditions(Conditions conditions);
 
-    @HbSelect(table = "EMPLOYEES", fields = {"empNo", "firstName", "lastName", "hireDate"})
+    @HbSelect(table = "EMPLOYEES")
     List<Row> selectByConditions(Conditions conditions);
 
     @HbSelect(table = "select * from EMPLOYEES where GENDER='F'")
@@ -34,7 +34,7 @@ public interface EmployeeMapper {
         );
     }
 
-    @HbSelect(table = "EMPLOYEES", fields = {"emp_no", "first_name", "last_name"})
+    @HbSelect(table = "EMPLOYEES")
     List<Row> selectRowsByQuery(EmployeeQuery query);
 
     /////////////////////////////////////////////////////////////////// Update

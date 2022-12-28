@@ -1,7 +1,6 @@
 package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Conditions;
-import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.utils.Bean;
@@ -57,9 +56,10 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
 
     private Conditions buildConditionsFromKey(String[] key, Object parameterObject) {
         Conditions conditions = new Conditions();
+        var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         for (String k : key) {
-            var columnName = Str.camel2Underline(k);
-            var fieldName = Str.underline2Camel(k);
+            var columnName = camelToUnderline ? Str.camel2Underline(k) : k;
+            var fieldName = camelToUnderline ? Str.underline2Camel(k) : k;
             conditions.with(columnName, c -> c.eq(Bean.getValue(parameterObject, fieldName)));
         }
         return conditions;
@@ -68,8 +68,9 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
     private void buildUpdateByMapObject(
         Sql.Update updateSql, List<String> conditionColumns, Map<String, Object> update
     ) {
+        var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         update.forEach((field, value) -> {
-            var columnName = Str.camel2Underline(field);
+            var columnName = camelToUnderline? Str.camel2Underline(field): field;
             if (conditionColumns.contains(columnName)) {
                 return;
             }
@@ -85,8 +86,9 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
             update.getClass(), getHybatisConfiguration().getHideBeanFieldsFrom()
         );
 
+        var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         pojoFields.forEach(f -> {
-            var columnName = Reflections.getColumnName(f);
+            var columnName = Reflections.getColumnName(f, camelToUnderline);
             if (conditionColumns.contains(columnName)) {
                 return;
             }

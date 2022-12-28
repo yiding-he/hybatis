@@ -24,8 +24,6 @@ public abstract class HybatisSqlSource implements SqlSource {
 
     protected final String tableName;
 
-    protected String[] fields;
-
     protected HybatisSqlSource(
         String sqlId, HybatisCore core, Configuration configuration, String tableName, Method mapperMethod
     ) {
@@ -38,14 +36,6 @@ public abstract class HybatisSqlSource implements SqlSource {
 
     public Method getMapperMethod() {
         return mapperMethod;
-    }
-
-    public String[] getFields() {
-        return fields;
-    }
-
-    public void setFields(String[] fields) {
-        this.fields = fields;
     }
 
     public String getSqlId() {

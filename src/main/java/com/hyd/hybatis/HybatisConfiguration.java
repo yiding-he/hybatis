@@ -20,4 +20,8 @@ public class HybatisConfiguration {
      */
     private boolean ignoreEmptyString = true;
 
+    /**
+     * Whether convert camel field names to underline style column names
+     */
+    private boolean camelToUnderline = true;
 }

@@ -31,16 +31,11 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
         } else {
             returnEntityType = Reflections.getReturnEntityType(method);
         }
-        var fields = method.getAnnotation(HbSelect.class).fields();
         var counting = isCounting(method);
         var selectMode = counting ? SelectMode.Count : SelectMode.Normal;
 
         SqlSourceForSelect sqlSource = new SqlSourceForSelect(
             sqlId, getCore(), mybatisConf, getTableName(mapperClass, method).getOrThrow(), selectMode, method);
-
-        if (fields.length > 0) {
-            sqlSource.setFields(fields);
-        }
 
         return MappedStatementHelper.buildMappedStatement(
             mybatisConf, sqlId, returnEntityType, sqlSource, SqlCommandType.SELECT

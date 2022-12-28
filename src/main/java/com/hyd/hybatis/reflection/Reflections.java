@@ -9,7 +9,9 @@ import com.hyd.hybatis.utils.Str;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -136,11 +138,11 @@ public class Reflections {
         }
     }
 
-    public static String getColumnName(Field field) {
+    public static String getColumnName(Field field, boolean camelToUnderline) {
         if (field.isAnnotationPresent(HbColumn.class)) {
             return field.getAnnotation(HbColumn.class).value();
         } else {
-            return Str.camel2Underline(field.getName());
+            return camelToUnderline? Str.camel2Underline(field.getName()): field.getName();
         }
     }
 

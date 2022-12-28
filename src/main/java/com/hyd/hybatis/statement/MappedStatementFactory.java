@@ -5,7 +5,6 @@ import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public interface MappedStatementFactory {

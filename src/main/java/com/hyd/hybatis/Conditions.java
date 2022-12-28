@@ -1,10 +1,7 @@
 package com.hyd.hybatis;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -82,12 +79,28 @@ public class Conditions implements Serializable {
     /**
      * query conditions
      */
-    private final Map<String, Condition<?>> data = new HashMap<>();
+    private final Map<String, Condition<?>> query = new HashMap<>();
+
+    private List<String> projection = Collections.emptyList();
 
     private int limit = -1;
 
     public int getLimit() {
         return limit;
+    }
+
+    public List<String> getProjection() {
+        return projection;
+    }
+
+    public Conditions projection(String... projection) {
+        this.projection = List.of(projection);
+        return this;
+    }
+
+    public Conditions projection(Collection<String> projection) {
+        this.projection = new ArrayList<>(projection);
+        return this;
     }
 
     public Conditions limit(int limit) {
@@ -98,7 +111,7 @@ public class Conditions implements Serializable {
     public Condition<Object> with(String column) {
         var c = new Condition<>();
         c.setColumn(column);
-        this.data.put(column, c);
+        this.query.put(column, c);
         return c;
     }
 
@@ -113,7 +126,7 @@ public class Conditions implements Serializable {
             var c = new Condition<>();
             c.setColumn(column);
             c.setOrderAsc(index.incrementAndGet());
-            this.data.put(column, c);
+            this.query.put(column, c);
         }
         return this;
     }
@@ -124,13 +137,13 @@ public class Conditions implements Serializable {
             var c = new Condition<>();
             c.setColumn(column);
             c.setOrderDesc(index.incrementAndGet());
-            this.data.put(column, c);
+            this.query.put(column, c);
         }
         return this;
     }
 
     private int getMaxOrderIndex() {
-        return this.data.values().stream()
+        return this.query.values().stream()
             .filter(c -> c.getOrderAsc() != null || c.getOrderDesc() != null)
             .mapToInt(c -> c.getOrderAsc() == null ? c.getOrderDesc() : c.getOrderAsc())
             .max().orElse(0);
@@ -141,6 +154,6 @@ public class Conditions implements Serializable {
     }
 
     public List<Condition<?>> getConditions() {
-        return new ArrayList<>(data.values());
+        return new ArrayList<>(query.values());
     }
 }

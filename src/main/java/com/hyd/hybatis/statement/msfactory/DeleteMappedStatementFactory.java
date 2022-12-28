@@ -1,11 +1,8 @@
 package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.annotations.HbDelete;
-import com.hyd.hybatis.annotations.HbSelect;
-import com.hyd.hybatis.annotations.HbUpdate;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.sql.SqlSourceForDelete;
-import com.hyd.hybatis.sql.SqlSourceForUpdate;
 import com.hyd.hybatis.statement.MappedStatementHelper;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;

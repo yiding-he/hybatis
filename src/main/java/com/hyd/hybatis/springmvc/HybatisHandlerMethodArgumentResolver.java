@@ -14,11 +14,9 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.hyd.hybatis.reflection.Reflections.getGenericTypeArg;
 import static com.hyd.hybatis.utils.Bean.convertValue;
@@ -81,6 +79,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
         }
 
         var t = BeanUtils.instantiateClass(parameterType);
+        var camelToUnderline = config.isCamelToUnderline();
         webRequest.getParameterMap().forEach((key, values) -> {
             Param param = parseParamValues(key, values);
             if (param == null) {
@@ -88,7 +87,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
             }
             if (conditionFieldsMap.containsKey(param.field)) {
                 var field = conditionFieldsMap.get(param.field);
-                param.column = Reflections.getColumnName(field);
+                param.column = Reflections.getColumnName(field, camelToUnderline);
 
                 Condition condition = Reflections.getFieldValue(t, field);
                 if (condition == null) {
@@ -116,6 +115,11 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
         var limit = webRequest.getParameter("limit");
         if (limit != null) {
             conditions.limit(Integer.parseInt(limit));
+        }
+
+        var projection = webRequest.getParameter("projection");
+        if (projection != null) {
+            conditions.projection(parseProjection(projection));
         }
 
         return conditions;
@@ -175,7 +179,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
         }
         var split = key.split("\\.");
         var field = split[0];
-        var column = Str.camel2Underline(field);
+        var column = config.isCamelToUnderline()? Str.camel2Underline(field): field;
         var condition = split[1];
 
         var valuesList = new ArrayList<String>();
@@ -203,5 +207,13 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
         param.values = values;
         param.parsedValues = valuesList;
         return param;
+    }
+
+    private Set<String> parseProjection(String projection) {
+        var stream = Stream.of(projection.split(",")).filter(Str::isNotBlank);
+        if (config.isCamelToUnderline()) {
+            stream = stream.map(Str::camel2Underline);
+        }
+        return stream.collect(Collectors.toSet());
     }
 }

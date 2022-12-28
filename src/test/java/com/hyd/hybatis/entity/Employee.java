@@ -2,9 +2,11 @@ package com.hyd.hybatis.entity;
 
 import com.hyd.hybatis.annotations.HbEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @HbEntity(table = "EMPLOYEES")
 public class Employee extends BaseEntity {

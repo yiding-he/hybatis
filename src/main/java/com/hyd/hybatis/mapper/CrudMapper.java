@@ -1,8 +1,10 @@
 package com.hyd.hybatis.mapper;
 
 import com.hyd.hybatis.Conditions;
-import com.hyd.hybatis.annotations.*;
-import com.hyd.hybatis.reflection.Reflections;
+import com.hyd.hybatis.annotations.HbDelete;
+import com.hyd.hybatis.annotations.HbInsert;
+import com.hyd.hybatis.annotations.HbSelect;
+import com.hyd.hybatis.annotations.HbUpdate;
 
 import java.util.List;
 

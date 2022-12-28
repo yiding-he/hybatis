@@ -37,9 +37,10 @@ public class SqlSourceForInsert extends HybatisSqlSource {
     }
 
     private void buildInsertByMapObject(Sql.Insert insertSql, Map<String, Object> insert) {
+        var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         insert.forEach((field, value) -> {
             if (value != null) {
-                var columnName = Str.camel2Underline(field);
+                var columnName = camelToUnderline? Str.camel2Underline(field): field;
                 insertSql.Values(columnName, value);
             }
         });
@@ -51,10 +52,11 @@ public class SqlSourceForInsert extends HybatisSqlSource {
             getHybatisConfiguration().getHideBeanFieldsFrom()
         );
 
+        var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         for (Field field : fields) {
             var fieldValue = Reflections.getFieldValue(insert, field);
             if (fieldValue != null) {
-                var columnName = Reflections.getColumnName(field);
+                var columnName = Reflections.getColumnName(field, camelToUnderline);
                 insertSql.Values(columnName, fieldValue);
             }
         }
