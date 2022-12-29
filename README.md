@@ -10,4 +10,9 @@ A MyBatis extension for [Spring Boot](https://spring.io/projects/spring-boot) pr
 It has two main functions:
 
 1. Execute dynamic SQL statement (with parameters).
-2. Generate functions for unmapped Mapper methods.
+2. Generate specified `Mapper` methods.
+
+### Requirement
+
+- MyBatis framework
+- Java 11 or later
