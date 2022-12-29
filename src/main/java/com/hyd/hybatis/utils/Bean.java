@@ -134,8 +134,8 @@ public class Bean {
     }
 
     /**
-     * 将一个值转化为指定的属性类型，以便于赋到对象属性。注意，当 value 的值超过属性类型允许的最大值时，强制转换将起作用。
-     * <p>
+     * 将一个值转化为指定的属性类型，以便于赋到对象属性。
+     * 当 value 的值超过属性类型允许的最大值时，将抛出异常。
      * 本方法主要处理数字类型的查询结果，对于字符类型和日期类型则不作处理，直接赋值。
      *
      * @param value 值
@@ -190,43 +190,49 @@ public class Bean {
 
             if (clazz == Integer.TYPE) {
 
-                if (bdValue.compareTo(new BigDecimal(Integer.MAX_VALUE)) > 0) {
-                    throw new HybatisException("Value " + bdValue + " is too large for integer");
+                if (bdValue.compareTo(new BigDecimal(Integer.MAX_VALUE)) > 0
+                    || bdValue.compareTo(new BigDecimal(Integer.MIN_VALUE)) < 0) {
+                    throw new HybatisException("Value " + bdValue + " is out of range for integer");
                 }
                 return bdValue.intValue();
 
             } else if (clazz == Long.TYPE) {
 
-                if (bdValue.compareTo(new BigDecimal(Long.MAX_VALUE)) > 0) {
-                    throw new HybatisException("Value " + bdValue + " is too large for long");
+                if (bdValue.compareTo(new BigDecimal(Long.MAX_VALUE)) > 0
+                    || bdValue.compareTo(new BigDecimal(Long.MIN_VALUE)) < 0) {
+                    throw new HybatisException("Value " + bdValue + " is out of range for long");
                 }
                 return bdValue.longValue();
 
             } else if (clazz == Double.TYPE) {
 
-                if (bdValue.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) > 0) {
-                    throw new HybatisException("Value " + bdValue + " is too large for double");
+                if (bdValue.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) > 0
+                    || bdValue.compareTo(BigDecimal.valueOf(-Double.MAX_VALUE)) < 0) {
+                    throw new HybatisException("Value " + bdValue + " is out of range for double");
                 }
                 return bdValue.doubleValue();
 
             } else if (clazz == Byte.TYPE) {
 
-                if (bdValue.compareTo(new BigDecimal(Byte.MAX_VALUE)) > 0) {
-                    throw new HybatisException("Value " + bdValue + " is too large for byte");
+                if (bdValue.compareTo(new BigDecimal(Byte.MAX_VALUE)) > 0
+                    || bdValue.compareTo(new BigDecimal(Byte.MIN_VALUE)) < 0) {
+                    throw new HybatisException("Value " + bdValue + " is out of range for byte");
                 }
                 return bdValue.byteValue();
 
             } else if (clazz == Short.TYPE) {
 
-                if (bdValue.compareTo(new BigDecimal(Short.MAX_VALUE)) > 0) {
-                    throw new HybatisException("Value " + bdValue + " is too large for short");
+                if (bdValue.compareTo(new BigDecimal(Short.MAX_VALUE)) > 0
+                    || bdValue.compareTo(new BigDecimal(Short.MIN_VALUE)) < 0) {
+                    throw new HybatisException("Value " + bdValue + " is out of range for short");
                 }
                 return bdValue.shortValue();
 
             } else if (clazz == Float.TYPE) {
 
-                if (bdValue.compareTo(BigDecimal.valueOf(Float.MAX_VALUE)) > 0) {
-                    throw new HybatisException("Value " + bdValue + " is too large for float");
+                if (bdValue.compareTo(BigDecimal.valueOf(Float.MAX_VALUE)) > 0
+                    || bdValue.compareTo(BigDecimal.valueOf(-Float.MAX_VALUE)) < 0) {
+                    throw new HybatisException("Value " + bdValue + " is out of range for float");
                 }
                 return bdValue.floatValue();
             }

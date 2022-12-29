@@ -23,7 +23,7 @@ public class Result<T> {
         this.value = value;
     }
 
-    public boolean ok() {
+    public boolean isSuccess() {
         return success;
     }
 
