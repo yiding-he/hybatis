@@ -115,7 +115,8 @@ public class Condition<T> implements Serializable {
         return this;
     }
 
-    public Condition<T> in(T... tt) {
+    @SafeVarargs
+    public final Condition<T> in(T... tt) {
         this.in = Arrays.asList(tt);
         return this;
     }

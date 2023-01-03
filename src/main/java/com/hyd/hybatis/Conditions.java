@@ -108,10 +108,16 @@ public class Conditions implements Serializable {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     public Condition<Object> with(String column) {
-        var c = new Condition<>();
-        c.setColumn(column);
-        this.query.put(column, c);
+        Condition<Object> c;
+        if (this.query.containsKey(column)) {
+            c = (Condition<Object>) this.query.get(column);
+        } else {
+            c = new Condition<>();
+            c.setColumn(column);
+            this.query.put(column, c);
+        }
         return c;
     }
 
