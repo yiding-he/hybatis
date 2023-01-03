@@ -6,7 +6,7 @@
 
   <groupId>com.hyd</groupId>
   <artifactId>hybatis</artifactId>
-  <version>0.5-SNAPSHOT</version>
+  <version>0.5</version>
 
   <name>hybatis</name>
   <description>A MyBatis extension for SpringBoot projects</description>
