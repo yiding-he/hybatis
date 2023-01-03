@@ -6,7 +6,7 @@
 
   <groupId>com.hyd</groupId>
   <artifactId>hybatis</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.5</version>
 
   <name>hybatis</name>
   <description>A MyBatis extension for SpringBoot projects</description>
@@ -15,7 +15,6 @@
   <developers>
     <developer>
       <name>Yiding He</name>
-      <url>https://heyiding.com:666</url>
       <email>yiding.he@gmail.com</email>
       <roles>
         <role>owner</role>
@@ -41,21 +40,11 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <spring-boot.version>2.7.5</spring-boot.version>
   </properties>
 
   <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
-    <dependency>
-      <groupId>org.mybatis</groupId>
-      <artifactId>mybatis-spring</artifactId>
-      <version>2.0.7</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
-    <dependency>
-      <groupId>org.mybatis</groupId>
-      <artifactId>mybatis</artifactId>
-      <version>3.5.10</version>
-    </dependency>
+    <!-- ////////////////////////// Logging ////////////////////////// -->
     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -73,7 +62,7 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
-      <version>2.7.2</version>
+      <version>${spring-boot.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -83,20 +72,42 @@
       <scope>compile</scope>
     </dependency>
 
+    <!-- ////////////////////////// MyBatis(Optional) ////////////////////////// -->
+    <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis-spring</artifactId>
+      <version>2.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis</artifactId>
+      <version>3.5.11</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.github.pagehelper/pagehelper-spring-boot-starter -->
+    <dependency>
+      <groupId>com.github.pagehelper</groupId>
+      <artifactId>pagehelper-spring-boot-starter</artifactId>
+      <version>1.4.6</version>
+      <scope>provided</scope>
+    </dependency>
 
-    <!-- ////////////////////////// Provided ////////////////////////// -->
+    <!-- ////////////////////////// Spring MVC & SpringBoot ////////////////////////// -->
     <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
-      <version>2.7.0</version>
+      <version>${spring-boot.version}</version>
       <scope>provided</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
     <dependency>
       <groupId>org.mybatis.spring.boot</groupId>
       <artifactId>mybatis-spring-boot-starter</artifactId>
-      <version>2.2.2</version>
+      <version>2.3.0</version>
       <scope>provided</scope>
     </dependency>
     <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
@@ -111,20 +122,13 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
-      <version>2.7.2</version>
+      <version>${spring-boot.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
-      <version>2.7.2</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/com.github.pagehelper/pagehelper-spring-boot-starter -->
-    <dependency>
-      <groupId>com.github.pagehelper</groupId>
-      <artifactId>pagehelper-spring-boot-starter</artifactId>
-      <version>1.4.3</version>
+      <version>${spring-boot.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -177,14 +181,14 @@
         <snapshotRepository>
           <id>dev-nexus-server</id>
           <name>Snapshots</name>
-          <url>http://${env.DEV_NEXUS_SERVER}/nexus/content/repositories/snapshots/</url>
+          <url>https://${env.DEV_NEXUS_SERVER}/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
       </distributionManagement>
       <repositories>
         <repository>
           <id>dev-nexus-server</id>
           <name>znxunzhi Repository</name>
-          <url>http://${env.DEV_NEXUS_SERVER}/nexus/content/groups/public</url>
+          <url>https://${env.DEV_NEXUS_SERVER}/nexus/content/groups/public</url>
           <releases>
             <enabled>true</enabled>
           </releases>

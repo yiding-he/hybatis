@@ -5,6 +5,91 @@
 
 一个在 [Spring Boot](https://spring.io/projects/spring-boot) 项目中使用的 MyBatis 扩展框架。
 
+Hybatis 提供的主要功能：
+
+1. 直接执行 SQL
+2. 为 Mapper 方法生成简单的动态增删改查
+
+## 0. 启用 Hybatis
+
+启用 Hybatis 需要先编译本项目然后包含到你的项目依赖关系中。如果你用 Maven，则可以直接用 `mvn install -maven.test.skip=true` 来安装到本地 Maven 库。
+
+#### 将 Hybatis 加入项目
+
+可以使用两种方式之一：
+
+1. 在包含了 MyBatis 框架的 Spring Boot 项目中的配置类上添加注解 `@Import(HybatisConfigurator.class)` 即可；
+2. 自己创建 Hybatis 对象：`new Hybatis(dataSource)`
+
+## 1. 执行 SQL
+
+启用 Hybatis 后，你就有了一个随时可以通过 `@Autowired` 来注入的 `Hybatis` 对象。下面是一个例子:
+
+```java
+@Service
+public class SampleService {
+
+    @Autowired
+    private Hybatis hybatis;
+
+    // 执行 insert 语句
+    public void insert(User user) {
+        val sql = "insert into user(id, name) values(?,?)";
+        hybatis.execute(sql, user.getId(), user.getName());
+    }
+
+    // 或者使用封装的 Insert 对象
+    public void insert2(User user) {
+        hybatis.execute(Sql.Insert("user")
+                .Values("id", user.getId())
+                .Values("name", user.getName())
+        );
+    }
+    
+    // 查询结果封装为 Row 对象，Row 是 Map 的子类
+    public List<Row> queryUsersByKeyword(String userNameKeyword) {
+        return hybatis.queryList(
+                "select * from user where name like ?", "%" + userNameKeyword + "%");
+    }
+    
+    // 执行数据库事务
+    public void insertUsers(List<User> users) {
+        val sql = "insert into user(id, name) values(?,?)";
+        hybatis.runTransaction(() -> {
+            for (User user : users) {
+                hybatis.execute(sql, user.getId(), user.getName());
+            }
+        });
+    }
+    
+    // 执行批处理
+    public void insertUsers2(List<User> users) {
+        var batchCommand = new BatchCommand();
+        batchCommand.setStatement("insert into user(id, name) values(?, ?)");
+        batchCommand.setParams(users.stream().map(
+                user -> List.of(user.getId(), user.getName())
+        ));
+        var effectedRows = hybatis.execute(batchCommand);
+    }
+    
+    // 大量数据自动分批次插入
+    public void insertUsers3(Stream<User> users) {
+        var sql = "insert into user(id, name) values(?,?)";
+        var batchSize = 100;
+        var batchExecutor = new BatchExecutor(hybatis, sql, batchSize);
+        
+        users
+            .map(user -> List.of(user.getId(), user.getName()))
+            .forEach(list -> batchExecutor.feed(list));
+        
+        batchExecutor.finish();
+    }
+}
+```
+
+
+## 2. 处理动态条件
+
 本框架会对满足条件的 Mapper 方法自动生成并注册 MappedStatement，这样能节省开发者的一部分工作量：
 
 1. 开发者不需要针对这些方法在注解或 XML 中编写 SQL；
@@ -12,29 +97,21 @@
 
 ### 实现原理：
 
-1. 当 SpringBoot 项目启动时，会自动扫描所有 Mapper 接口，找出那些没有注册到 MyBatis 框架的方法；
+1. 当 SpringBoot 项目启动时，Hybatis 会自动扫描所有 Mapper 接口，找出那些没有注册到 MyBatis 框架的方法；
 2. 遍历这些方法，如果方法满足先决条件，则 Hybatis 会为这些方法生成 MappedStatement 并注册到 Mybatis。
 
 注意：你可以随时将 Hybatis 加到现有项目中。对于项目中已经实现的 Mapper 方法，Hybatis 不会对其进行更改。
-
-### Hybatis 有哪些功能？
-
-Hybatis 的目的是简化 Mybatis 中的 insert/update/select 操作。
-
-- 对于 insert/update 操作，当表设计变化时我们往往需要进行维护。Hybatis 可以免去这样的维护。
-- 对于 select 查询，当查询条件变化，比如查询表单新增字段时，我们往往需要调整动态 SQL。Hybatis 可以免去这样的调整。
 
 ### Hybatis 能处理哪些 Mapper 方法？
 
 1. 方法必须带上 `@HbSelect`、`@HbInsert` 或 `@HbUpdate` 注解，以便识别操作类型；
 2. 带上 `@HbSelect` 注解的方法只有一个参数，参数类型满足下面条件之一：
    1. 类型为 `com.hyd.hybatis.Conditions` 
-   2. 类型为 `com.hyd.hybatis.Condition`
-   3. 包含一个或多个类型为 `com.hyd.hybatis.Condition` 成员的 JavaBean 类；
+   2. 包含一个或多个类型为 `com.hyd.hybatis.Condition` 成员的 JavaBean 类；
 3. 带上 `@HbInsert` 注解的方法只有一个参数，参数类型为 JavaBean 类；
 4. 带上 `@HbUpdate` 注解的方法有两个参数，第一个参数满足条件 2，第二个参数满足条件 3；
 
-_另：如果一个方法带上 @HbSelect 注解，且返回值为数字类型时，Hybatis 会认为这是一个 count 方法，将生成 `select count(1) from ...` 这样的 SQL。_
+_另：如果一个 @HbSelect 方法返回值为数字类型时，Hybatis 会认为这是一个 count 方法，将生成 `select count(1) from ...` 这样的 SQL。_
 
 ### 使用步骤
 
@@ -118,8 +195,8 @@ public class SampleController {
     private SampleMapper sampleMapper;
     
     // 使用示例
-    // curl http://host:port/sample/search?id.between=1,9&name.contains=test
-    // 将得到查询条件 "id BETWEEN 1 AND 9 AND name LIKE '%test%'"。
+    // curl "http://host:port/sample/search?projection=id,name&id.between=1,9&name.contains=test&limit=5"
+    // 将得到查询语句 "SELECT id, name FROM sample WHERE id BETWEEN 1 AND 9 AND name LIKE '%test%' LIMIT 5"。
     @GetMapping("/sample/search")
     public List<Sample> selectByConditions(Conditions conditions) {
         return sampleMapper.selectByConditions(conditions);

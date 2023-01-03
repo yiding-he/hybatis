@@ -40,4 +40,21 @@ public class Str {
         return s == null ? null : s.length() == 0 ? "" :
             Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
+
+    public static boolean isNotBlank(String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < s.length(); i++) {
+            var c = s.charAt(i);
+            if (!Character.isWhitespace(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isBlank(String s) {
+        return !isNotBlank(s);
+    }
 }

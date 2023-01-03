@@ -4,7 +4,6 @@ import com.hyd.hybatis.HybatisException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

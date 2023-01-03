@@ -4,8 +4,6 @@ import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
-import com.hyd.hybatis.utils.Bean;
-import com.hyd.hybatis.utils.Str;
 import lombok.Data;
 
 import java.lang.reflect.Field;
@@ -24,52 +22,68 @@ public class SqlHelper {
         private final HybatisConfiguration config;
     }
 
+    public static Sql.Delete buildDeleteFromConditions(Context context) {
+        Conditions conditions = (Conditions) context.paramObject;
+        Sql.Delete select = new Sql.Delete(context.tableName);
+        for (Condition<?> condition : conditions.getConditions()) {
+            injectCondition(select, condition);
+        }
+        return select;
+    }
+
     public static Sql.Select buildSelectFromConditions(Context context) {
         Conditions conditions = (Conditions) context.paramObject;
-        Sql.Select select = new Sql.Select("*").From(context.tableName);
+        var projection = conditions.getProjection();
+        var columns = projection.isEmpty() ? "*" : String.join(",", projection);
+        Sql.Select select = new Sql.Select(columns).From(context.tableName);
         for (Condition<?> condition : conditions.getConditions()) {
             injectCondition(select, condition);
         }
         injectOrderBy(select, conditions.getConditions());
-        return select;
-    }
 
-    public static Sql.Select buildSelectFromCondition(Context context) {
-        Condition<?> condition = (Condition<?>) context.paramObject;
-        Sql.Select select = new Sql.Select("*").From(context.tableName);
-        injectCondition(select, condition);
-        injectOrderBy(select, Collections.singletonList(condition));
+        if (conditions.getLimit() >= 0) {
+            select.Limit(conditions.getLimit());
+        }
         return select;
     }
 
     public static Sql.Select buildSelect(Context context) {
-        var tableName = context.tableName;
+        var select = Sql.Select("*").From(context.tableName);
+        HashMap<Field, Condition<?>> conditionMappings = injectConditionObject(context, select);
+        injectOrderBy(select, conditionMappings.values());
+        return select;
+    }
+
+    public static Sql.Delete buildDelete(Context context) {
+        var delete = Sql.Delete(context.tableName);
+        injectConditionObject(context, delete);
+        return delete;
+    }
+
+    private static HashMap<Field, Condition<?>> injectConditionObject(Context context, Sql<?> sql) {
         var queryObject = context.paramObject;
-        var select = Sql.Select("*").From(tableName);
 
         var conditionFields = Reflections
             .getPojoFieldsOfType(queryObject.getClass(), Condition.class, Collections.emptyList());
 
         var conditionMappings = new HashMap<Field, Condition<?>>();
+        var camelToUnderline = context.getConfig().isCamelToUnderline();
         for (Field f : conditionFields) {
             Condition<?> condition = Reflections.getFieldValue(queryObject, f);
             if (condition == null) {
                 continue;
             }
 
-            var columnName = Reflections.getColumnName(f);
+            var columnName = Reflections.getColumnName(f, camelToUnderline);
             condition.setColumn(columnName);
             conditionMappings.put(f, condition);
         }
 
         for (Field conditionField : conditionFields) {
             var condition = conditionMappings.get(conditionField);
-            injectCondition(select, condition);
+            injectCondition(sql, condition);
         }
-
-        var conditions = conditionMappings.values();
-        injectOrderBy(select, conditions);
-        return select;
+        return conditionMappings;
     }
 
     /**

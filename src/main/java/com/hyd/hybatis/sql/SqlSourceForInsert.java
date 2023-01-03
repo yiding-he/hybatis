@@ -1,6 +1,5 @@
 package com.hyd.hybatis.sql;
 
-import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.HybatisCore;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.utils.Str;
@@ -9,15 +8,16 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 @Slf4j
 public class SqlSourceForInsert extends HybatisSqlSource {
 
     public SqlSourceForInsert(
-        String sqlId, HybatisCore core, Configuration configuration, String tableName
+        String sqlId, HybatisCore core, Configuration configuration, String tableName, Method mapperMethod
     ) {
-        super(sqlId, core, configuration, tableName);
+        super(sqlId, core, configuration, tableName, mapperMethod);
     }
 
     @SuppressWarnings("unchecked")
@@ -32,14 +32,15 @@ public class SqlSourceForInsert extends HybatisSqlSource {
             buildInsertByBeanObject(insertSql, insert);
         }
 
-        log.info("[{}]: {}", getSqlId(), insertSql.toCommand());
+        log.debug("[{}]: {}", getSqlId(), insertSql.toCommand());
         return buildBoundSql(insertSql);
     }
 
     private void buildInsertByMapObject(Sql.Insert insertSql, Map<String, Object> insert) {
+        var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         insert.forEach((field, value) -> {
             if (value != null) {
-                var columnName = Str.camel2Underline(field);
+                var columnName = camelToUnderline? Str.camel2Underline(field): field;
                 insertSql.Values(columnName, value);
             }
         });
@@ -51,10 +52,11 @@ public class SqlSourceForInsert extends HybatisSqlSource {
             getHybatisConfiguration().getHideBeanFieldsFrom()
         );
 
+        var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         for (Field field : fields) {
             var fieldValue = Reflections.getFieldValue(insert, field);
             if (fieldValue != null) {
-                var columnName = Reflections.getColumnName(field);
+                var columnName = Reflections.getColumnName(field, camelToUnderline);
                 insertSql.Values(columnName, fieldValue);
             }
         }

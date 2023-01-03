@@ -21,7 +21,8 @@ public @interface HbUpdate {
     String table();
 
     /**
-     * 表示表的主键是哪几个列，当 Mapper 方法第一个参数是查询参数时，忽略本属性
+     * 表示表的主键是哪几个列，仅用于 update 方法只有一个参数时。
+     * 如果 Mapper 方法有两个参数且第一个参数是查询参数，则忽略本属性
      */
     String[] key() default {};
 }

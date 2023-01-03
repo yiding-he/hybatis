@@ -1,23 +1,23 @@
 package com.hyd.hybatis.statement;
 
 import com.hyd.hybatis.HybatisCore;
-import com.hyd.hybatis.statement.msfactory.AbstractMappedStatementFactory;
-import com.hyd.hybatis.statement.msfactory.InsertMappedStatementFactory;
-import com.hyd.hybatis.statement.msfactory.SelectMappedStatementFactory;
-import com.hyd.hybatis.statement.msfactory.UpdateMappedStatementFactory;
+import com.hyd.hybatis.statement.msfactory.*;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MappedStatementFactories {
 
-    private final List<MappedStatementFactory> mappedStatementFactories = new ArrayList<>(Arrays.asList(
-        new SelectMappedStatementFactory(),
-        new InsertMappedStatementFactory(),
-        new UpdateMappedStatementFactory()
-    ));
+    private final List<? extends MappedStatementFactory> mappedStatementFactories =
+        new ArrayList<>(List.of(
+            new SelectMappedStatementFactory(),
+            new InsertMappedStatementFactory(),
+            new UpdateMappedStatementFactory(),
+            new DeleteMappedStatementFactory()
+        ));
 
     public MappedStatementFactories(HybatisCore core) {
         this.init(core);
@@ -32,15 +32,14 @@ public class MappedStatementFactories {
     }
 
     public MappedStatement createMappedStatement(
-        Configuration configuration, String sqlId, Method method, boolean ignoreInvalidMethodName
+        Configuration configuration, String sqlId, Class<?> mapperClass, Method method, boolean ignoreInvalidMethodName
     ) {
-        MappedStatementFactory factory = getMappedStatementFactory(method);
-        return factory == null ? null : factory.createMappedStatement(configuration, sqlId, method);
-
+        MappedStatementFactory factory = getMappedStatementFactory(mapperClass, method);
+        return factory == null ? null : factory.createMappedStatement(configuration, sqlId, mapperClass, method);
     }
 
-    public MappedStatementFactory getMappedStatementFactory(Method method) {
+    public MappedStatementFactory getMappedStatementFactory(Class<?> mapperClass, Method method) {
         return mappedStatementFactories
-            .stream().filter(f -> f.match(method)).findFirst().orElse(null);
+            .stream().filter(f -> f.match(mapperClass, method)).findFirst().orElse(null);
     }
 }

@@ -3,7 +3,6 @@ package com.hyd.hybatis;
 import com.hyd.hybatis.reflection.Reflections;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;

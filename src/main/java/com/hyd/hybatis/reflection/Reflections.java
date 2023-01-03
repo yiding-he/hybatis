@@ -51,13 +51,12 @@ public class Reflections {
     }
 
     /**
-     * 判断指定的类是否属于查询条件。只要类中存在至少一个 Condition 类型的成员，或该类自身就是 Condition
+     * 判断指定的类是否属于查询条件。只要类中存在至少一个 Condition 类型的成员，或该类自身就是 Conditions
      * 就认为它是查询条件。
      */
     public static boolean isPojoClassQueryable(Class<?> pojoType) {
         return
             Conditions.class.isAssignableFrom(pojoType) ||
-                Condition.class.isAssignableFrom(pojoType) ||
                 getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).size() > 0;
     }
 
@@ -70,7 +69,10 @@ public class Reflections {
     }
 
     public static Class<?> getGenericTypeArg(Type type) {
-        if (type instanceof ParameterizedType) {
+        if (type instanceof Class && ((Class<?>) type).getGenericInterfaces().length > 0) {
+            var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
+            return (Class<?>) genericInterface.getActualTypeArguments()[0];
+        } else if (type instanceof ParameterizedType) {
             var parameterizedType = (ParameterizedType) type;
             Type args0 = parameterizedType.getActualTypeArguments()[0];
             if (args0 instanceof ParameterizedType) {
@@ -136,20 +138,45 @@ public class Reflections {
         }
     }
 
-    public static String getColumnName(Field field) {
+    public static String getColumnName(Field field, boolean camelToUnderline) {
         if (field.isAnnotationPresent(HbColumn.class)) {
             return field.getAnnotation(HbColumn.class).value();
         } else {
-            return Str.camel2Underline(field.getName());
+            return camelToUnderline? Str.camel2Underline(field.getName()): field.getName();
         }
     }
 
     /**
      * 判断一个方法是否包含执行内容
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean hasBody(Method method) {
         return Modifier.isStatic(method.getModifiers())
             || method.isDefault()
             || !Modifier.isAbstract(method.getModifiers());
+    }
+
+    /**
+     * 查找 Mapper 接口及其父接口中定义的非 default 方法
+     */
+    public static List<Method> getMapperNonDefaultMethods(Class<?> mapperClass) {
+        ArrayList<Method> nonDefaultMethods = new ArrayList<>();
+        if (!mapperClass.isInterface()) {
+            return nonDefaultMethods;
+        }
+
+        scanInterfaceAndAddMethod(mapperClass, nonDefaultMethods);
+        return nonDefaultMethods;
+    }
+
+    private static void scanInterfaceAndAddMethod(
+        Class<?> interfaceClass, ArrayList<Method> nonDefaultMethods
+    ) {
+        Stream.of(interfaceClass.getDeclaredMethods())
+            .filter(m -> !hasBody(m))
+            .forEach(nonDefaultMethods::add);
+
+        Stream.of(interfaceClass.getInterfaces())
+            .forEach(i -> scanInterfaceAndAddMethod(i, nonDefaultMethods));
     }
 }

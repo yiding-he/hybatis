@@ -9,19 +9,13 @@ import org.apache.ibatis.session.Configuration;
 import java.lang.reflect.Method;
 
 @Slf4j
-public class SqlSourceForSelect extends HybatisSqlSource {
+public class SqlSourceForDelete extends HybatisSqlSource {
 
-    /**
-     * 查询分页模式，非分页查询则为 None，否则为其他两种模式之一
-     */
-    protected final SelectMode selectMode;
-
-    public SqlSourceForSelect(
+    public SqlSourceForDelete(
         String sqlId, HybatisCore core, Configuration configuration, String tableName,
-        SelectMode selectMode, Method mapperMethod
+        Method mapperMethod
     ) {
         super(sqlId, core, configuration, tableName, mapperMethod);
-        this.selectMode = selectMode;
     }
 
     @Override
@@ -30,19 +24,15 @@ public class SqlSourceForSelect extends HybatisSqlSource {
         var context = new SqlHelper.Context(
             parameterObject, getTableName(), getHybatisConfiguration());
 
-        Sql.Select select;
+        Sql.Delete delete;
         if (parameterObject instanceof Conditions) {
-            select = SqlHelper.buildSelectFromConditions(context);
+            delete = SqlHelper.buildDeleteFromConditions(context);
         } else {
-            select = SqlHelper.buildSelect(context);
+            delete = SqlHelper.buildDelete(context);
         }
 
-        if (selectMode == SelectMode.Count) {
-            select.Columns("count(1)");
-        }
-
-        log.debug("[{}]: {}", getSqlId(), select.toCommand());
-        return buildBoundSql(select);
+        log.debug("[{}]: {}", getSqlId(), delete.toCommand());
+        return buildBoundSql(delete);
     }
 
 }

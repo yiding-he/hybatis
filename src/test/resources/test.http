@@ -1,0 +1,19 @@
+### 动态条件查询并返回指定字段
+GET http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4&projection=empNo,firstName
+Accept: application/json
+
+### 动态条件查询并返回指定字段（使用$分隔符）
+GET http://localhost:8080/emp/select-by-conditions?firstName$eq=Bikash&limit=4&projection=empNo,firstName
+Accept: application/json
+
+### 动态条件查询并返回指定字段（使用[]包裹操作符）
+GET http://localhost:8080/emp/select-by-conditions?firstName[eq]=Bikash&limit=4&projection=empNo,firstName
+Accept: application/json
+
+### 动态条件分页查询
+GET http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5
+Accept: application/json
+
+### 动态条件分页查询2
+GET http://localhost:8080/emp/select-page-by-query-2?firstName.eq=Bikash&pageIndex=3&pageSize=5
+Accept: application/json

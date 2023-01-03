@@ -2,11 +2,14 @@ package com.hyd.hybatis;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
 @Data
-public class Condition<T> {
+public class Condition<T> implements Serializable {
+
+    private static final long serialVersionUID = 43211L;
 
     public static <T> Condition<T> of(String column) {
         Condition<T> c = new Condition<>();

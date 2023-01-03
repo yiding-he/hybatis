@@ -5,7 +5,6 @@ import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.Configuration;
 
 import java.lang.reflect.Method;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public interface MappedStatementFactory {
@@ -17,7 +16,8 @@ public interface MappedStatementFactory {
             .orElse(null);
     }
 
-    boolean match(Method method);
+    boolean match(Class<?> mapperClass, Method method);
 
-    MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method);
+    MappedStatement createMappedStatement(
+        Configuration configuration, String sqlId, Class<?> mapperClass, Method method);
 }

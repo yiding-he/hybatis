@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 public class UpdateMappedStatementFactory extends AbstractMappedStatementFactory {
 
     @Override
-    public boolean match(Method method) {
+    public boolean match(Class<?> mapperClass, Method method) {
         return method.isAnnotationPresent(HbUpdate.class) &&
             ((
                 method.getParameterCount() == 2 &&
@@ -25,10 +25,12 @@ public class UpdateMappedStatementFactory extends AbstractMappedStatementFactory
     }
 
     @Override
-    public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
+    public MappedStatement createMappedStatement(
+        Configuration configuration, String sqlId, Class<?> mapperClass, Method method
+    ) {
         SqlSourceForUpdate sqlSource = new SqlSourceForUpdate(
-            sqlId, getCore(), configuration, getTableName(method),
-            method.getAnnotation(HbUpdate.class).key()
+            sqlId, getCore(), configuration, getTableName(mapperClass, method).getOrThrow(),
+            method, method.getAnnotation(HbUpdate.class).key()
         );
         return MappedStatementHelper.buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.UPDATE);
     }

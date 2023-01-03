@@ -19,13 +19,4 @@ public @interface HbSelect {
      */
     String table();
 
-    /**
-     * 表示查询哪些字段
-     */
-    String[] fields() default {};
-
-    /**
-     * 是否分页查询
-     */
-    boolean pagination() default false;
 }

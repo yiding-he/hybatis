@@ -1,6 +1,5 @@
 package com.hyd.hybatis;
 
-import com.hyd.hybatis.page.Pagination;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -22,12 +21,7 @@ public class HybatisConfiguration {
     private boolean ignoreEmptyString = true;
 
     /**
-     * Default page index parameter name
+     * Whether convert camel field names to underline style column names
      */
-    private String pageIndexParamName = Pagination.DEFAULT_PAGE_INDEX_NAME;
-
-    /**
-     * Default page size parameter name
-     */
-    private String pageSizeParamName = Pagination.DEFAULT_PAGE_SIZE_NAME;
+    private boolean camelToUnderline = true;
 }

@@ -12,16 +12,17 @@ import java.lang.reflect.Method;
 public class InsertMappedStatementFactory extends AbstractMappedStatementFactory {
 
     @Override
-    public boolean match(Method method) {
+    public boolean match(Class<?> mapperClass, Method method) {
         return method.isAnnotationPresent(HbInsert.class)
             && method.getParameterCount() == 1;
     }
 
     @Override
-    public MappedStatement createMappedStatement(Configuration configuration, String sqlId, Method method) {
-        var hbInsert = method.getAnnotation(HbInsert.class);
+    public MappedStatement createMappedStatement(
+        Configuration configuration, String sqlId, Class<?> mapperClass, Method method
+    ) {
         var sqlSource = new SqlSourceForInsert(
-            sqlId, getCore(), configuration, hbInsert.table()
+            sqlId, getCore(), configuration, getTableName(mapperClass, method).getOrThrow(), method
         );
         return MappedStatementHelper.buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.INSERT);
     }

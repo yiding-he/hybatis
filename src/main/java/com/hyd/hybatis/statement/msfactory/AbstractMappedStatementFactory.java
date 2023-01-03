@@ -2,11 +2,12 @@ package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.HybatisCore;
-import com.hyd.hybatis.annotations.HbInsert;
-import com.hyd.hybatis.annotations.HbSelect;
-import com.hyd.hybatis.annotations.HbUpdate;
+import com.hyd.hybatis.annotations.*;
 import com.hyd.hybatis.driver.HybatisLanguageDriver;
+import com.hyd.hybatis.mapper.CrudMapper;
+import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.statement.MappedStatementFactory;
+import com.hyd.hybatis.utils.Result;
 import org.apache.ibatis.scripting.LanguageDriver;
 
 import java.lang.reflect.Method;
@@ -37,29 +38,38 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
         return core;
     }
 
-    protected String getTableName(Method method) {
-        String tableName;
+    public static Result<String> getTableName(Class<?> mapperClass, Method method) {
+        String tableName = null;
 
-        if (method.isAnnotationPresent(HbSelect.class)) {
+        if (CrudMapper.class.isAssignableFrom(mapperClass)) {
+            var entityClass = Reflections.getGenericTypeArg(mapperClass);
+            if (entityClass != null && entityClass.isAnnotationPresent(HbEntity.class)) {
+                tableName = entityClass.getAnnotation(HbEntity.class).table();
+            }
+        } else if (method.isAnnotationPresent(HbSelect.class)) {
             tableName = method.getAnnotation(HbSelect.class).table();
         } else if (method.isAnnotationPresent(HbInsert.class)) {
             tableName = method.getAnnotation(HbInsert.class).table();
         } else if (method.isAnnotationPresent(HbUpdate.class)) {
             tableName = method.getAnnotation(HbUpdate.class).table();
-        } else {
-            throw new IllegalArgumentException("Method " + method.getName() + " contains no table information.");
+        } else if (method.isAnnotationPresent(HbDelete.class)) {
+            tableName = method.getAnnotation(HbDelete.class).table();
+        }
+
+        if (tableName == null) {
+            return Result.fail("Method " + method + " contains no table information.");
         }
 
         var isSubQuery = tableName.length() > 7 && tableName.substring(0, 7).equalsIgnoreCase("select ");
 
         if (isSubQuery && method.isAnnotationPresent(HbUpdate.class)) {
-            throw new IllegalArgumentException("Update method does not support sub query.");
+            return Result.fail("Update method " + method + " does not support sub query.");
         } else if (isSubQuery && method.isAnnotationPresent(HbInsert.class)) {
-            throw new IllegalArgumentException("Insert method does not support sub query.");
+            return Result.fail("Insert method " + method + " does not support sub query.");
         } else if (isSubQuery) {
             tableName = "(" + tableName + ") _hybatis_table_wrapper_";
         }
 
-        return tableName;
+        return Result.success(tableName);
     }
 }
