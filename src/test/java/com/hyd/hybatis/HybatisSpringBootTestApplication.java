@@ -1,6 +1,5 @@
 package com.hyd.hybatis;
 
-import com.github.pagehelper.PageHelper;
 import com.hyd.hybatis.entity.Department;
 import com.hyd.hybatis.entity.Employee;
 import com.hyd.hybatis.entity.EmployeeQuery;
@@ -9,7 +8,6 @@ import com.hyd.hybatis.mappers.EmployeeCrudMapper;
 import com.hyd.hybatis.mappers.EmployeeMapper;
 import com.hyd.hybatis.pagination.PageHelperPage;
 import com.hyd.hybatis.row.Row;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -20,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.function.Supplier;
 
 @SpringBootApplication
 @Import(HybatisConfigurator.class)
@@ -60,12 +57,14 @@ public class HybatisSpringBootTestApplication {
         private HttpServletRequest request;
 
         // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5"
+        // Mapper 返回 PageHelper 的 Page 对象，然后封装为 PageHelperPage
         @GetMapping("/select-page-by-query")
         public PageHelperPage<Employee> selectPageByQuery(EmployeeQuery employeeQuery) {
-            return new PageHelperPage<>(request, () -> employeeMapper.selectByQuery(employeeQuery));
+            return new PageHelperPage<>(request, () -> employeeMapper.selectPageByQuery(employeeQuery));
         }
 
         // curl "http://localhost:8080/emp/select-page-by-query-2?firstName.eq=Bikash&pageIndex=3&pageSize=5"
+        // Mapper 直接返回 PageHelperPage 对象
         @GetMapping("/select-page-by-query-2")
         public PageHelperPage<Employee> selectPageByQuery2(Conditions conditions) {
             return employeeCrudMapper.selectPage(conditions, request);

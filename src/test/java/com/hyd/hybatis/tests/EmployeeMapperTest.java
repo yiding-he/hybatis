@@ -5,11 +5,8 @@ import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
 import com.hyd.hybatis.entity.EmployeeQuery;
 import com.hyd.hybatis.mappers.EmployeeMapper;
-import com.hyd.hybatis.row.Row;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 

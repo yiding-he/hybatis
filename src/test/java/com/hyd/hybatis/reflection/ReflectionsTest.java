@@ -3,7 +3,7 @@ package com.hyd.hybatis.reflection;
 import com.hyd.hybatis.Conditions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReflectionsTest {
 

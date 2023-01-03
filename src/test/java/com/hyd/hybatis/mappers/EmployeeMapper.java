@@ -17,7 +17,10 @@ public interface EmployeeMapper {
     /////////////////////////////////////////////////////////////////// Query
 
     @HbSelect(table = "EMPLOYEES")
-    Page<Employee> selectByQuery(EmployeeQuery query);
+    Page<Employee> selectPageByQuery(EmployeeQuery query);
+
+    @HbSelect(table = "EMPLOYEES")
+    List<Employee> selectByQuery(EmployeeQuery query);
 
     @HbSelect(table = "EMPLOYEES")
     long countByConditions(Conditions conditions);
