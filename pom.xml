@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.hyd</groupId>
+  <groupId>com.github.yiding-he</groupId>
   <artifactId>hybatis</artifactId>
   <version>0.5</version>
 
@@ -224,6 +224,25 @@
           </snapshots>
         </pluginRepository>
       </pluginRepositories>
+    </profile>
+    <profile>
+      <id>github</id>
+      <repositories>
+        <repository>
+          <id>github</id>
+          <url>https://maven.pkg.github.com/yiding-he/hybatis</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <distributionManagement>
+        <repository>
+          <id>github</id>
+          <name>GitHub OWNER Apache Maven Packages</name>
+          <url>https://maven.pkg.github.com/yiding-he/hybatis</url>
+        </repository>
+      </distributionManagement>
     </profile>
     <profile>
       <id>maven-central-for-deploy</id>
