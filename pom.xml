@@ -6,7 +6,7 @@
 
   <groupId>com.github.yiding-he</groupId>
   <artifactId>hybatis</artifactId>
-  <version>0.5</version>
+  <version>0.5-SNAPSHOT</version>
 
   <name>hybatis</name>
   <description>A MyBatis extension for SpringBoot projects</description>
@@ -173,6 +173,24 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <profiles>
     <profile>
