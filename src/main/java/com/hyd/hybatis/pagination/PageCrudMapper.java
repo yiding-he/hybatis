@@ -3,8 +3,7 @@ package com.hyd.hybatis.pagination;
 import com.github.pagehelper.Page;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.mapper.CrudMapper;
-
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface PageCrudMapper<T> extends CrudMapper<T> {
 

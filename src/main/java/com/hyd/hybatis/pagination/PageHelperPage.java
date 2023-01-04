@@ -2,9 +2,10 @@ package com.hyd.hybatis.pagination;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 
-import javax.servlet.http.HttpServletRequest;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.function.Supplier;
 @Data
 public class PageHelperPage<T> implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 43212L;
 
     @SuppressWarnings("resource")
