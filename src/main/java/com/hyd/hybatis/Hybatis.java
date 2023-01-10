@@ -5,6 +5,10 @@ import com.hyd.hybatis.sql.BatchCommand;
 import com.hyd.hybatis.sql.Sql;
 import com.hyd.hybatis.sql.SqlCommand;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.transaction.Transaction;
+import org.apache.ibatis.transaction.TransactionFactory;
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,19 +21,17 @@ import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static org.apache.ibatis.session.TransactionIsolationLevel.READ_COMMITTED;
+
 public class Hybatis {
 
-    private static final ThreadLocal<Connection> currentConnection = new ThreadLocal<>();
+    private static final ThreadLocal<Transaction> currentTransaction = new ThreadLocal<>();
 
     private final HybatisConfiguration configuration;
 
-    private final ConnectionSupplier connectionSupplier;
+    private final DataSource dataSource;
 
-    @FunctionalInterface
-    public interface ConnectionSupplier {
-
-        Connection get() throws SQLException;
-    }
+    private final TransactionFactory transactionFactory;
 
     @FunctionalInterface
     public interface RowConsumer {
@@ -55,22 +57,34 @@ public class Hybatis {
         void run() throws SQLException;
     }
 
+    public Hybatis(
+        HybatisConfiguration configuration,
+        DataSource dataSource,
+        TransactionFactory transactionFactory
+    ) {
+        this.configuration = configuration;
+        this.dataSource = dataSource;
+        this.transactionFactory = transactionFactory;
+    }
+
     public Hybatis(DataSource dataSource) {
         this(new HybatisConfiguration(), dataSource);
     }
 
-    public Hybatis(HybatisConfiguration configuration, ConnectionSupplier connectionSupplier) {
-        this.configuration = configuration;
-        this.connectionSupplier = connectionSupplier;
-    }
-
     public Hybatis(HybatisConfiguration configuration, DataSource dataSource) {
-        this(configuration, dataSource::getConnection);
+        this(configuration, dataSource, new JdbcTransactionFactory());
     }
 
     public Hybatis(HybatisConfiguration configuration, SqlSessionFactory sqlSessionFactory) {
-        this(configuration,
-            () -> sqlSessionFactory.getConfiguration().getEnvironment().getDataSource().getConnection());
+        this(
+            configuration,
+            sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
+            sqlSessionFactory.getConfiguration().getEnvironment().getTransactionFactory()
+        );
+    }
+
+    public HybatisConfiguration getConfiguration() {
+        return configuration;
     }
 
     public void query(Sql.Select select, RowConsumer rowConsumer) throws SQLException {
@@ -175,32 +189,26 @@ public class Hybatis {
         });
     }
 
+    @Transactional
     public void runTransaction(DatabaseTask databaseTask) throws HybatisException {
-        Connection connection = null;
         try {
-            connection = getOrCreateConnection(false);
-            currentConnection.set(connection);
+            // 在 Spring 框架中，newTransaction() 方法的后面两个参数不起作用
+            var transaction = transactionFactory.newTransaction(dataSource, READ_COMMITTED, false);
+            currentTransaction.set(transaction);
             databaseTask.run();
-            currentConnection.get().commit();
+            currentTransaction.get().commit();
 
         } catch (Exception e) {
-            if (connection != null) {
+            if (currentTransaction.get() != null) {
                 try {
-                    connection.rollback();
+                    currentTransaction.get().rollback();
                 } catch (SQLException ex) {
                     // ignore failure
                 }
             }
             throw new HybatisException(e);
         } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    // ignore failure
-                }
-            }
-            currentConnection.remove();
+            currentTransaction.remove();
         }
     }
 
@@ -231,13 +239,16 @@ public class Hybatis {
     }
 
     private Connection getOrCreateConnection(boolean autoCommit) throws SQLException {
-        var currentConn = currentConnection.get();
-        if (currentConn != null && !currentConn.isClosed() && !currentConn.getAutoCommit()) {
-            return currentConn;
+        Connection connection;
+        if (currentTransaction.get() != null) {
+            connection = currentTransaction.get().getConnection();
+            if (connection.getAutoCommit()) {
+                connection.setAutoCommit(false);
+            }
+        } else {
+            connection = this.dataSource.getConnection();
+            connection.setAutoCommit(autoCommit);
         }
-
-        var connection = this.connectionSupplier.get();
-        connection.setAutoCommit(autoCommit);
         return connection;
     }
 

@@ -9,9 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HybatisTransactionTest extends HybatisSpringBootTestApplicationTest {
 
-    @Test
-    public void testRunTransaction() throws Exception {
-
+    public static void transactionTestFunction(Hybatis hybatis) throws SQLException {
         Supplier<Integer> count = () -> {
             try {
                 return Integer.parseInt(String.valueOf(
@@ -44,5 +42,10 @@ public class HybatisTransactionTest extends HybatisSpringBootTestApplicationTest
             System.err.println(e);
         }
         assertEquals(3, count.get());
+    }
+
+    @Test
+    public void testRunTransaction() throws Exception {
+        transactionTestFunction(hybatis);
     }
 }
