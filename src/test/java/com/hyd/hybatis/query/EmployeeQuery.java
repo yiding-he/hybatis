@@ -1,4 +1,4 @@
-package com.hyd.hybatis.entity;
+package com.hyd.hybatis.query;
 
 import com.hyd.hybatis.Condition;
 import lombok.Data;

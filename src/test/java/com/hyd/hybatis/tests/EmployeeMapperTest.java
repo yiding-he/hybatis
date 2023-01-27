@@ -3,7 +3,7 @@ package com.hyd.hybatis.tests;
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
-import com.hyd.hybatis.entity.EmployeeQuery;
+import com.hyd.hybatis.query.EmployeeQuery;
 import com.hyd.hybatis.mappers.EmployeeMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
 
     @Test
     public void testSelectByConditions() {
-        var rows = employeeMapper.selectByConditions(new Conditions()
+        var rows = employeeMapper.selectRowsByConditions(new Conditions()
             .withColumn("first_name").startWith("B")
             .orderDesc("last_name", "emp_no")
             .limit(10)

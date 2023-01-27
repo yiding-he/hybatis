@@ -2,7 +2,7 @@ package com.hyd.hybatis;
 
 import com.hyd.hybatis.entity.Department;
 import com.hyd.hybatis.entity.Employee;
-import com.hyd.hybatis.entity.EmployeeQuery;
+import com.hyd.hybatis.query.EmployeeQuery;
 import com.hyd.hybatis.mappers.DepartmentMapper;
 import com.hyd.hybatis.mappers.EmployeeCrudMapper;
 import com.hyd.hybatis.mappers.EmployeeMapper;
@@ -14,9 +14,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 @SpringBootApplication
@@ -44,6 +46,7 @@ public class HybatisSpringBootTestApplication {
     }
 
     @RestController
+    @Validated
     @RequestMapping("/emp")
     public static class EmployeeController {
 
@@ -59,7 +62,7 @@ public class HybatisSpringBootTestApplication {
         // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5"
         // Mapper 返回 PageHelper 的 Page 对象，然后封装为 PageHelperPage
         @GetMapping("/select-page-by-query")
-        public PageHelperPage<Employee> selectPageByQuery(EmployeeQuery employeeQuery) {
+        public PageHelperPage<Employee> selectPageByQuery(@Valid EmployeeQuery employeeQuery) {
             return new PageHelperPage<>(request, () -> employeeMapper.selectPageByQuery(employeeQuery));
         }
 
@@ -74,7 +77,7 @@ public class HybatisSpringBootTestApplication {
         @GetMapping("/select-by-conditions")
         public List<Row> selectByConditions(Conditions conditions) {
             conditions.limit(Math.min(conditions.getLimit(), 50));
-            return employeeMapper.selectByConditions(conditions);
+            return employeeMapper.selectRowsByConditions(conditions);
         }
 
         // curl "http://localhost:8080/emp/count?hire_date.gt=1994-12-31"
