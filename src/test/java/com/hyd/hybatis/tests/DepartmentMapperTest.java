@@ -21,6 +21,7 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
                 .orderAsc("dept_name")
                 .limit(5)
         );
+        assertFalse(departments.isEmpty());
         departments.forEach(System.out::println);
     }
 
@@ -41,8 +42,9 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
     public void testUpdate() {
         var update = new Department();
         update.setDeptName("Customer Service 客户服务");
-        departmentMapper.update(
+        var count = departmentMapper.update(
             new Conditions().withColumn("dept_no").eq("d009"), update);
+        assertTrue(count > 0);
     }
 
     @Test
