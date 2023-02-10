@@ -1,10 +1,10 @@
-package com.hyd.hybatis.tests;
+package com.hyd.hybatis.tests.mapper;
 
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
-import com.hyd.hybatis.query.EmployeeQuery;
 import com.hyd.hybatis.mappers.EmployeeMapper;
+import com.hyd.hybatis.query.EmployeeQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

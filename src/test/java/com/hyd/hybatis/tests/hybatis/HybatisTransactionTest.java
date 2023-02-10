@@ -1,5 +1,8 @@
-package com.hyd.hybatis;
+package com.hyd.hybatis.tests.hybatis;
 
+import com.hyd.hybatis.Hybatis;
+import com.hyd.hybatis.HybatisException;
+import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;

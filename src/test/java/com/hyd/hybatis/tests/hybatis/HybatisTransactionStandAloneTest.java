@@ -1,5 +1,6 @@
-package com.hyd.hybatis;
+package com.hyd.hybatis.tests.hybatis;
 
+import com.hyd.hybatis.Hybatis;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.junit.jupiter.api.Test;
 

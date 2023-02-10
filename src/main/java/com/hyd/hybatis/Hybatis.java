@@ -35,6 +35,8 @@ public class Hybatis {
 
     private static void closeWhenNecessary(Connection conn, boolean doCloseByDefault) {
         try {
+            log.trace("Try closing connection, isClosed={}, autoCommit={}, doCloseByDefault={}",
+                conn.isClosed(), conn.getAutoCommit(), doCloseByDefault);
             if (doCloseByDefault && !conn.isClosed() && conn.getAutoCommit()) {
                 conn.close();
             }
@@ -180,7 +182,7 @@ public class Hybatis {
             var iterator = new ResultSetIterator(rs);
             return StreamSupport
                 .stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
-                .onClose(() -> closeWhenNecessary(conn, false));
+                .onClose(() -> closeWhenNecessary(conn, true));
         }, false);
     }
 
