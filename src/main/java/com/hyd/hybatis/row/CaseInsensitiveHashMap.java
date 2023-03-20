@@ -14,6 +14,8 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V> {
     public void putAll(Map<? extends String, ? extends V> m) {
         if (m instanceof CaseInsensitiveHashMap) {
             super.putAll(m);
+        } else if (m == null) {
+            return;
         }
 
         Map<String, V> m2 = new HashMap<>();
