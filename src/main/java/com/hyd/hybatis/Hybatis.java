@@ -41,7 +41,7 @@ public class Hybatis {
                 conn.close();
             }
         } catch (Exception e) {
-            // ignore this error
+            log.warn("Connection close failed: {}", e.toString());
         }
     }
 
@@ -254,11 +254,18 @@ public class Hybatis {
                 try {
                     currentTransaction.get().rollback();
                 } catch (SQLException ex) {
-                    // ignore failure
+                    log.warn("Transaction rollback failed: {}", ex.toString());
                 }
             }
             throw new HybatisException(e);
         } finally {
+            if (currentTransaction.get() != null) {
+                try {
+                    currentTransaction.get().close();
+                } catch (SQLException e) {
+                    log.warn("Transaction close failed: {}", e.toString());
+                }
+            }
             currentTransaction.remove();
         }
     }
