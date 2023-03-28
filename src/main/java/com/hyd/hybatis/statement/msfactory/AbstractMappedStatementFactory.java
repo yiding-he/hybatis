@@ -46,6 +46,9 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
             if (entityClass != null && entityClass.isAnnotationPresent(HbEntity.class)) {
                 tableName = entityClass.getAnnotation(HbEntity.class).table();
             }
+            if (tableName == null && mapperClass.isAnnotationPresent(HbMapper.class)) {
+                tableName = mapperClass.getAnnotation(HbMapper.class).table();
+            }
         } else if (method.isAnnotationPresent(HbSelect.class)) {
             tableName = method.getAnnotation(HbSelect.class).table();
         } else if (method.isAnnotationPresent(HbInsert.class)) {

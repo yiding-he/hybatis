@@ -2,11 +2,12 @@ package com.hyd.hybatis;
 
 import com.hyd.hybatis.entity.Department;
 import com.hyd.hybatis.entity.Employee;
-import com.hyd.hybatis.query.EmployeeQuery;
 import com.hyd.hybatis.mappers.DepartmentMapper;
 import com.hyd.hybatis.mappers.EmployeeCrudMapper;
 import com.hyd.hybatis.mappers.EmployeeMapper;
+import com.hyd.hybatis.mappers.EmployeeRowMapper;
 import com.hyd.hybatis.pagination.PageHelperPage;
+import com.hyd.hybatis.query.EmployeeQuery;
 import com.hyd.hybatis.row.Row;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,9 @@ public class HybatisSpringBootTestApplication {
         private EmployeeCrudMapper employeeCrudMapper;
 
         @Autowired
+        private EmployeeRowMapper employeeRowMapper;
+
+        @Autowired
         private HttpServletRequest request;
 
         // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5"
@@ -71,6 +75,13 @@ public class HybatisSpringBootTestApplication {
         @GetMapping("/select-page-by-query-2")
         public PageHelperPage<Employee> selectPageByQuery2(Conditions conditions) {
             return employeeCrudMapper.selectPage(conditions, request);
+        }
+
+        // curl "http://localhost:8080/emp/select-rows-page-by-conditions?firstName.eq=Bikash&pageIndex=3&pageSize=5"
+        @GetMapping("/select-rows-page-by-conditions")
+        public PageHelperPage<Row> selectRowsPageByConditions(Conditions conditions) {
+            conditions = conditions.projection("emp_no", "first_name", "last_name");
+            return employeeRowMapper.selectPage(conditions, request);
         }
 
         // curl "http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4&projection=empNo,firstName,lastName,hireDate"
