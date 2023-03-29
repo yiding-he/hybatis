@@ -8,6 +8,7 @@ import com.hyd.hybatis.mapper.CrudMapper;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.statement.MappedStatementFactory;
 import com.hyd.hybatis.utils.Result;
+import com.hyd.hybatis.utils.Str;
 import org.apache.ibatis.scripting.LanguageDriver;
 
 import java.lang.reflect.Method;
@@ -38,18 +39,23 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
         return core;
     }
 
+    public static String getCrudMapperTableName(Class<? extends CrudMapper<?>> mapperClass) {
+        String tableName = "";
+        var entityClass = Reflections.getGenericTypeArg(mapperClass);
+        if (entityClass != null && entityClass.isAnnotationPresent(HbEntity.class)) {
+            tableName = entityClass.getAnnotation(HbEntity.class).table();
+        }
+        if (Str.isBlank(tableName) && mapperClass.isAnnotationPresent(HbMapper.class)) {
+            tableName = mapperClass.getAnnotation(HbMapper.class).table();
+        }
+        return tableName;
+    }
+
+    @SuppressWarnings("unchecked")
     public static Result<String> getTableName(Class<?> mapperClass, Method method) {
         String tableName = null;
 
-        if (CrudMapper.class.isAssignableFrom(mapperClass)) {
-            var entityClass = Reflections.getGenericTypeArg(mapperClass);
-            if (entityClass != null && entityClass.isAnnotationPresent(HbEntity.class)) {
-                tableName = entityClass.getAnnotation(HbEntity.class).table();
-            }
-            if (tableName == null && mapperClass.isAnnotationPresent(HbMapper.class)) {
-                tableName = mapperClass.getAnnotation(HbMapper.class).table();
-            }
-        } else if (method.isAnnotationPresent(HbSelect.class)) {
+        if (method.isAnnotationPresent(HbSelect.class)) {
             tableName = method.getAnnotation(HbSelect.class).table();
         } else if (method.isAnnotationPresent(HbInsert.class)) {
             tableName = method.getAnnotation(HbInsert.class).table();
@@ -57,6 +63,10 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
             tableName = method.getAnnotation(HbUpdate.class).table();
         } else if (method.isAnnotationPresent(HbDelete.class)) {
             tableName = method.getAnnotation(HbDelete.class).table();
+        }
+
+        if (Str.isBlank(tableName) && CrudMapper.class.isAssignableFrom(mapperClass)) {
+            tableName = getCrudMapperTableName((Class<? extends CrudMapper<?>>) mapperClass);
         }
 
         if (tableName == null) {

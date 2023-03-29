@@ -70,8 +70,12 @@ public class Reflections {
 
     public static Class<?> getGenericTypeArg(Type type) {
         if (type instanceof Class && ((Class<?>) type).getGenericInterfaces().length > 0) {
-            var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
-            return (Class<?>) genericInterface.getActualTypeArguments()[0];
+            if (((Class<?>) type).getGenericInterfaces()[0] instanceof ParameterizedType) {
+                var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
+                return (Class<?>) genericInterface.getActualTypeArguments()[0];
+            } else {
+                return null;
+            }
         } else if (type instanceof ParameterizedType) {
             var parameterizedType = (ParameterizedType) type;
             Type args0 = parameterizedType.getActualTypeArguments()[0];
