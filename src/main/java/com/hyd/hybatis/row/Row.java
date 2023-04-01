@@ -195,6 +195,13 @@ public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, O
 
     //////////////////////////////////////////
 
+    public Row putValue(String key, Object value) {
+        put(key, value);
+        return this;
+    }
+
+    //////////////////////////////////////////
+
     public static Row fromResultSet(ResultSet rs) throws SQLException {
         var metaData = rs.getMetaData();
         var columnCount = metaData.getColumnCount();
