@@ -111,13 +111,22 @@ public class Condition<T> implements Serializable {
     }
 
     public Condition<T> in(List<T> tt) {
-        this.in = tt;
-        return this;
+        return inList(tt);
     }
 
-    @SafeVarargs
+    @SuppressWarnings("unchecked")
     public final Condition<T> in(T... tt) {
-        this.in = Arrays.asList(tt);
+        if (tt == null || tt.length == 0) {
+            return this;
+        } else if (tt[0] instanceof List) {
+            return inList((List<T>) tt[0]);
+        } else {
+            return inList(Arrays.asList(tt));
+        }
+    }
+
+    private Condition<T> inList(List<T> tt) {
+        this.in = tt;
         return this;
     }
 }

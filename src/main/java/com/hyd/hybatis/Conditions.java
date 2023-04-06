@@ -65,11 +65,21 @@ public class Conditions implements Serializable {
         }
 
         public Conditions in(List<?> tt) {
-            return Conditions.this.with(column, c -> c.in(tt));
+            return inList(tt);
         }
 
         @SafeVarargs
         public final <T> Conditions in(T... tt) {
+            if (tt == null || tt.length == 0) {
+                return Conditions.this.with(column, c -> {});
+            } else if (tt[0] instanceof List) {
+                return inList((List<?>) tt[0]);
+            } else {
+                return inList(Arrays.asList(tt));
+            }
+        }
+
+        private Conditions inList(List<?> tt) {
             return Conditions.this.with(column, c -> c.in(tt));
         }
     }
