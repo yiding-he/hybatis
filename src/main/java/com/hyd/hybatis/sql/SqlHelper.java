@@ -32,10 +32,15 @@ public class SqlHelper {
     }
 
     public static Sql.Select buildSelectFromConditions(Context context) {
-        Conditions conditions = (Conditions) context.paramObject;
+        var conditions = (Conditions) context.paramObject;
+        var tableName = context.tableName;
+        return buildSelectFromConditions(conditions, tableName);
+    }
+
+    public static Sql.Select buildSelectFromConditions(Conditions conditions, String tableName) {
         var projection = conditions.getProjection();
         var columns = projection.isEmpty() ? "*" : String.join(",", projection);
-        Sql.Select select = new Sql.Select(columns).From(context.tableName);
+        Sql.Select select = new Sql.Select(columns).From(tableName);
         for (Condition<?> condition : conditions.getConditions()) {
             injectCondition(select, condition);
         }
