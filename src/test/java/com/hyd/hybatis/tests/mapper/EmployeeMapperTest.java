@@ -44,4 +44,11 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
         );
         rows.forEach(System.out::println);
     }
+
+    @Test
+    public void testCountByConditions() throws Exception {
+        var count = employeeMapper.countByConditions(new Conditions()
+            .withColumn("first_name").startWith("B"));
+        System.out.println("count = " + count);
+    }
 }
