@@ -25,7 +25,7 @@ public interface CrudMapper<T> {
     List<T> selectList(Conditions conditions);
 
     @HbSelect(table = "")
-    Long countByConditions(Conditions conditions);
+    Long count(Conditions conditions);
 
     @HbDelete(table = "")
     int delete(Conditions conditions);

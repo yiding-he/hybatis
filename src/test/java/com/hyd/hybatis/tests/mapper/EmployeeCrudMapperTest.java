@@ -13,7 +13,7 @@ public class EmployeeCrudMapperTest extends HybatisSpringBootTestApplicationTest
 
     @Test
     public void testCount() throws Exception {
-        var count = employeeCrudMapper.countByConditions(
+        var count = employeeCrudMapper.count(
             new Conditions().withColumn("first_name").startWith("B")
         );
         System.out.println("count = " + count);
