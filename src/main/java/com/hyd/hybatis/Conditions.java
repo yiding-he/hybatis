@@ -1,5 +1,8 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.sql.Sql;
+import com.hyd.hybatis.sql.SqlHelper;
+
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -171,5 +174,9 @@ public class Conditions implements Serializable {
 
     public List<Condition<?>> getConditions() {
         return new ArrayList<>(query.values());
+    }
+
+    public Sql.Select toSelect(String tableName) {
+        return SqlHelper.buildSelectFromConditions(this, tableName);
     }
 }

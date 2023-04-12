@@ -22,12 +22,33 @@ public class SqlHelper {
         private final HybatisConfiguration config;
     }
 
+    ////////////////////////////////////////
+
+    public static Sql.Delete buildDelete(Context context) {
+        var delete = Sql.Delete(context.tableName);
+        injectConditionObject(context, delete);
+        return delete;
+    }
+
     public static Sql.Delete buildDeleteFromConditions(Context context) {
         Conditions conditions = (Conditions) context.paramObject;
-        Sql.Delete select = new Sql.Delete(context.tableName);
+        return buildDeleteFromConditions(conditions, context.tableName);
+    }
+
+    public static Sql.Delete buildDeleteFromConditions(Conditions conditions, String tableName) {
+        Sql.Delete delete = new Sql.Delete(tableName);
         for (Condition<?> condition : conditions.getConditions()) {
-            injectCondition(select, condition);
+            injectCondition(delete, condition);
         }
+        return delete;
+    }
+
+    ////////////////////////////////////////
+
+    public static Sql.Select buildSelect(Context context) {
+        var select = Sql.Select("*").From(context.tableName);
+        HashMap<Field, Condition<?>> conditionMappings = injectConditionObject(context, select);
+        injectOrderBy(select, conditionMappings.values());
         return select;
     }
 
@@ -52,18 +73,7 @@ public class SqlHelper {
         return select;
     }
 
-    public static Sql.Select buildSelect(Context context) {
-        var select = Sql.Select("*").From(context.tableName);
-        HashMap<Field, Condition<?>> conditionMappings = injectConditionObject(context, select);
-        injectOrderBy(select, conditionMappings.values());
-        return select;
-    }
-
-    public static Sql.Delete buildDelete(Context context) {
-        var delete = Sql.Delete(context.tableName);
-        injectConditionObject(context, delete);
-        return delete;
-    }
+    ////////////////////////////////////////
 
     private static HashMap<Field, Condition<?>> injectConditionObject(Context context, Sql<?> sql) {
         var queryObject = context.paramObject;
