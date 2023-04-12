@@ -10,6 +10,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
@@ -308,7 +309,11 @@ public class Hybatis {
                 connection.setAutoCommit(false);
             }
         } else {
-            connection = this.dataSource.getConnection();
+            connection = DataSourceUtils.getConnection(dataSource);
+        }
+
+        // 如果是 DataSourceUtils 新创建的连接，而不在事务当中，则可以随意设置 autoCommit
+        if (connection.getAutoCommit()) {
             connection.setAutoCommit(autoCommit);
         }
         return connection;
