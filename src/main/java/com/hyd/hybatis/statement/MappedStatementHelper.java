@@ -1,6 +1,8 @@
 package com.hyd.hybatis.statement;
 
 import com.hyd.hybatis.driver.HybatisLanguageDriver;
+import com.hyd.hybatis.sql.SelectMode;
+import com.hyd.hybatis.sql.SqlSourceForSelect;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.SqlCommandType;
@@ -40,11 +42,25 @@ public class MappedStatementHelper {
      * @return 构建结果
      */
     public static MappedStatement buildMappedStatement(
-        Configuration configuration, String sqlId, Class<?> entityType, SqlSource sqlSource, SqlCommandType commandType
+        Configuration configuration, String sqlId, Class<?> entityType,
+        SqlSource sqlSource, SqlCommandType commandType
     ) {
-        ResultMap resultMap = entityType == null ? null : new ResultMap
-            .Builder(configuration, sqlId + "_RM", entityType, Collections.emptyList(), true)
-            .build();
+
+        ResultMap resultMap = null;
+        if (sqlSource instanceof SqlSourceForSelect) {
+            var selectMode = ((SqlSourceForSelect) sqlSource).getSelectMode();
+            if (selectMode == SelectMode.Count) {
+                resultMap = new ResultMap
+                    .Builder(configuration, sqlId + "_RM", Long.class, Collections.emptyList(), true)
+                    .build();
+            }
+        }
+
+        if (resultMap == null) {
+            resultMap = entityType == null ? null : new ResultMap
+                .Builder(configuration, sqlId + "_RM", entityType, Collections.emptyList(), true)
+                .build();
+        }
 
         return new MappedStatement
             .Builder(configuration, sqlId, sqlSource, commandType)

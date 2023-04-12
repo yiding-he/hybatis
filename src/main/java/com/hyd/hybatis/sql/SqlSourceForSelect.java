@@ -24,6 +24,10 @@ public class SqlSourceForSelect extends HybatisSqlSource {
         this.selectMode = selectMode;
     }
 
+    public SelectMode getSelectMode() {
+        return selectMode;
+    }
+
     @Override
     protected BoundSql build(Object parameterObject) {
 
