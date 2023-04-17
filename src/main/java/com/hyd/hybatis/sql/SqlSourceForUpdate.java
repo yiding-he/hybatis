@@ -42,12 +42,12 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
         }
 
         Sql.Update updateSql = Sql.Update(getTableName());
-        var conditionColumns = SqlHelper.injectUpdateConditions(updateSql, query);
+        SqlHelper.injectUpdateConditions(updateSql, query);
 
         if (update instanceof Map) {
-            buildUpdateByMapObject(updateSql, conditionColumns, (Map<String, Object>) update);
+            buildUpdateByMapObject(updateSql, (Map<String, Object>) update);
         } else {
-            buildUpdateByBeanObject(updateSql, conditionColumns, update);
+            buildUpdateByBeanObject(updateSql, update);
         }
 
         log.debug("[{}]: {}", getSqlId(), updateSql.toCommand());
@@ -65,21 +65,24 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
         return conditions;
     }
 
+    /**
+     * 根据 Map 内容生成 Update 语句的 Set 部分
+     */
     private void buildUpdateByMapObject(
-        Sql.Update updateSql, List<String> conditionColumns, Map<String, Object> update
+        Sql.Update updateSql, Map<String, Object> update
     ) {
         var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         update.forEach((field, value) -> {
-            var columnName = camelToUnderline? Str.camel2Underline(field): field;
-            if (conditionColumns.contains(columnName)) {
-                return;
-            }
+            var columnName = camelToUnderline ? Str.camel2Underline(field) : field;
             updateSql.SetIfNotNull(columnName, value);
         });
     }
 
+    /**
+     * 根据 Java bean 对象生成 Update 语句的 Set 部分
+     */
     private void buildUpdateByBeanObject(
-        Sql.Update updateSql, List<String> conditionColumns, Object update
+        Sql.Update updateSql, Object update
     ) {
 
         List<Field> pojoFields = Reflections.getPojoFields(
@@ -89,9 +92,6 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
         var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         pojoFields.forEach(f -> {
             var columnName = Reflections.getColumnName(f, camelToUnderline);
-            if (conditionColumns.contains(columnName)) {
-                return;
-            }
             Object fieldValue = Reflections.getFieldValue(update, f);
             updateSql.SetIfNotNull(columnName, fieldValue);
         });

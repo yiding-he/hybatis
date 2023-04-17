@@ -7,7 +7,10 @@ import com.hyd.hybatis.reflection.Reflections;
 import lombok.Data;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class SqlHelper {
@@ -104,15 +107,12 @@ public class SqlHelper {
     /**
      * 分析 queryObject，将查询条件放入 update 中，返回条件字段列表
      */
-    public static List<String> injectUpdateConditions(Sql.Update update, Object queryObject) {
+    public static void injectUpdateConditions(Sql.Update update, Object queryObject) {
 
-        var result = new ArrayList<String>();
         if (queryObject instanceof Conditions) {
-            ((Conditions) queryObject).getConditions().forEach(c -> {
-                result.add(c.getColumn());
-                injectCondition(update, c);
-            });
-            return result;
+            ((Conditions) queryObject).getConditions().forEach(
+                c -> injectCondition(update, c)
+            );
         }
 
         var conditionFields = Reflections
@@ -123,12 +123,9 @@ public class SqlHelper {
             if (c == null) {
                 continue;
             }
-
-            result.add(c.getColumn());
             injectCondition(update, c);
         }
 
-        return result;
     }
 
     ///////////////////////////////////////////////////////////////////

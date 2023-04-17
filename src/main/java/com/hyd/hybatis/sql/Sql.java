@@ -25,6 +25,8 @@ import static java.util.Collections.emptyList;
 })
 public abstract class Sql<T extends Sql<?>> {
 
+    public static final Object NULL = new Object();
+
     private Sql() {
 
     }
@@ -576,6 +578,8 @@ public abstract class Sql<T extends Sql<?>> {
                 Pair pair = updates.get(i);
                 if (!pair.hasArg()) {
                     statement += pair.statement;
+                } else if (pair.args.get(0) == NULL) {
+                    statement += pair.statement + "=null";
                 } else if (pair.statement.contains("?")) {
                     this.params.addAll(pair.args);
                     statement += pair.statement;
