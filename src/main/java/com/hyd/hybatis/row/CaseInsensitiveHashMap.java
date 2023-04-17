@@ -10,6 +10,21 @@ public class CaseInsensitiveHashMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = 1L;
 
+    public CaseInsensitiveHashMap(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    public CaseInsensitiveHashMap(int initialCapacity) {
+        super(initialCapacity);
+    }
+
+    public CaseInsensitiveHashMap() {
+    }
+
+    public CaseInsensitiveHashMap(Map<? extends String, ? extends V> m) {
+        putAll(m);
+    }
+
     @Override
     public void putAll(Map<? extends String, ? extends V> m) {
         if (m instanceof CaseInsensitiveHashMap) {
