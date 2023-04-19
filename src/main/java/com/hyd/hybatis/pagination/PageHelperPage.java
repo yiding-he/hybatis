@@ -44,7 +44,7 @@ public class PageHelperPage<T> implements Serializable {
         this.pageSize = pageSize;
     }
 
-    private final List<?> list;
+    private final List<T> list;
 
     private final int total;
 
