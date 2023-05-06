@@ -2,13 +2,16 @@ package com.hyd.hybatis.jdbc.metadata;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
-public class DbTable {
+public class DbTable implements Serializable {
+
+    private static final long serialVersionUID = 4040779844456762005L;
 
     private String catalog;
 
