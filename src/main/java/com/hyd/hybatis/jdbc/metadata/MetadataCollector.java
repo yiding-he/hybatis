@@ -82,9 +82,9 @@ public class MetadataCollector {
                 var table = new DbTable();
                 table.setName(tables.getString("TABLE_NAME"));
                 table.setRemarks(tables.getString("REMARKS"));
+                table.setCatalog(context.catalog);
+                table.setSchema(context.schema);
                 table.setColumns(collectColumns(metaData, table.getName()));
-                table.setCatalog(tables.getString("TABLE_CAT"));
-                table.setSchema(tables.getString("TABLE_SCHEM"));
                 tableList.add(table);
             }
         }
