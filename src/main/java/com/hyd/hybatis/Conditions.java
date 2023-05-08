@@ -172,8 +172,16 @@ public class Conditions implements Serializable {
         return new Wrapper(column);
     }
 
+    public Set<String> getConditionKeys() {
+        return query.keySet();
+    }
+
     public List<Condition<?>> getConditions() {
         return new ArrayList<>(query.values());
+    }
+
+    public Condition<?> getCondition(String column) {
+        return query.get(column);
     }
 
     public Sql.Select toSelect(String tableName) {
