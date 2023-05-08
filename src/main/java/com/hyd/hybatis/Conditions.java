@@ -74,7 +74,8 @@ public class Conditions implements Serializable {
         @SafeVarargs
         public final <T> Conditions in(T... tt) {
             if (tt == null || tt.length == 0) {
-                return Conditions.this.with(column, c -> {});
+                return Conditions.this.with(column, c -> {
+                });
             } else if (tt[0] instanceof List) {
                 return inList((List<?>) tt[0]);
             } else {
@@ -186,5 +187,19 @@ public class Conditions implements Serializable {
 
     public Sql.Select toSelect(String tableName) {
         return SqlHelper.buildSelectFromConditions(this, tableName);
+    }
+
+    /**
+     * Create a new Conditions object with specified keys
+     */
+    public Conditions pick(String... keys) {
+        var conditions = new Conditions();
+        for (String key : keys) {
+            var condition = query.get(key);
+            if (condition != null) {
+                conditions.query.put(key, condition);
+            }
+        }
+        return conditions;
     }
 }
