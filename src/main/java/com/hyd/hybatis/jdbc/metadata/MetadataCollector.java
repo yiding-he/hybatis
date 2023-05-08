@@ -52,12 +52,32 @@ public class MetadataCollector {
         dbMeta.setCatalog(context.catalog);
         dbMeta.setSchema(context.schema);
         dbMeta.setTables(collectTables(metaData, context));
+        dbMeta.setViews(collectViews(metaData, context));
         return dbMeta;
     }
 
+    ////////////////////////////////////////
+
+    private List<DbView> collectViews(DatabaseMetaData metaData, Context context) throws SQLException {
+        List<DbView> viewList = new ArrayList<>();
+        try (var views = metaData.getTables(context.catalog, context.schema, null, new String[]{"VIEW"})) {
+            while (views.next()) {
+                var view = new DbView();
+                view.setName(views.getString("TABLE_NAME"));
+                view.setCatalog(context.catalog);
+                view.setSchema(context.schema);
+                view.setColumns(collectColumns(metaData, view.getName()));
+                viewList.add(view);
+            }
+        }
+        return viewList;
+    }
+
+    ////////////////////////////////////////
+
     private List<DbTable> collectTables(DatabaseMetaData metaData, Context context) throws SQLException {
         List<DbTable> tableList = new ArrayList<>();
-        try (var tables = metaData.getTables(context.catalog, context.schema, null, null)) {
+        try (var tables = metaData.getTables(context.catalog, context.schema, null, new String[] {"TABLE"})) {
             while (tables.next()) {
                 var table = new DbTable();
                 table.setName(tables.getString("TABLE_NAME"));
@@ -70,6 +90,8 @@ public class MetadataCollector {
         }
         return tableList;
     }
+
+    ////////////////////////////////////////
 
     private List<DbColumn> collectColumns(DatabaseMetaData metaData, String tableName) throws SQLException {
         Map<String, Integer> primaryKeyMap = new HashMap<>();

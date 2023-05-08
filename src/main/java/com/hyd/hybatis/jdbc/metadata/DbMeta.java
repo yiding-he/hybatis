@@ -19,4 +19,6 @@ public class DbMeta implements Serializable {
     private String catalog;
 
     private List<DbTable> tables;
+
+    private List<DbView> views;
 }
