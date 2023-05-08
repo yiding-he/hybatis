@@ -66,7 +66,7 @@ public class MetadataCollector {
                 view.setName(views.getString("TABLE_NAME"));
                 view.setCatalog(context.catalog);
                 view.setSchema(context.schema);
-                view.setColumns(collectColumns(metaData, view.getName()));
+                view.setColumns(collectColumns(metaData, context, view.getName()));
                 viewList.add(view);
             }
         }
@@ -84,7 +84,7 @@ public class MetadataCollector {
                 table.setRemarks(tables.getString("REMARKS"));
                 table.setCatalog(context.catalog);
                 table.setSchema(context.schema);
-                table.setColumns(collectColumns(metaData, table.getName()));
+                table.setColumns(collectColumns(metaData, context, table.getName()));
                 tableList.add(table);
             }
         }
@@ -93,9 +93,11 @@ public class MetadataCollector {
 
     ////////////////////////////////////////
 
-    private List<DbColumn> collectColumns(DatabaseMetaData metaData, String tableName) throws SQLException {
+    private List<DbColumn> collectColumns(
+        DatabaseMetaData metaData, Context context, String tableName
+    ) throws SQLException {
         Map<String, Integer> primaryKeyMap = new HashMap<>();
-        try (var primaryKeys = metaData.getPrimaryKeys(null, null, tableName)) {
+        try (var primaryKeys = metaData.getPrimaryKeys(context.catalog, context.schema, tableName)) {
             while (primaryKeys.next()) {
                 var columnName = primaryKeys.getString("COLUMN_NAME");
                 primaryKeyMap.put(columnName, primaryKeyMap.size() + 1);
@@ -103,7 +105,7 @@ public class MetadataCollector {
         }
 
         List<DbColumn> columnList = new ArrayList<>();
-        try (var columns = metaData.getColumns(null, null, tableName, null)) {
+        try (var columns = metaData.getColumns(context.catalog, context.schema, tableName, null)) {
             while (columns.next()) {
                 var column = new DbColumn();
                 column.setName(columns.getString("COLUMN_NAME"));
