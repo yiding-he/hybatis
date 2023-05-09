@@ -18,4 +18,9 @@ public @interface HbMapper {
      * 表示对应数据库哪张表
      */
     String table();
+
+    /**
+     * 表示有哪些主键
+     */
+    String[] primaryKeyNames() default {};
 }

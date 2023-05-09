@@ -39,16 +39,30 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
         return core;
     }
 
+    @SuppressWarnings("unchecked")
     public static String getCrudMapperTableName(Class<? extends CrudMapper<?>> mapperClass) {
-        String tableName = "";
-        var entityClass = Reflections.getGenericTypeArg(mapperClass);
-        if (entityClass != null && entityClass.isAnnotationPresent(HbEntity.class)) {
-            tableName = entityClass.getAnnotation(HbEntity.class).table();
+
+        var allInterfaces = Reflections.allInterfaces(mapperClass);
+        for (Class<?> i : allInterfaces) {
+            if (!CrudMapper.class.isAssignableFrom(i)) {
+                continue;
+            }
+
+            var inf = (Class<? extends CrudMapper<?>>) i;
+            String tableName = "";
+            var entityClass = Reflections.getGenericTypeArg(inf);
+            if (entityClass != null && entityClass.isAnnotationPresent(HbEntity.class)) {
+                tableName = entityClass.getAnnotation(HbEntity.class).table();
+            }
+            if (Str.isBlank(tableName) && inf.isAnnotationPresent(HbMapper.class)) {
+                tableName = inf.getAnnotation(HbMapper.class).table();
+            }
+            if (Str.isNotBlank(tableName)) {
+                return tableName;
+            }
         }
-        if (Str.isBlank(tableName) && mapperClass.isAnnotationPresent(HbMapper.class)) {
-            tableName = mapperClass.getAnnotation(HbMapper.class).table();
-        }
-        return tableName;
+
+        return "";
     }
 
     @SuppressWarnings("unchecked")

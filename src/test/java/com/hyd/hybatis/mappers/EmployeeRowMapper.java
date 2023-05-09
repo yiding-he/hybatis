@@ -6,7 +6,7 @@ import com.hyd.hybatis.row.Row;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-@HbMapper(table = "EMPLOYEES")
+@HbMapper(table = "EMPLOYEES", primaryKeyNames = "EMP_NO")
 public interface EmployeeRowMapper extends PageCrudMapper<Row> {
 
 }
