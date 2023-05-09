@@ -71,6 +71,14 @@ public class Conditions implements Serializable {
             return inList(tt);
         }
 
+        public Conditions orderAsc(int order) {
+            return Conditions.this.with(column, c -> c.setOrderAsc(order));
+        }
+
+        public Conditions orderDesc(int order) {
+            return Conditions.this.with(column, c -> c.setOrderDesc(order));
+        }
+
         @SafeVarargs
         public final <T> Conditions in(T... tt) {
             if (tt == null || tt.length == 0) {
