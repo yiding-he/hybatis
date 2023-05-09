@@ -2,11 +2,14 @@ package com.hyd.hybatis.statement.msfactory;
 
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.HybatisCore;
-import com.hyd.hybatis.annotations.*;
+import com.hyd.hybatis.annotations.HbDelete;
+import com.hyd.hybatis.annotations.HbInsert;
+import com.hyd.hybatis.annotations.HbSelect;
+import com.hyd.hybatis.annotations.HbUpdate;
 import com.hyd.hybatis.driver.HybatisLanguageDriver;
 import com.hyd.hybatis.mapper.CrudMapper;
-import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.statement.MappedStatementFactory;
+import com.hyd.hybatis.utils.MapperUtil;
 import com.hyd.hybatis.utils.Result;
 import com.hyd.hybatis.utils.Str;
 import org.apache.ibatis.scripting.LanguageDriver;
@@ -40,32 +43,6 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
     }
 
     @SuppressWarnings("unchecked")
-    public static String getCrudMapperTableName(Class<? extends CrudMapper<?>> mapperClass) {
-
-        var allInterfaces = Reflections.allInterfaces(mapperClass);
-        for (Class<?> i : allInterfaces) {
-            if (!CrudMapper.class.isAssignableFrom(i)) {
-                continue;
-            }
-
-            var inf = (Class<? extends CrudMapper<?>>) i;
-            String tableName = "";
-            var entityClass = Reflections.getGenericTypeArg(inf);
-            if (entityClass != null && entityClass.isAnnotationPresent(HbEntity.class)) {
-                tableName = entityClass.getAnnotation(HbEntity.class).table();
-            }
-            if (Str.isBlank(tableName) && inf.isAnnotationPresent(HbMapper.class)) {
-                tableName = inf.getAnnotation(HbMapper.class).table();
-            }
-            if (Str.isNotBlank(tableName)) {
-                return tableName;
-            }
-        }
-
-        return "";
-    }
-
-    @SuppressWarnings("unchecked")
     public static Result<String> getTableName(Class<?> mapperClass, Method method) {
         String tableName = null;
 
@@ -80,7 +57,7 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
         }
 
         if (Str.isBlank(tableName) && CrudMapper.class.isAssignableFrom(mapperClass)) {
-            tableName = getCrudMapperTableName((Class<? extends CrudMapper<?>>) mapperClass);
+            tableName = MapperUtil.getCrudMapperTableName((Class<? extends CrudMapper<?>>) mapperClass);
         }
 
         if (tableName == null) {
