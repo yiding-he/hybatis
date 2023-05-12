@@ -190,7 +190,7 @@ public class Conditions implements Serializable {
     }
 
     public Condition<?> getCondition(String column) {
-        return query.get(column);
+        return query.getOrDefault(column, Condition.EMPTY);
     }
 
     public Sql.Select toSelect(String tableName) {
