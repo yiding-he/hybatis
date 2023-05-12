@@ -193,6 +193,10 @@ public class Conditions implements Serializable {
         return query.getOrDefault(column, Condition.EMPTY);
     }
 
+    public boolean containsColumn(String column) {
+        return query.containsKey(column);
+    }
+
     public Sql.Select toSelect(String tableName) {
         return SqlHelper.buildSelectFromConditions(this, tableName);
     }
