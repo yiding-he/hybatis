@@ -54,4 +54,8 @@ public interface CrudMapper<T> {
     default T findById(Object... primaryKeyValues) {
         return selectOne(findByIdConditions(primaryKeyValues));
     }
+
+    default int deleteById(Object... primaryKeyValues) {
+        return delete(findByIdConditions(primaryKeyValues));
+    }
 }
