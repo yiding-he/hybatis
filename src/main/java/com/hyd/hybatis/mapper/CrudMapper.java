@@ -7,6 +7,7 @@ import com.hyd.hybatis.annotations.HbSelect;
 import com.hyd.hybatis.annotations.HbUpdate;
 import com.hyd.hybatis.utils.MapperUtil;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -53,6 +54,16 @@ public interface CrudMapper<T> {
 
     default T findById(Object... primaryKeyValues) {
         return selectOne(findByIdConditions(primaryKeyValues));
+    }
+
+    @SuppressWarnings("unchecked")
+    default void updateById(Object... primaryKeyValuesAndUpdate) {
+        if (primaryKeyValuesAndUpdate == null || primaryKeyValuesAndUpdate.length < 2) {
+            throw new IllegalArgumentException("Insufficient count of argument.");
+        }
+        var primaryKeyValues = Arrays.copyOf(primaryKeyValuesAndUpdate, primaryKeyValuesAndUpdate.length - 1);
+        var updateEntity = (T)primaryKeyValuesAndUpdate[primaryKeyValuesAndUpdate.length - 1];
+        update(findByIdConditions(primaryKeyValues), updateEntity);
     }
 
     default int deleteById(Object... primaryKeyValues) {
