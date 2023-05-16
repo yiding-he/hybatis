@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public class Conditions implements Serializable {
+public class Conditions implements Serializable, Cloneable {
 
     @SuppressWarnings({"Convert2MethodRef", "unused"})
     public class Wrapper {
@@ -213,5 +213,16 @@ public class Conditions implements Serializable {
             }
         }
         return conditions;
+    }
+
+    @Override
+    public Conditions clone() {
+        try {
+            Conditions clone = (Conditions) super.clone();
+            clone.query.putAll(query);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
