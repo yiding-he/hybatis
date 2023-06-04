@@ -23,6 +23,11 @@ public class DbColumn implements Serializable {
 
     private String remarks;
 
+    /**
+     * 字段外键约束，目前框架不支持自动收集外键约束信息
+     */
+    private DbFk fk;
+
     public boolean primaryKey() {
         return this.primaryKey > 0;
     }

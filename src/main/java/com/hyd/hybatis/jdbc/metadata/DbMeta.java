@@ -21,4 +21,18 @@ public class DbMeta implements Serializable {
     private List<DbTable> tables;
 
     private List<DbView> views;
+
+    ///////////////////////////////
+
+    public DbTable findTable(String tableName) {
+        return tables.stream()
+            .filter(t -> t.getName().equalsIgnoreCase(tableName))
+            .findFirst()
+            .orElse(null);
+    }
+
+    public DbColumn findColumn(String tableName, String columnName) {
+        var table = findTable(tableName);
+        return table == null ? null : table.findColumn(columnName);
+    }
 }

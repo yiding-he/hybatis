@@ -23,6 +23,8 @@ public class DbTable implements Serializable {
 
     private List<DbColumn> columns;
 
+    ///////////////////////////////
+
     public List<DbColumn> primaryKeyColumns() {
         return this.columns == null? Collections.emptyList():
             this.columns.stream()
@@ -35,5 +37,12 @@ public class DbTable implements Serializable {
         return primaryKeyColumns().stream()
             .map(DbColumn::getName)
             .collect(Collectors.toList());
+    }
+
+    public DbColumn findColumn(String columnName) {
+        return this.columns.stream()
+            .filter(c -> c.getName().equalsIgnoreCase(columnName))
+            .findFirst()
+            .orElse(null);
     }
 }
