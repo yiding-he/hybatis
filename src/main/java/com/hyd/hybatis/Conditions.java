@@ -10,6 +10,53 @@ import java.util.function.Consumer;
 
 public class Conditions implements Serializable, Cloneable {
 
+    public static Conditions eq(String columnName, Object value) {
+        return new Conditions().withColumn(columnName).eq(value);
+    }
+
+    public static Conditions ne(String columnName, Object value) {
+        return new Conditions().withColumn(columnName).ne(value);
+    }
+
+
+    public static Conditions lt(String columnName, Object value) {
+        return new Conditions().withColumn(columnName).lt(value);
+    }
+
+    public static Conditions lte(String columnName, Object value) {
+        return new Conditions().withColumn(columnName).lte(value);
+    }
+
+    public static Conditions gt(String columnName, Object value) {
+        return new Conditions().withColumn(columnName).gt(value);
+    }
+
+    public static Conditions gte(String columnName, Object value) {
+        return new Conditions().withColumn(columnName).gte(value);
+    }
+
+    public static Conditions between(String columnName, Object o1, Object o2) {
+        return new Conditions().withColumn(columnName).between(o1, o2);
+    }
+
+    public static Conditions in(String columnName, List<?> tt) {
+        return new Conditions().withColumn(columnName).inList(tt);
+    }
+
+    public static Conditions in(String columnName, Object... tt) {
+        return new Conditions().withColumn(columnName).in(tt);
+    }
+
+    public static Conditions beNull(String columnName) {
+        return new Conditions().withColumn(columnName).beNull();
+    }
+
+    public static Conditions nonNull(String columnName) {
+        return new Conditions().withColumn(columnName).nonNull();
+    }
+
+    ////////////////////////////////////////
+
     @SuppressWarnings({"Convert2MethodRef", "unused"})
     public class Wrapper {
 
