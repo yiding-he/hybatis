@@ -259,6 +259,8 @@ public class Conditions implements Serializable, Cloneable {
                 conditions.query.put(key, condition);
             }
         }
+        conditions.projection = new ArrayList<>(this.projection);
+        conditions.limit = this.limit;
         return conditions;
     }
 
@@ -267,6 +269,8 @@ public class Conditions implements Serializable, Cloneable {
         try {
             Conditions clone = (Conditions) super.clone();
             clone.query.putAll(query);
+            clone.projection = new ArrayList<>(this.projection);
+            clone.limit = this.limit;
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
