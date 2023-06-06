@@ -172,6 +172,17 @@ public class Conditions implements Serializable, Cloneable {
         return this;
     }
 
+    public Conditions ensureProjection(Collection<String> projections) {
+        if (!projection.isEmpty()) {
+            for (String p : projections) {
+                if (!projection.contains(p)) {
+                    projection.add(p);
+                }
+            }
+        }
+        return this;
+    }
+
     public Conditions limit(int limit) {
         this.limit = limit;
         return this;
