@@ -235,6 +235,13 @@ public class Conditions implements Serializable, Cloneable {
             .max().orElse(0);
     }
 
+    /**
+     * Allow user to manipulate the conditions
+     */
+    public Map<String, Condition<?>> getQuery() {
+        return query;
+    }
+
     public Wrapper withColumn(String column) {
         return new Wrapper(column);
     }
