@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Collect metadata from database via JDBC API.
@@ -105,9 +106,11 @@ public class MetadataCollector {
         }
 
         List<DbColumn> columnList = new ArrayList<>();
+        var counter = new AtomicInteger();
         try (var columns = metaData.getColumns(context.catalog, context.schema, tableName, null)) {
             while (columns.next()) {
                 var column = new DbColumn();
+                column.setIndex(counter.getAndIncrement());
                 column.setName(columns.getString("COLUMN_NAME"));
                 column.setRemarks(columns.getString("REMARKS"));
                 column.setType(columns.getInt("DATA_TYPE"));
