@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 public class SqlSourceForSelect extends HybatisSqlSource {
 
     /**
-     * 查询分页模式，非分页查询则为 None，否则为其他两种模式之一
+     * Determine what kind of content will be returned by this query.
      */
     protected final SelectMode selectMode;
 

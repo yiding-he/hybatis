@@ -21,6 +21,9 @@ import java.util.stream.Stream;
 import static com.hyd.hybatis.reflection.Reflections.getGenericTypeArg;
 import static com.hyd.hybatis.utils.Bean.convertValue;
 
+/**
+ * Used to resolve the parameter values of Conditions type in SpringMVC Controller methods.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 @Slf4j
 public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {

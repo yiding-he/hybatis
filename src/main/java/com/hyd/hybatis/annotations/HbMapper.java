@@ -6,7 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 用于注解返回 Row 对象的 Mapper
+ * A supplementary annotation for CrudMapper sub interfaces.
+ * <p>
+ * When the table name cannot be inferred from the entity class
+ * corresponding to the CrudMapper interface, this annotation is
+ * used to specify which database table this CrudMapper corresponds to.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({
@@ -15,12 +19,12 @@ import java.lang.annotation.Target;
 public @interface HbMapper {
 
     /**
-     * 表示对应数据库哪张表
+     * Indicates which table the CrudMapper interface corresponds to
      */
     String table();
 
     /**
-     * 表示有哪些主键
+     * Name of the primary keys of the table the CrudMapper interface corresponds to.
      */
     String[] primaryKeyNames() default {};
 }

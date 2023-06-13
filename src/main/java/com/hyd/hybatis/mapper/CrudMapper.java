@@ -12,17 +12,42 @@ import java.util.List;
 
 /**
  * Mapper with predefined CRUD methods.
+ * <p>
+ * An empty table name in the annotation means that
+ * the actual table name will be obtained from @HbEntity or @HbMapper.
  *
  * @param <T> Entity type, should be annotated with {@link com.hyd.hybatis.annotations.HbEntity}
  */
 public interface CrudMapper<T> {
 
+    /**
+     * Default method for insertion.
+     *
+     * @param insertEntity entity to be inserted
+     *
+     * @return affected rows
+     */
     @HbInsert(table = "")
     int insert(T insertEntity);
 
+    /**
+     * Default method for update.
+     *
+     * @param conditions   query conditions
+     * @param updateEntity entity which contains updating properties
+     *
+     * @return number of rows affected
+     */
     @HbUpdate(table = "")
     int update(Conditions conditions, T updateEntity);
 
+    /**
+     * Default method for query.
+     *
+     * @param conditions query conditions
+     *
+     * @return query result
+     */
     @HbSelect(table = "")
     List<T> selectList(Conditions conditions);
 
@@ -32,6 +57,13 @@ public interface CrudMapper<T> {
     @HbDelete(table = "")
     int delete(Conditions conditions);
 
+    /**
+     * Retrieve first query result.
+     *
+     * @param conditions query conditions
+     *
+     * @return first query result
+     */
     default T selectOne(Conditions conditions) {
         return selectList(conditions.limit(1)).stream().findFirst().orElse(null);
     }
@@ -52,20 +84,39 @@ public interface CrudMapper<T> {
         return conditions;
     }
 
+    /**
+     * Retrieve entity by primary key.
+     *
+     * @param primaryKeyValues primary key values
+     *
+     * @return entity
+     */
     default T findById(Object... primaryKeyValues) {
         return selectOne(findByIdConditions(primaryKeyValues));
     }
 
+    /**
+     * Update entity by primary key.
+     *
+     * @param primaryKeyValuesAndUpdate key and update values. The last argument is the update entity.
+     */
     @SuppressWarnings("unchecked")
     default void updateById(Object... primaryKeyValuesAndUpdate) {
         if (primaryKeyValuesAndUpdate == null || primaryKeyValuesAndUpdate.length < 2) {
             throw new IllegalArgumentException("Insufficient count of argument.");
         }
         var primaryKeyValues = Arrays.copyOf(primaryKeyValuesAndUpdate, primaryKeyValuesAndUpdate.length - 1);
-        var updateEntity = (T)primaryKeyValuesAndUpdate[primaryKeyValuesAndUpdate.length - 1];
+        var updateEntity = (T) primaryKeyValuesAndUpdate[primaryKeyValuesAndUpdate.length - 1];
         update(findByIdConditions(primaryKeyValues), updateEntity);
     }
 
+    /**
+     * Delete entity by primary key.
+     *
+     * @param primaryKeyValues primary key values.
+     *
+     * @return the number of rows deleted.
+     */
     default int deleteById(Object... primaryKeyValues) {
         return delete(findByIdConditions(primaryKeyValues));
     }
