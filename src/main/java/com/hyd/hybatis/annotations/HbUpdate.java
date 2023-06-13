@@ -16,13 +16,7 @@ import java.lang.annotation.Target;
 public @interface HbUpdate {
 
     /**
-     * 表示该查询是针对哪个表
+     * 表示本方法针对的是哪张表。如果为空，则框架会从 Mapper 类那里取
      */
     String table();
-
-    /**
-     * 表示表的主键是哪几个列，仅用于 update 方法只有一个参数时。
-     * 如果 Mapper 方法有两个参数且第一个参数是查询参数，则忽略本属性
-     */
-    String[] key() default {};
 }

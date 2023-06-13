@@ -48,10 +48,10 @@ public interface CrudMapper<T> {
      *
      * @return query result
      */
-    @HbSelect(table = "")
+    @HbSelect
     List<T> selectList(Conditions conditions);
 
-    @HbSelect(table = "")
+    @HbSelect
     Long count(Conditions conditions);
 
     @HbDelete(table = "")

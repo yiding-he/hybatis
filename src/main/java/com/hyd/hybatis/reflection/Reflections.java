@@ -186,6 +186,11 @@ public class Reflections {
             .forEach(i -> scanInterfaceAndAddMethod(i, nonDefaultMethods));
     }
 
+    ////////////////////////////////////////
+
+    /**
+     * Recursively enumerate all interfaces implemented by {@code type}.
+     */
     public static List<Class<?>> allInterfaces(Class<?> type) {
         var list = new ArrayList<Class<?>>();
         allInterfaces(type, list);

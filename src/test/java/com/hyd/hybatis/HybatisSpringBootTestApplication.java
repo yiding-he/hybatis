@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
+import static com.hyd.hybatis.Conditions.eq;
+
 @SpringBootApplication
 @Import(HybatisConfigurator.class)
 @EnableConfigurationProperties(HybatisConfiguration.class)
@@ -103,7 +105,9 @@ public class HybatisSpringBootTestApplication {
         //  --data '{"empNo":1, "firstName":"Hybatis", "lastName":"Smith"}'
         @PostMapping("/update")
         public String updateEmployee(@RequestBody Employee update) {
-            employeeMapper.updateEmployee(update);
+            employeeMapper.updateEmployee(
+                eq("emp_no", update.getEmpNo()), update
+            );
             return "ok";
         }
     }

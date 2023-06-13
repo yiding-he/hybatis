@@ -48,7 +48,7 @@ public interface EmployeeMapper {
 
     /////////////////////////////////////////////////////////////////// Update
 
-    @HbUpdate(table = "EMPLOYEES", key = "emp_no")
-    void updateEmployee(Employee employee);
+    @HbUpdate(table = "EMPLOYEES")
+    void updateEmployee(Conditions conditions, Employee employee);
 
 }
