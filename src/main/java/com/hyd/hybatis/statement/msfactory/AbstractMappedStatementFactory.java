@@ -64,7 +64,7 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
             return Result.fail("Method " + method + " contains no table information.");
         }
 
-        var isSubQuery = tableName.length() > 7 && tableName.substring(0, 7).equalsIgnoreCase("select ");
+        var isSubQuery = tableName.length() > 7 && tableName.substring(0, 7).trim().equalsIgnoreCase("select");
 
         if (isSubQuery && method.isAnnotationPresent(HbUpdate.class)) {
             return Result.fail("Update method " + method + " does not support sub query.");
