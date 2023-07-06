@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 public class DbMeta implements Serializable {
@@ -24,15 +25,13 @@ public class DbMeta implements Serializable {
 
     ///////////////////////////////
 
-    public DbTable findTable(String tableName) {
+    public Optional<DbTable> findTable(String tableName) {
         return tables.stream()
             .filter(t -> t.getName().equalsIgnoreCase(tableName))
-            .findFirst()
-            .orElse(null);
+            .findFirst();
     }
 
-    public DbColumn findColumn(String tableName, String columnName) {
-        var table = findTable(tableName);
-        return table == null ? null : table.findColumn(columnName);
+    public Optional<DbColumn> findColumn(String tableName, String columnName) {
+        return findTable(tableName).flatMap(t -> t.findColumn(columnName));
     }
 }

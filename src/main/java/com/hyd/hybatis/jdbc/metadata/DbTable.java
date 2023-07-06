@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -39,10 +40,9 @@ public class DbTable implements Serializable {
             .collect(Collectors.toList());
     }
 
-    public DbColumn findColumn(String columnName) {
+    public Optional<DbColumn> findColumn(String columnName) {
         return this.columns.stream()
             .filter(c -> c.getName().equalsIgnoreCase(columnName))
-            .findFirst()
-            .orElse(null);
+            .findFirst();
     }
 }
