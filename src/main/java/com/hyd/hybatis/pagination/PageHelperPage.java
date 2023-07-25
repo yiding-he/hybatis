@@ -20,6 +20,19 @@ public class PageHelperPage<T> implements Serializable {
 
     private static final long serialVersionUID = 43212L;
 
+    public static <T> PageHelperPage<T> fromList(HttpServletRequest request, Supplier<List<T>> listSupplier) {
+        return new PageHelperPage<>(request,() -> {
+            var list = listSupplier.get();
+            if (list instanceof Page) {
+                return (Page<T>) list;
+            } else {
+                var page = new Page<T>(1, list.size());
+                page.addAll(list);
+                return page;
+            }
+        });
+    }
+
     @SuppressWarnings("resource")
     public PageHelperPage(HttpServletRequest request, Supplier<Page<T>> pageSupplier) {
         var pageNum = request.getParameter("pageNum") == null ? 1 : Integer.parseInt(request.getParameter("pageNum"));

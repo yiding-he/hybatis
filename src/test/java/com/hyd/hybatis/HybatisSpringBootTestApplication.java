@@ -65,25 +65,33 @@ public class HybatisSpringBootTestApplication {
         @Autowired
         private HttpServletRequest request;
 
-        // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5"
+        // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageNum=3&pageSize=5"
         // Mapper 返回 PageHelper 的 Page 对象，然后封装为 PageHelperPage
         @GetMapping("/select-page-by-query")
         public PageHelperPage<Employee> selectPageByQuery(@Valid EmployeeQuery employeeQuery) {
             return new PageHelperPage<>(request, () -> employeeMapper.selectPageByQuery(employeeQuery));
         }
 
-        // curl "http://localhost:8080/emp/select-page-by-query-2?firstName.eq=Bikash&pageIndex=3&pageSize=5"
+        // curl "http://localhost:8080/emp/select-page-by-query-2?firstName.eq=Bikash&pageNum=3&pageSize=5"
         // Mapper 直接返回 PageHelperPage 对象
         @GetMapping("/select-page-by-query-2")
         public PageHelperPage<Employee> selectPageByQuery2(Conditions conditions) {
             return employeeCrudMapper.selectPage(conditions, request);
         }
 
-        // curl "http://localhost:8080/emp/select-rows-page-by-conditions?firstName.eq=Bikash&pageIndex=3&pageSize=5"
+        // curl "http://localhost:8080/emp/select-rows-page-by-conditions?firstName.eq=Bikash&pageNum=3&pageSize=5"
         @GetMapping("/select-rows-page-by-conditions")
         public PageHelperPage<Row> selectRowsPageByConditions(Conditions conditions) {
             conditions = conditions.projection("emp_no", "first_name", "last_name");
             return employeeRowMapper.selectPage(conditions, request);
+        }
+
+        // curl "http://localhost:8080/emp/select-rows-page-by-conditions?pageNum=3&pageSize=5"
+        @GetMapping("/select-rows-page-by-conditions-2")
+        public PageHelperPage<Row> selectRowsPageByConditions2() {
+            return employeeRowMapper.selectPage(
+                () -> employeeRowMapper.selectAllEmployees(), request
+            );
         }
 
         // curl "http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4&projection=empNo,firstName,lastName,hireDate"
