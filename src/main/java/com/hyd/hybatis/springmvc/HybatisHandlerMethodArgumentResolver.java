@@ -134,6 +134,11 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
                 .map(v -> convertValue(v, type))
                 .collect(Collectors.toList());
             c.in(list);
+        } else if (param.condition.equals("nin")) {
+            List<T> list = param.parsedValues.stream()
+                .map(v -> convertValue(v, type))
+                .collect(Collectors.toList());
+            c.nin(list);
         } else if (param.condition.equals("between") && param.parsedValues.size() == 2) {
             c.between(
                 convertValue(param.parsedValues.get(0), type),

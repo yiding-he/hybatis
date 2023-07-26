@@ -186,6 +186,8 @@ public class Condition<T> implements Serializable {
 
     private List<T> in;         // in
 
+    private List<T> nin;        // not in
+
     private Integer orderAsc;   // order by ... asc
 
     private Integer orderDesc;  // order by ... desc
@@ -272,6 +274,26 @@ public class Condition<T> implements Serializable {
 
     private Condition<T> inList(List<T> tt) {
         this.in = tt;
+        return this;
+    }
+
+    public Condition<T> nin(List<T> tt) {
+        return ninList(tt);
+    }
+
+    @SuppressWarnings("unchecked")
+    public final Condition<T> nin(T... tt) {
+        if (tt == null || tt.length == 0) {
+            return this;
+        } else if (tt[0] instanceof List) {
+            return ninList((List<T>) tt[0]);
+        } else {
+            return ninList(Arrays.asList(tt));
+        }
+    }
+
+    private Condition<T> ninList(List<T> tt) {
+        this.nin = tt;
         return this;
     }
 }

@@ -47,6 +47,14 @@ public class Conditions implements Serializable, Cloneable {
         return new Conditions().withColumn(columnName).in(tt);
     }
 
+    public static Conditions nin(String columnName, List<?> tt) {
+        return new Conditions().withColumn(columnName).ninList(tt);
+    }
+
+    public static Conditions nin(String columnName, Object... tt) {
+        return new Conditions().withColumn(columnName).nin(tt);
+    }
+
     public static Conditions beNull(String columnName) {
         return new Conditions().withColumn(columnName).beNull();
     }
@@ -117,6 +125,9 @@ public class Conditions implements Serializable, Cloneable {
         public Conditions in(List<?> tt) {
             return inList(tt);
         }
+        public Conditions nin(List<?> tt) {
+            return ninList(tt);
+        }
 
         public Conditions orderAsc(int order) {
             return Conditions.this.with(column, c -> c.setOrderAsc(order));
@@ -140,6 +151,22 @@ public class Conditions implements Serializable, Cloneable {
 
         private Conditions inList(List<?> tt) {
             return Conditions.this.with(column, c -> c.in(tt));
+        }
+
+        @SafeVarargs
+        public final <T> Conditions nin(T... tt) {
+            if (tt == null || tt.length == 0) {
+                return Conditions.this.with(column, c -> {
+                });
+            } else if (tt[0] instanceof List) {
+                return ninList((List<?>) tt[0]);
+            } else {
+                return ninList(Arrays.asList(tt));
+            }
+        }
+
+        private Conditions ninList(List<?> tt) {
+            return Conditions.this.with(column, c -> c.nin(tt));
         }
     }
 
@@ -209,10 +236,9 @@ public class Conditions implements Serializable, Cloneable {
     public Conditions orderAsc(String... ascColumns) {
         var index = new AtomicInteger(getMaxOrderIndex());
         for (String column : ascColumns) {
-            var c = new Condition<>();
+            var c = this.query.computeIfAbsent(column, __ -> new Condition<>());
             c.setColumn(column);
             c.setOrderAsc(index.incrementAndGet());
-            this.query.put(column, c);
         }
         return this;
     }
@@ -220,10 +246,9 @@ public class Conditions implements Serializable, Cloneable {
     public Conditions orderDesc(String... ascColumns) {
         var index = new AtomicInteger(getMaxOrderIndex());
         for (String column : ascColumns) {
-            var c = new Condition<>();
+            var c = this.query.computeIfAbsent(column, __ -> new Condition<>());
             c.setColumn(column);
             c.setOrderDesc(index.incrementAndGet());
-            this.query.put(column, c);
         }
         return this;
     }

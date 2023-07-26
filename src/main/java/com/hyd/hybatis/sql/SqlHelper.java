@@ -191,6 +191,10 @@ public class SqlHelper {
                 var value = condition.getIn();
                 sql.And(columnName + " in ?", value);
             }
+            if (condition.getNin() != null) {
+                var value = condition.getNin();
+                sql.And(columnName + " not in ?", value);
+            }
         }
     }
 }

@@ -18,6 +18,8 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
     public void testSelectList() {
         var departments = departmentMapper.selectList(
             new Conditions()
+                .withColumn("dept_name").nin("Finance", "Development")
+                .withColumn("dept_no").gt("d001")
                 .orderAsc("dept_name")
                 .limit(5)
         );
