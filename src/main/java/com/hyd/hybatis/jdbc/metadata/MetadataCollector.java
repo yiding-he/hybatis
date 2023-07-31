@@ -2,6 +2,7 @@ package com.hyd.hybatis.jdbc.metadata;
 
 import javax.sql.DataSource;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,12 @@ public class MetadataCollector {
             this.catalog = catalog;
             this.schema = schema;
         }
+    }
+
+    @FunctionalInterface
+    private interface MetadataProcessor<T> {
+
+        T process(DatabaseMetaData metaData, Context context) throws SQLException;
     }
 
     private final DataSource dataSource;
@@ -57,39 +64,75 @@ public class MetadataCollector {
         return dbMeta;
     }
 
+    private <T> T withMetadata(MetadataProcessor<T> processor) throws SQLException {
+        try (var connection = this.dataSource.getConnection()) {
+            var metaData = connection.getMetaData();
+            return processor.process(metaData, new Context(connection.getCatalog(), connection.getSchema()));
+        }
+    }
+
     ////////////////////////////////////////
+
+    public DbView collectView(String viewName) throws SQLException {
+        return withMetadata((metaData, context) -> collectView0(viewName, metaData, context));
+    }
 
     private List<DbView> collectViews(DatabaseMetaData metaData, Context context) throws SQLException {
         List<DbView> viewList = new ArrayList<>();
         try (var views = metaData.getTables(context.catalog, context.schema, null, new String[]{"VIEW"})) {
             while (views.next()) {
-                var view = new DbView();
-                view.setName(views.getString("TABLE_NAME"));
-                view.setCatalog(context.catalog);
-                view.setSchema(context.schema);
-                view.setColumns(collectColumns(metaData, context, view.getName()));
-                viewList.add(view);
+                viewList.add(collectView0(
+                    views.getString("TABLE_NAME"), metaData, context
+                ));
             }
         }
         return viewList;
     }
 
+    /**
+     * Reading database view information
+     */
+    private DbView collectView0(String viewName, DatabaseMetaData metaData, Context context) throws SQLException {
+        var view = new DbView();
+        view.setName(viewName);
+        view.setCatalog(context.catalog);
+        view.setSchema(context.schema);
+        view.setColumns(collectColumns(metaData, context, view.getName()));
+        return view;
+    }
+
     ////////////////////////////////////////
+
+    public DbTable collectTable(String tableName) throws SQLException {
+        return withMetadata((metaData, context) -> {
+            try (var tables = metaData.getTables(context.catalog, context.schema, tableName, null)) {
+                if (tables.next()) {
+                    return collectTable0(metaData, context, tables);
+                }
+            }
+            return null;
+        });
+    }
 
     private List<DbTable> collectTables(DatabaseMetaData metaData, Context context) throws SQLException {
         List<DbTable> tableList = new ArrayList<>();
         try (var tables = metaData.getTables(context.catalog, context.schema, null, new String[] {"TABLE"})) {
             while (tables.next()) {
-                var table = new DbTable();
-                table.setName(tables.getString("TABLE_NAME"));
-                table.setRemarks(tables.getString("REMARKS"));
-                table.setCatalog(context.catalog);
-                table.setSchema(context.schema);
-                table.setColumns(collectColumns(metaData, context, table.getName()));
+                var table = collectTable0(metaData, context, tables);
                 tableList.add(table);
             }
         }
         return tableList;
+    }
+
+    private DbTable collectTable0(DatabaseMetaData metaData, Context context, ResultSet tableRs) throws SQLException {
+        var table = new DbTable();
+        table.setName(tableRs.getString("TABLE_NAME"));
+        table.setRemarks(tableRs.getString("REMARKS"));
+        table.setCatalog(context.catalog);
+        table.setSchema(context.schema);
+        table.setColumns(collectColumns(metaData, context, table.getName()));
+        return table;
     }
 
     ////////////////////////////////////////
