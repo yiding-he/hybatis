@@ -33,12 +33,21 @@ public class MetadataCollector {
         T process(DatabaseMetaData metaData, Context context) throws SQLException;
     }
 
+    ////////////////////////////////////////
+
     private final DataSource dataSource;
+
+    //////////////////////////////////////// Constructor
 
     public MetadataCollector(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
+    ////////////////////////////////////////
+
+    /**
+     * Collect database mata data
+     */
     public DbMeta collect() throws SQLException {
         try (var connection = this.dataSource.getConnection()) {
             var metaData = connection.getMetaData();
@@ -46,12 +55,17 @@ public class MetadataCollector {
         }
     }
 
+    /**
+     * Collect database mata data
+     */
     public DbMeta collect(String catalog, String schema) throws SQLException {
         try (var connection = this.dataSource.getConnection()) {
             var metaData = connection.getMetaData();
             return collect(metaData, new Context(catalog, schema));
         }
     }
+
+    ////////////////////////////////////////
 
     private DbMeta collect(DatabaseMetaData metaData, Context context) throws SQLException {
         var dbMeta = new DbMeta();
@@ -64,6 +78,9 @@ public class MetadataCollector {
         return dbMeta;
     }
 
+    /**
+     * Utility function for connection processing
+     */
     private <T> T withMetadata(MetadataProcessor<T> processor) throws SQLException {
         try (var connection = this.dataSource.getConnection()) {
             var metaData = connection.getMetaData();
@@ -71,7 +88,19 @@ public class MetadataCollector {
         }
     }
 
-    ////////////////////////////////////////
+    //////////////////////////////////////// views
+
+    public List<String> getAllViewNames() throws SQLException {
+        return withMetadata((metaData, context) -> {
+            List<String> viewNames = new ArrayList<>();
+            try (var views = queryViewResultSet(metaData, context)) {
+                while (views.next()) {
+                    viewNames.add(views.getString("TABLE_NAME"));
+                }
+            }
+            return viewNames;
+        });
+    }
 
     public DbView collectView(String viewName) throws SQLException {
         return withMetadata((metaData, context) -> collectView0(viewName, metaData, context));
@@ -79,7 +108,7 @@ public class MetadataCollector {
 
     private List<DbView> collectViews(DatabaseMetaData metaData, Context context) throws SQLException {
         List<DbView> viewList = new ArrayList<>();
-        try (var views = metaData.getTables(context.catalog, context.schema, null, new String[]{"VIEW"})) {
+        try (var views = queryViewResultSet(metaData, context)) {
             while (views.next()) {
                 viewList.add(collectView0(
                     views.getString("TABLE_NAME"), metaData, context
@@ -87,6 +116,10 @@ public class MetadataCollector {
             }
         }
         return viewList;
+    }
+
+    private static ResultSet queryViewResultSet(DatabaseMetaData metaData, Context context) throws SQLException {
+        return metaData.getTables(context.catalog, context.schema, null, new String[]{"VIEW"});
     }
 
     /**
@@ -101,7 +134,19 @@ public class MetadataCollector {
         return view;
     }
 
-    ////////////////////////////////////////
+    //////////////////////////////////////// tables
+
+    public List<String> getAllTableNames() throws SQLException {
+        return withMetadata((metaData, context) -> {
+            List<String> tableNames = new ArrayList<>();
+            try (var views = queryTableResultSet(metaData, context)) {
+                while (views.next()) {
+                    tableNames.add(views.getString("TABLE_NAME"));
+                }
+            }
+            return tableNames;
+        });
+    }
 
     public DbTable collectTable(String tableName) throws SQLException {
         return withMetadata((metaData, context) -> {
@@ -116,13 +161,17 @@ public class MetadataCollector {
 
     private List<DbTable> collectTables(DatabaseMetaData metaData, Context context) throws SQLException {
         List<DbTable> tableList = new ArrayList<>();
-        try (var tables = metaData.getTables(context.catalog, context.schema, null, new String[] {"TABLE"})) {
+        try (var tables = queryTableResultSet(metaData, context)) {
             while (tables.next()) {
                 var table = collectTable0(metaData, context, tables);
                 tableList.add(table);
             }
         }
         return tableList;
+    }
+
+    private static ResultSet queryTableResultSet(DatabaseMetaData metaData, Context context) throws SQLException {
+        return metaData.getTables(context.catalog, context.schema, null, new String[]{"TABLE"});
     }
 
     private DbTable collectTable0(DatabaseMetaData metaData, Context context, ResultSet tableRs) throws SQLException {
@@ -135,7 +184,7 @@ public class MetadataCollector {
         return table;
     }
 
-    ////////////////////////////////////////
+    //////////////////////////////////////// columns of views and tables
 
     private List<DbColumn> collectColumns(
         DatabaseMetaData metaData, Context context, String tableName
