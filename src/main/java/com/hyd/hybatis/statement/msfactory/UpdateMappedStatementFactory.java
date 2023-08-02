@@ -26,6 +26,7 @@ public class UpdateMappedStatementFactory extends AbstractMappedStatementFactory
         SqlSourceForUpdate sqlSource = new SqlSourceForUpdate(
             sqlId, getCore(), configuration, getTableName(mapperClass, method).getOrThrow(), method
         );
-        return MappedStatementHelper.buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.UPDATE);
+        return MappedStatementHelper.buildMappedStatement(
+                configuration, sqlId, mapperClass, sqlSource, SqlCommandType.UPDATE);
     }
 }

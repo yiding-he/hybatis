@@ -38,7 +38,7 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
             sqlId, getCore(), mybatisConf, getTableName(mapperClass, method).getOrThrow(), selectMode, method);
 
         return MappedStatementHelper.buildMappedStatement(
-            mybatisConf, sqlId, returnEntityType, sqlSource, SqlCommandType.SELECT
+            mybatisConf, sqlId, mapperClass, returnEntityType, sqlSource, SqlCommandType.SELECT
         );
     }
 
