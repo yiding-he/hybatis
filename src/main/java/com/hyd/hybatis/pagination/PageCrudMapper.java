@@ -5,6 +5,8 @@ import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.mapper.CrudMapper;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.function.Supplier;
 
 public interface PageCrudMapper<T> extends CrudMapper<T> {
 
@@ -14,5 +16,9 @@ public interface PageCrudMapper<T> extends CrudMapper<T> {
 
     default PageHelperPage<T> selectPage(Conditions conditions, HttpServletRequest request) {
         return new PageHelperPage<>(request, () -> (Page<T>) selectList(conditions));
+    }
+
+    default PageHelperPage<T> selectPage(Supplier<List<T>> listSupplier, HttpServletRequest request) {
+        return PageHelperPage.fromList(request, listSupplier);
     }
 }

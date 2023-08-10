@@ -1,5 +1,8 @@
-package com.hyd.hybatis;
+package com.hyd.hybatis.tests.hybatis;
 
+import com.hyd.hybatis.Hybatis;
+import com.hyd.hybatis.HybatisException;
+import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
@@ -9,9 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HybatisTransactionTest extends HybatisSpringBootTestApplicationTest {
 
-    @Test
-    public void testRunTransaction() throws Exception {
-
+    public static void transactionTestFunction(Hybatis hybatis) throws SQLException {
         Supplier<Integer> count = () -> {
             try {
                 return Integer.parseInt(String.valueOf(
@@ -44,5 +45,10 @@ public class HybatisTransactionTest extends HybatisSpringBootTestApplicationTest
             System.err.println(e);
         }
         assertEquals(3, count.get());
+    }
+
+    @Test
+    public void testRunTransaction() throws Exception {
+        transactionTestFunction(hybatis);
     }
 }

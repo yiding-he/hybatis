@@ -4,16 +4,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 对 key 忽略大小写的 HashMap
+ * 对 key 忽略大小写的 HashMap，注意存进去的 key 都会转为小写，也就是说 keys() 方法返回的都是小写
  */
 public class CaseInsensitiveHashMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = 1L;
 
+    public CaseInsensitiveHashMap(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    public CaseInsensitiveHashMap(int initialCapacity) {
+        super(initialCapacity);
+    }
+
+    public CaseInsensitiveHashMap() {
+    }
+
+    public CaseInsensitiveHashMap(Map<? extends String, ? extends V> m) {
+        putAll(m);
+    }
+
     @Override
     public void putAll(Map<? extends String, ? extends V> m) {
         if (m instanceof CaseInsensitiveHashMap) {
             super.putAll(m);
+        } else if (m == null) {
+            return;
         }
 
         Map<String, V> m2 = new HashMap<>();

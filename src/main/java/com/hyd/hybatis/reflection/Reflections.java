@@ -8,6 +8,7 @@ import com.hyd.hybatis.utils.Bean;
 import com.hyd.hybatis.utils.Str;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,8 +71,13 @@ public class Reflections {
 
     public static Class<?> getGenericTypeArg(Type type) {
         if (type instanceof Class && ((Class<?>) type).getGenericInterfaces().length > 0) {
-            var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
-            return (Class<?>) genericInterface.getActualTypeArguments()[0];
+            if (((Class<?>) type).getGenericInterfaces()[0] instanceof ParameterizedType) {
+                var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
+                var arg0 = genericInterface.getActualTypeArguments()[0];
+                return arg0 instanceof Class? (Class<?>) arg0: null;
+            } else {
+                return null;
+            }
         } else if (type instanceof ParameterizedType) {
             var parameterizedType = (ParameterizedType) type;
             Type args0 = parameterizedType.getActualTypeArguments()[0];
@@ -178,5 +184,30 @@ public class Reflections {
 
         Stream.of(interfaceClass.getInterfaces())
             .forEach(i -> scanInterfaceAndAddMethod(i, nonDefaultMethods));
+    }
+
+    ////////////////////////////////////////
+
+    /**
+     * Recursively enumerate all interfaces implemented by {@code type}.
+     */
+    public static List<Class<?>> allInterfaces(Class<?> type) {
+        var list = new ArrayList<Class<?>>();
+        allInterfaces(type, list);
+        return list;
+    }
+
+    private static void allInterfaces(Class<?> type, ArrayList<Class<?>> collector) {
+        if (type.isInterface()) {
+            collector.add(type);
+        }
+        Collections.addAll(collector, type.getInterfaces());
+    }
+
+    public static <T extends Annotation> T getAnnotationFromInterface(Class<?> type, Class<T> annotationType) {
+        return allInterfaces(type).stream()
+            .filter(i -> i.isAnnotationPresent(annotationType))
+            .map(i -> i.getAnnotation(annotationType))
+            .findFirst().orElse(null);
     }
 }

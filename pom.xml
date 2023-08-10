@@ -6,7 +6,7 @@
 
   <groupId>com.github.yiding-he</groupId>
   <artifactId>hybatis</artifactId>
-  <version>0.5</version>
+  <version>0.5-SNAPSHOT</version>
 
   <name>hybatis</name>
   <description>A MyBatis extension for SpringBoot projects</description>
@@ -72,7 +72,7 @@
       <scope>compile</scope>
     </dependency>
 
-    <!-- ////////////////////////// MyBatis(Optional) ////////////////////////// -->
+    <!-- ////////////////////////// MyBatis ////////////////////////// -->
     <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
     <dependency>
       <groupId>org.mybatis</groupId>
@@ -85,8 +85,26 @@
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis</artifactId>
       <version>3.5.11</version>
+    </dependency>
+
+    <!-- ////////////////////////// Cache (Optional) ////////////////////////// -->
+    <!-- https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>3.1.7</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- ////////////////////////// Jakarta Validation (Optional) ////////////////////////// -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ////////////////////////// MyBatis Page Helper (Optional) ////////////////////////// -->
     <!-- https://mvnrepository.com/artifact/com.github.pagehelper/pagehelper-spring-boot-starter -->
     <dependency>
       <groupId>com.github.pagehelper</groupId>
@@ -95,7 +113,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- ////////////////////////// Spring MVC & SpringBoot ////////////////////////// -->
+    <!-- ////////////////////////// Spring MVC & SpringBoot (Optional) ////////////////////////// -->
     <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -173,6 +191,30 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Need newer version of maven-deploy-plugin to use 'alt*DeploymentRepository' properties -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>3.1.1</version>
+      </plugin>
+    </plugins>
+  </build>
 
   <profiles>
     <profile>

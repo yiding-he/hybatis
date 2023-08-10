@@ -11,7 +11,7 @@ GET http://localhost:8080/emp/select-by-conditions?firstName[eq]=Bikash&limit=4&
 Accept: application/json
 
 ### 动态条件分页查询
-GET http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5
+GET http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageIndex=3&pageSize=5&useless-param=xxx
 Accept: application/json
 
 ### 动态条件分页查询2

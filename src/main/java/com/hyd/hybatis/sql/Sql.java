@@ -1,11 +1,16 @@
 package com.hyd.hybatis.sql;
 
 
+import com.hyd.hybatis.utils.Str;
+
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Collections.emptyList;
 
 /**
  * Dynamic SQL generator
@@ -19,6 +24,8 @@ import java.util.stream.Collectors;
     "unused", "BooleanMethodIsAlwaysInverted", "unchecked", "UnusedReturnValue"
 })
 public abstract class Sql<T extends Sql<?>> {
+
+    public static final Object NULL = new Object();
 
     private Sql() {
 
@@ -308,13 +315,13 @@ public abstract class Sql<T extends Sql<?>> {
 
             // marks = "(?,?,?,...,?)"
             String marks = "(" +
-                objects.stream()
-                    .map(o -> {
-                        this.params.add(o);
-                        return "?";
-                    })
-                    .collect(Collectors.joining(",")) +
-                ")";
+                           objects.stream()
+                               .map(o -> {
+                                   this.params.add(o);
+                                   return "?";
+                               })
+                               .collect(Collectors.joining(",")) +
+                           ")";
 
             // "A in ?" -> "A in (?,?,?)"
             where += condition.statement.replace("?", marks);
@@ -323,12 +330,12 @@ public abstract class Sql<T extends Sql<?>> {
 
             // marks = "(?,?,?,...,?)"
             String marks = "(" +
-                condition.args.stream()
-                    .map(o -> {
-                        this.params.add(o);
-                        return "?";
-                    }).collect(Collectors.joining(",")) +
-                ")";
+                           condition.args.stream()
+                               .map(o -> {
+                                   this.params.add(o);
+                                   return "?";
+                               }).collect(Collectors.joining(",")) +
+                           ")";
 
             // "A in ?" -> "A in (?,?,?)"
             where += condition.statement.replace("?", marks);
@@ -406,7 +413,7 @@ public abstract class Sql<T extends Sql<?>> {
         public Pair(Joint joint, String statement, Object... args) {
             this.joint = joint;
             this.statement = statement.trim();
-            this.args = args == null ? Collections.emptyList() : Arrays.asList(args);
+            this.args = args == null ? emptyList() : Arrays.asList(args);
         }
 
         public Pair(Joint joint, String statement, List<Object> args) {
@@ -446,7 +453,7 @@ public abstract class Sql<T extends Sql<?>> {
 
         protected static List<Object> joinPairValue(List<Pair> pairs) {
             if (pairs.isEmpty()) {
-                return Collections.emptyList();
+                return emptyList();
             }
 
             List<Object> result = new ArrayList<>();
@@ -467,7 +474,7 @@ public abstract class Sql<T extends Sql<?>> {
         public final List<Object> params;
 
         public Join(JoinType type, String statement) {
-            this(type, statement, Collections.emptyList());
+            this(type, statement, emptyList());
         }
 
         public Join(JoinType type, String statement, Object... params) {
@@ -482,6 +489,10 @@ public abstract class Sql<T extends Sql<?>> {
     public static class Insert extends Sql<Insert> {
 
         private final List<Pair> pairs = new ArrayList<>();
+
+        private boolean onDuplicateKeyUpdate = false;
+
+        private List<String> duplicateKeyUpdateColumns = emptyList();
 
         public Insert(String table) {
             this.table = table;
@@ -505,18 +516,29 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
-        public Insert OnDuplicateKeyUpdate() {
-            this.suffix = " on duplicate key update";
+        public Insert OnDuplicateKeyUpdate(String... updateColumns) {
+            this.onDuplicateKeyUpdate = true;
+            this.duplicateKeyUpdateColumns = List.of(updateColumns);
+            this.suffix = Str.isBlank(this.suffix) ? "" : this.suffix;
+            this.suffix += Stream.of(updateColumns).map(c -> c + "=?").collect(Collectors.joining(","));
             return this;
         }
 
         @Override
         public SqlCommand toCommand() {
-            this.statement = "insert into " + table +
+            this.statement =
+                "insert into " + table +
                 "(" + Pair.joinPairName(pairs) + ") values " +
                 "(" + Pair.joinPairHolder(pairs) + ")" +
+                (onDuplicateKeyUpdate ? " on duplicate key update " : "" ) +
                 (suffix == null ? "" : suffix);
-            this.params = Pair.joinPairValue(pairs);
+
+            params = Pair.joinPairValue(pairs);
+            if (onDuplicateKeyUpdate) {
+                var pairMap = new HashMap<String, Object>();
+                pairs.forEach(p -> pairMap.put(p.statement, p.firstArg()));
+                duplicateKeyUpdateColumns.forEach(c -> params.add(pairMap.get(c)));
+            }
 
             return new SqlCommand(statement, params);
         }
@@ -544,7 +566,7 @@ public abstract class Sql<T extends Sql<?>> {
         public SqlCommand toCommand() {
             this.params.clear();
             this.statement = "update " + table +
-                " set " + generateSetBlock() + " " + generateWhereBlock();
+                             " set " + generateSetBlock() + " " + generateWhereBlock();
 
             return new SqlCommand(this.statement, this.params);
         }
@@ -556,6 +578,8 @@ public abstract class Sql<T extends Sql<?>> {
                 Pair pair = updates.get(i);
                 if (!pair.hasArg()) {
                     statement += pair.statement;
+                } else if (pair.args.get(0) == NULL) {
+                    statement += pair.statement + "=null";
                 } else if (pair.statement.contains("?")) {
                     this.params.addAll(pair.args);
                     statement += pair.statement;

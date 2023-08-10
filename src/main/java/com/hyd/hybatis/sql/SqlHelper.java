@@ -7,7 +7,10 @@ import com.hyd.hybatis.reflection.Reflections;
 import lombok.Data;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class SqlHelper {
@@ -22,20 +25,46 @@ public class SqlHelper {
         private final HybatisConfiguration config;
     }
 
+    ////////////////////////////////////////
+
+    public static Sql.Delete buildDelete(Context context) {
+        var delete = Sql.Delete(context.tableName);
+        injectConditionObject(context, delete);
+        return delete;
+    }
+
     public static Sql.Delete buildDeleteFromConditions(Context context) {
         Conditions conditions = (Conditions) context.paramObject;
-        Sql.Delete select = new Sql.Delete(context.tableName);
+        return buildDeleteFromConditions(conditions, context.tableName);
+    }
+
+    public static Sql.Delete buildDeleteFromConditions(Conditions conditions, String tableName) {
+        Sql.Delete delete = new Sql.Delete(tableName);
         for (Condition<?> condition : conditions.getConditions()) {
-            injectCondition(select, condition);
+            injectCondition(delete, condition);
         }
+        return delete;
+    }
+
+    ////////////////////////////////////////
+
+    public static Sql.Select buildSelect(Context context) {
+        var select = Sql.Select("*").From(context.tableName);
+        HashMap<Field, Condition<?>> conditionMappings = injectConditionObject(context, select);
+        injectOrderBy(select, conditionMappings.values());
         return select;
     }
 
     public static Sql.Select buildSelectFromConditions(Context context) {
-        Conditions conditions = (Conditions) context.paramObject;
+        var conditions = (Conditions) context.paramObject;
+        var tableName = context.tableName;
+        return buildSelectFromConditions(conditions, tableName);
+    }
+
+    public static Sql.Select buildSelectFromConditions(Conditions conditions, String tableName) {
         var projection = conditions.getProjection();
         var columns = projection.isEmpty() ? "*" : String.join(",", projection);
-        Sql.Select select = new Sql.Select(columns).From(context.tableName);
+        Sql.Select select = new Sql.Select(columns).From(tableName);
         for (Condition<?> condition : conditions.getConditions()) {
             injectCondition(select, condition);
         }
@@ -47,18 +76,7 @@ public class SqlHelper {
         return select;
     }
 
-    public static Sql.Select buildSelect(Context context) {
-        var select = Sql.Select("*").From(context.tableName);
-        HashMap<Field, Condition<?>> conditionMappings = injectConditionObject(context, select);
-        injectOrderBy(select, conditionMappings.values());
-        return select;
-    }
-
-    public static Sql.Delete buildDelete(Context context) {
-        var delete = Sql.Delete(context.tableName);
-        injectConditionObject(context, delete);
-        return delete;
-    }
+    ////////////////////////////////////////
 
     private static HashMap<Field, Condition<?>> injectConditionObject(Context context, Sql<?> sql) {
         var queryObject = context.paramObject;
@@ -89,15 +107,12 @@ public class SqlHelper {
     /**
      * 分析 queryObject，将查询条件放入 update 中，返回条件字段列表
      */
-    public static List<String> injectUpdateConditions(Sql.Update update, Object queryObject) {
+    public static void injectUpdateConditions(Sql.Update update, Object queryObject) {
 
-        var result = new ArrayList<String>();
         if (queryObject instanceof Conditions) {
-            ((Conditions) queryObject).getConditions().forEach(c -> {
-                result.add(c.getColumn());
-                injectCondition(update, c);
-            });
-            return result;
+            ((Conditions) queryObject).getConditions().forEach(
+                c -> injectCondition(update, c)
+            );
         }
 
         var conditionFields = Reflections
@@ -108,12 +123,9 @@ public class SqlHelper {
             if (c == null) {
                 continue;
             }
-
-            result.add(c.getColumn());
             injectCondition(update, c);
         }
 
-        return result;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -178,6 +190,10 @@ public class SqlHelper {
             if (condition.getIn() != null) {
                 var value = condition.getIn();
                 sql.And(columnName + " in ?", value);
+            }
+            if (condition.getNin() != null) {
+                var value = condition.getNin();
+                sql.And(columnName + " not in ?", value);
             }
         }
     }

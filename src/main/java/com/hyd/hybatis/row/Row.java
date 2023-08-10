@@ -18,10 +18,27 @@ import java.util.Map;
 @Slf4j
 public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, Object> {
 
+    private static final long serialVersionUID = -2500693152518809831L;
+
     /**
      * 缺省日期格式
      */
     public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    public Row(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    public Row(int initialCapacity) {
+        super(initialCapacity);
+    }
+
+    public Row() {
+    }
+
+    public Row(Map<? extends String, ?> m) {
+        super(m);
+    }
 
     public Double getDoubleObject(String key) {
         Object value = get(key);
@@ -191,6 +208,13 @@ public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, O
         } else {
             return value.toString();
         }
+    }
+
+    //////////////////////////////////////////
+
+    public Row putValue(String key, Object value) {
+        put(key, value);
+        return this;
     }
 
     //////////////////////////////////////////
