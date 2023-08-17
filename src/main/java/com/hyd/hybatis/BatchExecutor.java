@@ -64,7 +64,7 @@ public class BatchExecutor {
         flush();
     }
 
-    private void flush() throws SQLException {
+    private synchronized void flush() throws SQLException {
         this.hybatis.executeBatch(this.statement, this.parameterBuffer);
         this.counter += this.parameterBuffer.size();
         this.parameterBuffer.clear();
