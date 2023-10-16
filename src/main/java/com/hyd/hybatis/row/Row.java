@@ -7,6 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.Map;
 
@@ -188,6 +193,8 @@ public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, O
             return new Date(((Double) value).longValue());
         } else if (value instanceof Date) {
             return (Date) value;
+        } else if (value instanceof Temporal) {
+            return parseDate((Temporal) value);
         } else {
             try {
                 return parseDate(value.toString(), pattern);
@@ -195,6 +202,20 @@ public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, O
                 throw new HybatisException(e);
             }
         }
+    }
+
+    private Date parseDate(Temporal value) {
+        if (value instanceof Instant) {
+            return Date.from((Instant) value);
+        }
+        if (value instanceof ZonedDateTime) {
+            return Date.from(((ZonedDateTime) value).toInstant());
+        }
+        if (value instanceof LocalDateTime) {
+            return Date.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant());
+        }
+        Instant instant = Instant.from(value);
+        return Date.from(instant);
     }
 
     private Date parseDate(String dateStr, String pattern) throws ParseException {
