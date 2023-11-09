@@ -492,6 +492,8 @@ public abstract class Sql<T extends Sql<?>> {
 
         private boolean onDuplicateKeyUpdate = false;
 
+        private boolean onDuplicateKeyIgnore = false;
+
         private List<String> duplicateKeyUpdateColumns = emptyList();
 
         public Insert(String table) {
@@ -524,13 +526,20 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
+        public Insert OnDuplicateKeyIgnore() {
+            this.onDuplicateKeyIgnore = true;
+            return this;
+        }
+
         @Override
         public SqlCommand toCommand() {
             this.statement =
-                "insert into " + table +
+                "insert " +
+                (onDuplicateKeyIgnore ? "ignore " : "") +
+                "into " + table +
                 "(" + Pair.joinPairName(pairs) + ") values " +
                 "(" + Pair.joinPairHolder(pairs) + ")" +
-                (onDuplicateKeyUpdate ? " on duplicate key update " : "" ) +
+                (onDuplicateKeyUpdate ? " on duplicate key update " : "") +
                 (suffix == null ? "" : suffix);
 
             params = Pair.joinPairValue(pairs);
