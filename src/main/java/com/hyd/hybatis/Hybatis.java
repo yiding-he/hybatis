@@ -20,12 +20,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static org.apache.ibatis.session.TransactionIsolationLevel.READ_COMMITTED;
 
@@ -180,9 +177,8 @@ public class Hybatis {
         return withConnection(conn -> {
             var ps = prepareStatement(conn, command);
             var rs = ps.executeQuery();
-            var iterator = new ResultSetIterator(rs);
-            return StreamSupport
-                .stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
+            return new ResultSetIterator(rs)
+                .toRowStream()
                 .onClose(() -> closeWhenNecessary(conn, true));
         }, false);
     }

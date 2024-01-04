@@ -45,7 +45,7 @@ public abstract class Sql<T extends Sql<?>> {
         }
 
         String str = obj.toString();
-        return str.length() == 0 || str.trim().length() == 0;
+        return Str.isBlank(str);
     }
 
     public abstract SqlCommand toCommand();

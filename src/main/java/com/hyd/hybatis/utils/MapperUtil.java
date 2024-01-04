@@ -6,6 +6,9 @@ import com.hyd.hybatis.reflection.Reflections;
 
 public class MapperUtil {
 
+    /**
+     * Try to get primary key information from the HbMapper annotation.
+     */
     public static String[] primaryKeyNames(Class<?> type) {
         var a = Reflections.getAnnotationFromInterface(type, HbMapper.class);
         if (a != null && a.primaryKeyNames().length > 0) {
@@ -14,7 +17,10 @@ public class MapperUtil {
         return new String[0];
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Try to get table name information from the HbMapper annotation of mapperClass,
+     * or from the HbEntity annotation of its generic parameter entity class.
+     */
     public static String getCrudMapperTableName(Class<?> mapperClass) {
         var allInterfaces = Reflections.allInterfaces(mapperClass);
         for (Class<?> i : allInterfaces) {

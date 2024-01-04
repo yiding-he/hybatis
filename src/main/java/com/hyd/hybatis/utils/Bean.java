@@ -22,9 +22,9 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public class Bean {
 
-    static Map<Class, Class> primitiveToWrapper = new HashMap<>();
+    static Map<Class<?>, Class<?>> primitiveToWrapper = new HashMap<>();
 
-    static Map<Class, Class> wrapperToPrimitive = new HashMap<>();
+    static Map<Class<?>, Class<?>> wrapperToPrimitive = new HashMap<>();
 
     static {
         primitiveToWrapper.put(Boolean.TYPE, Boolean.class);
@@ -45,12 +45,28 @@ public class Bean {
         wrapperToPrimitive.put(Double.class, Double.TYPE);
     }
 
-    public static Class getPrimitive(Class wrapperClass) {
+    public static Class<?> primitiveTypeOf(Class<?> wrapperClass) {
         return wrapperToPrimitive.get(wrapperClass);
     }
 
-    public static Class getWrapper(Class primitiveClass) {
+    public static Class<?> wrapperTypeOf(Class<?> primitiveClass) {
         return primitiveToWrapper.get(primitiveClass);
+    }
+
+    /**
+     * Determine if srcType is equal to targetType or a subclass of targetType.
+     */
+    public static boolean matchType(Class<?> srcType, Class<?> targetType) {
+        if (targetType.isAssignableFrom(srcType) || srcType.equals(targetType)) {
+            return true;
+        }
+        if (srcType.isPrimitive() && !targetType.isPrimitive()) {
+            return matchType(wrapperTypeOf(srcType), targetType);
+        } else if (!srcType.isPrimitive() && targetType.isPrimitive()) {
+            return matchType(srcType, wrapperTypeOf(targetType));
+        } else {
+            return false;
+        }
     }
 
     private Bean() {
@@ -70,7 +86,7 @@ public class Bean {
         }
 
         try {
-            PropertyDescriptor propertyDescriptor = getPropertyDescriptor(obj.getClass(), fieldName);
+            PropertyDescriptor propertyDescriptor = findProperty(obj.getClass(), fieldName);
             if (propertyDescriptor == null) {
                 throw new HybatisException(
                     "Field not found for " + obj.getClass().getCanonicalName() + "#" + fieldName);
@@ -103,14 +119,13 @@ public class Bean {
      *
      * @return 方法对象
      */
-    private static Method getPropertyMethod(Class clazz, String fieldName, boolean getter) {
-        PropertyDescriptor descriptor = getPropertyDescriptor(clazz, fieldName);
+    private static Method getPropertyMethod(Class<?> clazz, String fieldName, boolean getter) {
+        PropertyDescriptor descriptor = findProperty(clazz, fieldName);
         return descriptor == null ? null :
             getter ? descriptor.getReadMethod() : descriptor.getWriteMethod();
     }
 
-    private static PropertyDescriptor getPropertyDescriptor(Class clazz, String fieldName) {
-
+    private static PropertyDescriptor findProperty(Class<?> clazz, String fieldName) {
         try {
             BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
             for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
@@ -134,61 +149,60 @@ public class Bean {
     }
 
     /**
-     * 将一个值转化为指定的属性类型，以便于赋到对象属性。
-     * 当 value 的值超过属性类型允许的最大值时，将抛出异常。
-     * 本方法主要处理数字类型的查询结果，对于字符类型和日期类型则不作处理，直接赋值。
+     * <p>Converts a value to the specified target type in order to assign it to an object property.</p>
+     * <p>When the value exceeds the maximum allowed value of the target type, an exception will be thrown.</p>
+     * <p>This method is mainly used to handle numeric query results,
+     * and does not perform any conversion for character types and date types.</p>
      *
-     * @param value 值
-     * @param clazz 属性类型
+     * @param value      the value to be converted
+     * @param targetType the target property type
      *
-     * @return 转化后的属性值
+     * @return the converted property value
      *
-     * @throws NoSuchMethodException  如果 field 指名的类不包含一个以字符串为参数的构造函数
-     * @throws IllegalAccessException 如果执行构造函数失败
-     * @throws InstantiationException 如果执行构造函数失败
+     * @throws NoSuchMethodException  if the class of the field does not have a string argument constructor
+     * @throws IllegalAccessException if the constructor execution fails
+     * @throws InstantiationException if the constructor execution fails
      */
-    private static Object convertValue0(Object value, Class<?> clazz)
+    private static Object convertValue0(Object value, Class<?> targetType)
         throws NoSuchMethodException, IllegalAccessException, InstantiationException {
         if (value == null) {
             return null;
         }
 
-        // 如果类型刚好相符就直接返回 value
-        if (value.getClass() == clazz ||
-            (clazz.isPrimitive() && getWrapper(clazz) == value.getClass())) {
+        if (matchType(value.getClass(), targetType)) {
             return value;
         }
 
-        if (clazz == String.class) {
+        if (targetType == String.class) {
             return String.valueOf(value);
 
-        } else if (clazz == Integer.class || clazz == Long.class || clazz == Double.class ||
-            clazz == BigDecimal.class || clazz == BigInteger.class) {
+        } else if (targetType == Integer.class || targetType == Long.class || targetType == Double.class ||
+                   targetType == BigDecimal.class || targetType == BigInteger.class) {
             try {
                 String str_value = new BigDecimal(String.valueOf(value)).toPlainString();
 
-                // 避免因为带有小数点而无法转换成 Integer/Long。
+                // 避免 str_value 因为带有小数点而无法转换成 Integer/Long。
                 // 但如果值真的带小数，那么为了避免精度丢失，只有抛出异常了。
                 if (str_value.endsWith(".0")) {
                     str_value = str_value.substring(0, str_value.length() - 2);
                 }
 
-                return clazz.getDeclaredConstructor(String.class).newInstance(str_value);
+                return targetType.getDeclaredConstructor(String.class).newInstance(str_value);
 
             } catch (InvocationTargetException e) {
                 if (e.getTargetException() instanceof NumberFormatException) {
-                    String message = "Value " + value + " (" + value.getClass() + ") cannot convert to " + clazz;
+                    String message = "Value " + value + " (" + value.getClass() + ") cannot convert to " + targetType;
                     throw new HybatisException(message, e);
                 }
             }
-        } else if (clazz == Boolean.TYPE || clazz == Boolean.class) {
+        } else if (targetType == Boolean.TYPE || targetType == Boolean.class) {
             return Boolean.valueOf(String.valueOf(value));
 
-        } else if (clazz.isPrimitive()) { // 处理基本型别
+        } else if (targetType.isPrimitive()) { // 处理基本型别
 
             BigDecimal bdValue = new BigDecimal(String.valueOf(value));
 
-            if (clazz == Integer.TYPE) {
+            if (targetType == Integer.TYPE) {
 
                 if (bdValue.compareTo(new BigDecimal(Integer.MAX_VALUE)) > 0
                     || bdValue.compareTo(new BigDecimal(Integer.MIN_VALUE)) < 0) {
@@ -196,7 +210,7 @@ public class Bean {
                 }
                 return bdValue.intValue();
 
-            } else if (clazz == Long.TYPE) {
+            } else if (targetType == Long.TYPE) {
 
                 if (bdValue.compareTo(new BigDecimal(Long.MAX_VALUE)) > 0
                     || bdValue.compareTo(new BigDecimal(Long.MIN_VALUE)) < 0) {
@@ -204,7 +218,7 @@ public class Bean {
                 }
                 return bdValue.longValue();
 
-            } else if (clazz == Double.TYPE) {
+            } else if (targetType == Double.TYPE) {
 
                 if (bdValue.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) > 0
                     || bdValue.compareTo(BigDecimal.valueOf(-Double.MAX_VALUE)) < 0) {
@@ -212,7 +226,7 @@ public class Bean {
                 }
                 return bdValue.doubleValue();
 
-            } else if (clazz == Byte.TYPE) {
+            } else if (targetType == Byte.TYPE) {
 
                 if (bdValue.compareTo(new BigDecimal(Byte.MAX_VALUE)) > 0
                     || bdValue.compareTo(new BigDecimal(Byte.MIN_VALUE)) < 0) {
@@ -220,7 +234,7 @@ public class Bean {
                 }
                 return bdValue.byteValue();
 
-            } else if (clazz == Short.TYPE) {
+            } else if (targetType == Short.TYPE) {
 
                 if (bdValue.compareTo(new BigDecimal(Short.MAX_VALUE)) > 0
                     || bdValue.compareTo(new BigDecimal(Short.MIN_VALUE)) < 0) {
@@ -228,7 +242,7 @@ public class Bean {
                 }
                 return bdValue.shortValue();
 
-            } else if (clazz == Float.TYPE) {
+            } else if (targetType == Float.TYPE) {
 
                 if (bdValue.compareTo(BigDecimal.valueOf(Float.MAX_VALUE)) > 0
                     || bdValue.compareTo(BigDecimal.valueOf(-Float.MAX_VALUE)) < 0) {
@@ -261,7 +275,7 @@ public class Bean {
             } else {
                 throw new HybatisException(
                     "Error executing method " + obj.getClass().getCanonicalName() + "#" +
-                        getter.getName() + " " + modifiers(getter.getModifiers()), e);
+                    getter.getName() + " " + modifiers(getter.getModifiers()), e);
             }
         }
     }

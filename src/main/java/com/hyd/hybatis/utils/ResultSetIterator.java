@@ -6,6 +6,10 @@ import com.hyd.hybatis.row.Row;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class ResultSetIterator implements Iterator<Row> {
 
@@ -31,5 +35,9 @@ public class ResultSetIterator implements Iterator<Row> {
         } catch (SQLException e) {
             throw new HybatisException("Error parsing row data from from ResultSet", e);
         }
+    }
+
+    public Stream<Row> toRowStream() {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.ORDERED), false);
     }
 }
