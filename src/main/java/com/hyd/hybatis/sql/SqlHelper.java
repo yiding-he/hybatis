@@ -40,7 +40,7 @@ public class SqlHelper {
 
     public static Sql.Delete buildDeleteFromConditions(Conditions conditions, String tableName) {
         Sql.Delete delete = new Sql.Delete(tableName);
-        for (Condition<?> condition : conditions.getConditions()) {
+        for (Condition<?> condition : conditions.conditionsList()) {
             injectCondition(delete, condition);
         }
         return delete;
@@ -65,10 +65,10 @@ public class SqlHelper {
         var projection = conditions.getProjection();
         var columns = projection.isEmpty() ? "*" : String.join(",", projection);
         Sql.Select select = new Sql.Select(columns).From(tableName);
-        for (Condition<?> condition : conditions.getConditions()) {
+        for (Condition<?> condition : conditions.conditionsList()) {
             injectCondition(select, condition);
         }
-        injectOrderBy(select, conditions.getConditions());
+        injectOrderBy(select, conditions.conditionsList());
 
         if (conditions.getLimit() >= 0) {
             select.Limit(conditions.getLimit());
@@ -110,7 +110,7 @@ public class SqlHelper {
     public static void injectUpdateConditions(Sql.Update update, Object queryObject) {
 
         if (queryObject instanceof Conditions) {
-            ((Conditions) queryObject).getConditions().forEach(
+            ((Conditions) queryObject).conditionsList().forEach(
                 c -> injectCondition(update, c)
             );
         }

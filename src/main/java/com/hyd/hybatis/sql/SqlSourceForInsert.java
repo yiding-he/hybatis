@@ -1,6 +1,7 @@
 package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.HybatisCore;
+import com.hyd.hybatis.annotations.HbInsert;
 import com.hyd.hybatis.reflection.Reflections;
 import com.hyd.hybatis.utils.Str;
 import lombok.extern.slf4j.Slf4j;
@@ -23,13 +24,22 @@ public class SqlSourceForInsert extends HybatisSqlSource {
     @SuppressWarnings("unchecked")
     @Override
     protected BoundSql build(Object insert) {
-
         var insertSql = Sql.Insert(getTableName());
 
         if (insert instanceof Map) {
             buildInsertByMapObject(insertSql, (Map<String, Object>) insert);
         } else {
             buildInsertByBeanObject(insertSql, insert);
+        }
+
+        var annotation = mapperMethod.getAnnotation(HbInsert.class);
+        if (annotation != null) {
+            if (annotation.onDuplicateKeyIgnore()) {
+                insertSql.OnDuplicateKeyIgnore();
+            }
+            if (annotation.onDuplicateKeyUpdate().length > 0) {
+                insertSql.OnDuplicateKeyUpdate(annotation.onDuplicateKeyUpdate());
+            }
         }
 
         log.debug("[{}]: {}", getSqlId(), insertSql.toCommand());

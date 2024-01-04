@@ -52,13 +52,13 @@ public class Reflections {
     }
 
     /**
-     * 判断指定的类是否属于查询条件。只要类中存在至少一个 Condition 类型的成员，或该类自身就是 Conditions
-     * 就认为它是查询条件。
+     * 判断 pojoType 是否属于查询条件。只要类中存在至少一个 Condition 类型的成员，
+     * 或该类自身就是 Conditions 或其子类，就认为它是查询条件。
      */
     public static boolean isPojoClassQueryable(Class<?> pojoType) {
         return
             Conditions.class.isAssignableFrom(pojoType) ||
-                getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).size() > 0;
+            !getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).isEmpty();
     }
 
     /**

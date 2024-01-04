@@ -2,12 +2,14 @@ package com.hyd.hybatis;
 
 import com.hyd.hybatis.sql.Sql;
 import com.hyd.hybatis.sql.SqlHelper;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+@Getter
 public class Conditions implements Serializable, Cloneable {
 
     public static Conditions eq(String columnName, Object value) {
@@ -17,7 +19,6 @@ public class Conditions implements Serializable, Cloneable {
     public static Conditions ne(String columnName, Object value) {
         return new Conditions().withColumn(columnName).ne(value);
     }
-
 
     public static Conditions lt(String columnName, Object value) {
         return new Conditions().withColumn(columnName).lt(value);
@@ -174,6 +175,9 @@ public class Conditions implements Serializable, Cloneable {
 
     /**
      * query conditions
+     * -- GETTER --
+     *  Allow user to manipulate the conditions
+
      */
     private final Map<String, Condition<?>> query = new HashMap<>();
 
@@ -181,13 +185,22 @@ public class Conditions implements Serializable, Cloneable {
 
     private int limit = -1;
 
-    public int getLimit() {
-        return limit;
+    ////////////////////////////////// equals and hashcode
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Conditions that = (Conditions) o;
+        return limit == that.limit && Objects.equals(query, that.query) && Objects.equals(projection, that.projection);
     }
 
-    public List<String> getProjection() {
-        return projection;
+    @Override
+    public int hashCode() {
+        return Objects.hash(query, projection, limit);
     }
+
+    //////////////////////////////////
 
     public Conditions projection(String... projection) {
         this.projection = List.of(projection);
@@ -234,7 +247,7 @@ public class Conditions implements Serializable, Cloneable {
     }
 
     public Conditions orderAsc(String... ascColumns) {
-        var index = new AtomicInteger(getMaxOrderIndex());
+        var index = new AtomicInteger(maxOrderIndex());
         for (String column : ascColumns) {
             var c = this.query.computeIfAbsent(column, __ -> new Condition<>());
             c.setColumn(column);
@@ -244,7 +257,7 @@ public class Conditions implements Serializable, Cloneable {
     }
 
     public Conditions orderDesc(String... ascColumns) {
-        var index = new AtomicInteger(getMaxOrderIndex());
+        var index = new AtomicInteger(maxOrderIndex());
         for (String column : ascColumns) {
             var c = this.query.computeIfAbsent(column, __ -> new Condition<>());
             c.setColumn(column);
@@ -253,29 +266,22 @@ public class Conditions implements Serializable, Cloneable {
         return this;
     }
 
-    private int getMaxOrderIndex() {
+    private int maxOrderIndex() {
         return this.query.values().stream()
             .filter(c -> c.getOrderAsc() != null || c.getOrderDesc() != null)
             .mapToInt(c -> c.getOrderAsc() == null ? c.getOrderDesc() : c.getOrderAsc())
             .max().orElse(0);
     }
 
-    /**
-     * Allow user to manipulate the conditions
-     */
-    public Map<String, Condition<?>> getQuery() {
-        return query;
-    }
-
     public Wrapper withColumn(String column) {
         return new Wrapper(column);
     }
 
-    public Set<String> getConditionKeys() {
+    public Set<String> conditionKeySet() {
         return query.keySet();
     }
 
-    public List<Condition<?>> getConditions() {
+    public List<Condition<?>> conditionsList() {
         return new ArrayList<>(query.values());
     }
 

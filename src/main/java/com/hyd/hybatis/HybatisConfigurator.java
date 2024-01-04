@@ -4,13 +4,14 @@ import com.hyd.hybatis.springmvc.HybatisBeanPostProcessor;
 import com.hyd.hybatis.springmvc.HybatisMvcConfigurer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * How to use: Add {@code @Import(HybatisConfigurator.class)} to your Spring Boot application class.
+ * How to use: Add {@code @Import(HybatisConfigurator.class)} to your Spring Boot Configuration class.
  */
 @Slf4j
 @Configuration
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Import;
     HybatisBeanPostProcessor.class,
     HybatisMvcConfigurer.class
 })
+@ConditionalOnBean(SqlSessionFactory.class)
 public class HybatisConfigurator {
 
     @Bean

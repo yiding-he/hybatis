@@ -15,6 +15,11 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
     private DepartmentMapper departmentMapper;
 
     @Test
+    public void testSelectAll() throws Exception {
+        departmentMapper.selectAll().forEach(System.out::println);
+    }
+
+    @Test
     public void testSelectList() {
         var departments = departmentMapper.selectList(
             new Conditions()
@@ -25,6 +30,16 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
         );
         assertFalse(departments.isEmpty());
         departments.forEach(System.out::println);
+    }
+
+    @Test
+    public void testInsertIgnore() throws Exception {
+        var department = new Department();
+        department.setDeptNo("d010");
+        department.setDeptName("AAAAAAAAAAAA");
+        departmentMapper.insertIgnore(department);
+
+        assertEquals("新的部门", departmentMapper.findById("d010").getDeptName());
     }
 
     @Test
