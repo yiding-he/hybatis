@@ -9,7 +9,7 @@ class MapperUtilTest {
 
     @Test
     public void testPrimaryKeyNames() throws Exception {
-        var primaryKeyNames = MapperUtil.primaryKeyNames(EmployeeRowMapper.class);
+        var primaryKeyNames = MapperUtil.getPrimaryKeys(EmployeeRowMapper.class);
         System.out.println("primaryKeyNames = " + Arrays.toString(primaryKeyNames));
     }
 }

@@ -2,6 +2,7 @@ package com.hyd.hybatis.row;
 
 import com.hyd.hybatis.HybatisException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +22,7 @@ import java.util.Map;
  * @author yiding.he
  */
 @Slf4j
-public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, Object> {
+public class Row extends CaseInsensitiveMap<String, Object> {
 
     private static final long serialVersionUID = -2500693152518809831L;
 

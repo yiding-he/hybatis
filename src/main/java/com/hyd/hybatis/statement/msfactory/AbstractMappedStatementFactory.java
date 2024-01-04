@@ -57,10 +57,10 @@ public abstract class AbstractMappedStatementFactory implements MappedStatementF
         }
 
         if (Str.isBlank(tableName) && CrudMapper.class.isAssignableFrom(mapperClass)) {
-            tableName = MapperUtil.getCrudMapperTableName(mapperClass);
+            tableName = MapperUtil.getTableName(mapperClass);
         }
 
-        if (tableName == null) {
+        if (Str.isBlank(tableName)) {
             return Result.fail("Method " + method + " contains no table information.");
         }
 

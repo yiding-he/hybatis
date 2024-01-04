@@ -5,6 +5,10 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * Query condition object used to restrict the query parameters,
+ * preventing the query request from containing unauthorized conditions.
+ */
 @Data
 public class EmployeeQuery {
 

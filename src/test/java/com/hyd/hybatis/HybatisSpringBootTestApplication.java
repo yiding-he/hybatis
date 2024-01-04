@@ -19,7 +19,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.List;
 
 import static com.hyd.hybatis.Conditions.eq;
@@ -66,9 +65,10 @@ public class HybatisSpringBootTestApplication {
         private HttpServletRequest request;
 
         // curl "http://localhost:8080/emp/select-page-by-query?firstName.eq=Bikash&pageNum=3&pageSize=5"
-        // Mapper 返回 PageHelper 的 Page 对象，然后封装为 PageHelperPage
+        // curl "http://localhost:8080/emp/select-page-by-query?firstName$eq=Bikash&pageNum=3&pageSize=5"
+        // 如果前端不支持发送 "firstName.eq" 这样的参数名，可以换成 "firstName$eq"
         @GetMapping("/select-page-by-query")
-        public PageHelperPage<Employee> selectPageByQuery(@Valid EmployeeQuery employeeQuery) {
+        public PageHelperPage<Employee> selectPageByQuery(EmployeeQuery employeeQuery) {
             return new PageHelperPage<>(request, () -> employeeMapper.selectPageByQuery(employeeQuery));
         }
 
@@ -82,7 +82,6 @@ public class HybatisSpringBootTestApplication {
         // curl "http://localhost:8080/emp/select-rows-page-by-conditions?firstName.eq=Bikash&pageNum=3&pageSize=5"
         @GetMapping("/select-rows-page-by-conditions")
         public PageHelperPage<Row> selectRowsPageByConditions(Conditions conditions) {
-            conditions = conditions.projection("emp_no", "first_name", "last_name");
             return employeeRowMapper.selectPage(conditions, request);
         }
 
