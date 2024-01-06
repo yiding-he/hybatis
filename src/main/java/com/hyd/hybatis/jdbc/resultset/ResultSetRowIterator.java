@@ -1,4 +1,4 @@
-package com.hyd.hybatis.utils;
+package com.hyd.hybatis.jdbc.resultset;
 
 import com.hyd.hybatis.HybatisException;
 import com.hyd.hybatis.row.Row;
@@ -11,11 +11,11 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class ResultSetIterator implements Iterator<Row> {
+public class ResultSetRowIterator implements Iterator<Row> {
 
     private final ResultSet resultSet;
 
-    public ResultSetIterator(ResultSet resultSet) {
+    public ResultSetRowIterator(ResultSet resultSet) {
         this.resultSet = resultSet;
     }
 

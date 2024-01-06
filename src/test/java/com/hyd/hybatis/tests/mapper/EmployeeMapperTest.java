@@ -36,6 +36,17 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
     }
 
     @Test
+    public void testSelectLimit1() {
+        var employees = employeeMapper.selectByConditions(new Conditions()
+           .withColumn("first_name").startWith("B")
+           .orderDesc("last_name", "emp_no")
+           .limit(1)
+        );
+        assertFalse(employees.isEmpty());
+        employees.forEach(System.out::println);
+    }
+
+    @Test
     public void testSelectByConditions() {
         var rows = employeeMapper.selectRowsByConditions(new Conditions()
             .withColumn("first_name").startWith("B")

@@ -1,15 +1,17 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.jdbc.resultset.ResultSetBeanIterator;
 import com.hyd.hybatis.row.Row;
 import com.hyd.hybatis.sql.BatchCommand;
 import com.hyd.hybatis.sql.Sql;
 import com.hyd.hybatis.sql.SqlCommand;
-import com.hyd.hybatis.utils.ResultSetIterator;
+import com.hyd.hybatis.jdbc.resultset.ResultSetRowIterator;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.TransactionFactory;
-import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,19 +45,25 @@ public class Hybatis {
         }
     }
 
+    @Getter
     private final HybatisConfiguration configuration;
 
     private final DataSource dataSource;
 
-    /**
-     * Provided by MyBatis, use it for compatibility
-     */
+    private final Configuration mybatisConfiguration;
+
     private final TransactionFactory transactionFactory;
 
     @FunctionalInterface
     public interface RowConsumer {
 
         void accept(Row row) throws SQLException;
+    }
+
+    @FunctionalInterface
+    public interface EntityConsumer<T> {
+
+        void accept(T entity) throws SQLException;
     }
 
     @FunctionalInterface
@@ -78,33 +86,15 @@ public class Hybatis {
 
     public Hybatis(
         HybatisConfiguration configuration,
-        DataSource dataSource,
-        TransactionFactory transactionFactory
+        SqlSessionFactory sqlSessionFactory
     ) {
         this.configuration = configuration;
-        this.dataSource = dataSource;
-        this.transactionFactory = transactionFactory;
+        this.mybatisConfiguration = sqlSessionFactory.getConfiguration();
+        this.dataSource = this.mybatisConfiguration.getEnvironment().getDataSource();
+        this.transactionFactory = this.mybatisConfiguration.getEnvironment().getTransactionFactory();
     }
 
-    public Hybatis(DataSource dataSource) {
-        this(new HybatisConfiguration(), dataSource);
-    }
-
-    public Hybatis(HybatisConfiguration configuration, DataSource dataSource) {
-        this(configuration, dataSource, new JdbcTransactionFactory());
-    }
-
-    public Hybatis(HybatisConfiguration configuration, SqlSessionFactory sqlSessionFactory) {
-        this(
-            configuration,
-            sqlSessionFactory.getConfiguration().getEnvironment().getDataSource(),
-            sqlSessionFactory.getConfiguration().getEnvironment().getTransactionFactory()
-        );
-    }
-
-    public HybatisConfiguration getConfiguration() {
-        return configuration;
-    }
+    //////////////////////////////////////// Query methods which return Row objects
 
     public void query(Sql.Select select, RowConsumer rowConsumer) throws SQLException {
         query(select.toCommand(), rowConsumer);
@@ -166,6 +156,74 @@ public class Hybatis {
         return queryStream(select.toCommand());
     }
 
+    //////////////////////////////////////// Query methods which return entity objects
+
+    public <T> void query(
+        Class<T> entityClass, Sql.Select select, EntityConsumer<T> entityConsumer
+    ) throws SQLException {
+        query(entityClass, select.toCommand(), entityConsumer);
+    }
+
+    public <T> void query(
+        Class<T> entityClass, String statement, List<Object> parameters, EntityConsumer<T> entityConsumer
+    ) throws SQLException {
+        query(entityClass, new SqlCommand(statement, parameters), entityConsumer);
+    }
+
+    public <T> void query(
+        Class<T> entityClass, SqlCommand command, EntityConsumer<T> entityConsumer
+    ) throws SQLException {
+        try (var entityStream = queryStream(entityClass, command)) {
+            try {
+                entityStream.forEach(entity -> {
+                    try {
+                        entityConsumer.accept(entity);
+                    } catch (SQLException e) {
+                        throw new SQLExceptionWrapper(e);
+                    }
+                });
+            } catch (SQLExceptionWrapper w) {
+                throw w.unwrap();
+            }
+        }
+    }
+
+    public <T> T queryOne(Class<T> entityClass, String sql, Object... params) throws SQLException {
+        return queryOne(entityClass, new SqlCommand(sql, List.of(params)));
+    }
+
+    public <T> T queryOne(Class<T> entityClass, Sql.Select select) throws SQLException {
+        return queryOne(entityClass, select.toCommand());
+    }
+
+    public <T> T queryOne(Class<T> entityClass, SqlCommand command) throws SQLException {
+        try (var entityStream = queryStream(entityClass, command)) {
+            return entityStream.findFirst().orElse(null);
+        }
+    }
+
+    public <T> List<T> queryList(Class<T> entityClass, String sql, Object... params) throws SQLException {
+        return queryList(entityClass, new SqlCommand(sql, Arrays.asList(params)));
+    }
+
+    public <T> List<T> queryList(Class<T> entityClass, Sql.Select select) throws SQLException {
+        return queryList(entityClass, select.toCommand());
+    }
+
+    public <T> List<T> queryList(Class<T> entityClass, SqlCommand command) throws SQLException {
+        try (var entityStream = queryStream(entityClass, command)) {
+            return entityStream.collect(Collectors.toList());
+        }
+    }
+
+    public <T> Stream<T> queryStream(Class<T> entityClass, String sql, Object... params) throws SQLException {
+        return queryStream(entityClass, new SqlCommand(sql, List.of(params)));
+    }
+
+    public <T> Stream<T> queryStream(Class<T> entityClass, Sql.Select select) throws SQLException {
+        return queryStream(entityClass, select.toCommand());
+    }
+
     /**
      * The core query method.
      * <p>
@@ -177,11 +235,23 @@ public class Hybatis {
         return withConnection(conn -> {
             var ps = prepareStatement(conn, command);
             var rs = ps.executeQuery();
-            return new ResultSetIterator(rs)
+            return new ResultSetRowIterator(rs)
                 .toRowStream()
                 .onClose(() -> closeWhenNecessary(conn, true));
         }, false);
     }
+
+    public <T> Stream<T> queryStream(Class<T> entityClass, SqlCommand command) throws SQLException {
+        return withConnection(conn -> {
+            var ps = prepareStatement(conn, command);
+            var rs = ps.executeQuery();
+            return new ResultSetBeanIterator<>(this.mybatisConfiguration, rs, entityClass)
+                .toBeanStream()
+                .onClose(() -> closeWhenNecessary(conn, true));
+        }, false);
+    }
+
+    //////////////////////////////////////// Execute methods like insert, update, delete
 
     public long execute(Sql.Update update) throws SQLException {
         return withConnection(conn -> {
@@ -316,7 +386,7 @@ public class Hybatis {
     }
 
     private int executeCommand(Connection conn, SqlCommand command) throws SQLException {
-        PreparedStatement ps = prepareStatement(conn, command);
+        var ps = prepareStatement(conn, command);
         return ps.executeUpdate();
     }
 

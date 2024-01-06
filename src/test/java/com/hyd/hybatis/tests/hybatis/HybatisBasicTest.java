@@ -1,6 +1,7 @@
 package com.hyd.hybatis.tests.hybatis;
 
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
+import com.hyd.hybatis.entity.Employee;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,6 +17,13 @@ public class HybatisBasicTest extends HybatisSpringBootTestApplicationTest {
         var rows = hybatis.queryList("select * from DEPARTMENTS");
         assertFalse(rows.isEmpty());
         rows.forEach(System.out::println);
+    }
+
+    @Test
+    public void testQueryBeanList() throws Exception {
+        var employees = hybatis.queryList(Employee.class, "select * from EMPLOYEES limit 10");
+        assertFalse(employees.isEmpty());
+        employees.forEach(System.out::println);
     }
 
     @Test
