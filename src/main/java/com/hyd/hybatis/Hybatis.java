@@ -1,17 +1,18 @@
 package com.hyd.hybatis;
 
 import com.hyd.hybatis.jdbc.resultset.ResultSetBeanIterator;
+import com.hyd.hybatis.jdbc.resultset.ResultSetRowIterator;
 import com.hyd.hybatis.row.Row;
 import com.hyd.hybatis.sql.BatchCommand;
 import com.hyd.hybatis.sql.Sql;
 import com.hyd.hybatis.sql.SqlCommand;
-import com.hyd.hybatis.jdbc.resultset.ResultSetRowIterator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.TransactionFactory;
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,6 +93,20 @@ public class Hybatis {
         this.mybatisConfiguration = sqlSessionFactory.getConfiguration();
         this.dataSource = this.mybatisConfiguration.getEnvironment().getDataSource();
         this.transactionFactory = this.mybatisConfiguration.getEnvironment().getTransactionFactory();
+    }
+
+    /**
+     * @deprecated 为了兼容旧版本的构造方法，构造出来的 Hybatis 对象无法将查询结果转换为 java bean
+     */
+    @Deprecated
+    public Hybatis(
+        HybatisConfiguration configuration,
+        DataSource dataSource
+    ) {
+        this.configuration = configuration;
+        this.dataSource = dataSource;
+        this.mybatisConfiguration = null;
+        this.transactionFactory = new JdbcTransactionFactory();
     }
 
     //////////////////////////////////////// Query methods which return Row objects
@@ -242,6 +257,10 @@ public class Hybatis {
     }
 
     public <T> Stream<T> queryStream(Class<T> entityClass, SqlCommand command) throws SQLException {
+        if (this.mybatisConfiguration == null) {
+            throw new HybatisException("Hybatis 没有正确初始化，请使用另外的构造方法");
+        }
+
         return withConnection(conn -> {
             var ps = prepareStatement(conn, command);
             var rs = ps.executeQuery();
