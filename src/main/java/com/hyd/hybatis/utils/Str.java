@@ -58,6 +58,18 @@ public class Str {
         return !isNotBlank(s);
     }
 
+    public static String firstNonBlank(String... strings) {
+        if (strings == null) {
+            return null;
+        }
+        for (String s : strings) {
+            if (isNotBlank(s)) {
+                return s;
+            }
+        }
+        return strings.length == 0 ? null : strings[strings.length - 1];
+    }
+
     public static boolean isInteger(String s) {
         return s != null && s.matches("[+-]?\\d+");
     }
