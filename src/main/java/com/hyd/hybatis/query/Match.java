@@ -1,6 +1,7 @@
 package com.hyd.hybatis.query;
 
 import com.hyd.hybatis.query.match.CompositeMatch;
+import com.hyd.hybatis.query.match.Equal;
 import com.hyd.hybatis.sql.SqlCommand;
 
 import java.util.List;
@@ -30,6 +31,10 @@ public interface Match {
 
     static CompositeMatch OR(Match... matches) {
         return OR(List.of(matches));
+    }
+
+    static Equal equal(String field, Object value) {
+        return new Equal(field, value);
     }
 
     /**

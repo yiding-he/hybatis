@@ -17,9 +17,16 @@ import static com.hyd.hybatis.utils.Obj.isNotEmpty;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TableOrView extends AbstractQuery {
+public class TableOrView extends AbstractQuery<TableOrView> {
 
     private String name;
+
+    public TableOrView() {
+    }
+
+    public TableOrView(String name) {
+        this.name = name;
+    }
 
     @Override
     public String getAlias() {
@@ -45,7 +52,7 @@ public class TableOrView extends AbstractQuery {
         getProjections().stream().filter(p -> Obj.isNotEmpty(p.getFrom())).forEach(p -> {
             if (!p.getFrom().equals(getAlias())) {
                 throw new IllegalArgumentException("Projection '" + p.toSqlExpression() +
-                    "' cannot be used in table or view '" + getAlias() + "'"
+                    "' cannot be selected from table or view '" + getAlias() + "'"
                 );
             }
         });

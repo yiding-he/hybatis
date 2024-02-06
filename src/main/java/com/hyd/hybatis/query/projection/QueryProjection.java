@@ -26,7 +26,7 @@ public class QueryProjection implements Projection {
 
     private String alias;
 
-    public QueryProjection with(String field) {
+    public QueryProjection col(String field) {
         this.field = field;
         return this;
     }
