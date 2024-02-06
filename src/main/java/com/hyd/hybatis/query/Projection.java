@@ -28,7 +28,7 @@ public interface Projection {
     /**
      * 直接定义要选取的字段
      */
-    static PlainProjection plain(String field) {
+    static PlainProjection col(String field) {
         return new PlainProjection().with(field);
     }
 

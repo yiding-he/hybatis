@@ -11,7 +11,7 @@ import static com.hyd.hybatis.utils.Obj.isNotEmpty;
 /**
  * 表示一个查询结构，查询结构与查询结构之间可以相互组合，以实现查询结构的复用。
  */
-public interface Query {
+public interface Query<Q extends Query<Q>> {
 
     /**
      * 定义过滤条件
@@ -47,7 +47,12 @@ public interface Query {
                 .collect(Collectors.toList())
         );
 
-        // TODO 从 getAggregates() 拼接查询字段
+        // 从 getAggregates() 拼接查询字段
+        list.addAll(
+            this.getAggregates().stream()
+                .map(Aggregate::toSqlExpression)
+                .collect(Collectors.toList())
+        );
 
         return String.join(",", list);
     }
