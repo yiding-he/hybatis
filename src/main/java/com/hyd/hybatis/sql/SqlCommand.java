@@ -1,7 +1,15 @@
 package com.hyd.hybatis.sql;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+/**
+ * 表示一条含参数的 SQL 语句或片段
+ */
+@Getter
+@Setter
 public class SqlCommand {
 
     private String statement;
@@ -13,22 +21,6 @@ public class SqlCommand {
 
     public SqlCommand(String statement, List<Object> params) {
         this.statement = statement;
-        this.params = params;
-    }
-
-    public String getStatement() {
-        return statement;
-    }
-
-    public void setStatement(String statement) {
-        this.statement = statement;
-    }
-
-    public List<Object> getParams() {
-        return params;
-    }
-
-    public void setParams(List<Object> params) {
         this.params = params;
     }
 

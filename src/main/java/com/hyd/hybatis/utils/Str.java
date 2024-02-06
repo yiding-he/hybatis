@@ -41,8 +41,8 @@ public class Str {
             Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
-    public static boolean isNotBlank(String s) {
-        if (s == null || s.isEmpty()) {
+    public static boolean isNotBlank(CharSequence s) {
+        if (s == null) {
             return false;
         }
         for (int i = 0; i < s.length(); i++) {
@@ -54,7 +54,7 @@ public class Str {
         return false;
     }
 
-    public static boolean isBlank(String s) {
+    public static boolean isBlank(CharSequence s) {
         return !isNotBlank(s);
     }
 
