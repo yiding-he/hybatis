@@ -25,14 +25,8 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
     public MappedStatement createMappedStatement(
         Configuration mybatisConf, String sqlId, Class<?> mapperClass, Method method
     ) {
-        Class<?> returnEntityType;
-        if (CrudMapper.class.isAssignableFrom(mapperClass)) {
-            returnEntityType = Reflections.getGenericTypeArg(mapperClass);
-        } else {
-            returnEntityType = Reflections.getReturnEntityType(method);
-        }
-        var counting = isCounting(method);
-        var selectMode = counting ? SelectMode.Count : SelectMode.Normal;
+        var returnEntityType = getReturnEntityType(mapperClass, method);
+        var selectMode = getSelectMode(method);
 
         SqlSourceForSelect sqlSource = new SqlSourceForSelect(
             sqlId, getCore(), mybatisConf, getTableName(mapperClass, method).getOrThrow(), selectMode, method);
@@ -42,13 +36,24 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
         );
     }
 
+    private static Class<?> getReturnEntityType(Class<?> mapperClass, Method method) {
+        if (CrudMapper.class.isAssignableFrom(mapperClass)) {
+            return Reflections.getGenericTypeArg(mapperClass);
+        } else {
+            return Reflections.getReturnEntityType(method);
+        }
+    }
+
     /**
      * 判断一个 Mapper 方法是否只返回记录数
      */
-    public static boolean isCounting(Method method) {
+    public static SelectMode getSelectMode(Method method) {
         Class<?> returnType = method.getReturnType();
-        return returnType == Integer.TYPE ||
+        boolean counting =
+            returnType == Short.TYPE ||
+            returnType == Integer.TYPE ||
             returnType == Long.TYPE ||
             Number.class.isAssignableFrom(returnType);
+        return counting ? SelectMode.Count : SelectMode.Normal;
     }
 }

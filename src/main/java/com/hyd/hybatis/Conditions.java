@@ -175,11 +175,15 @@ public class Conditions implements Serializable, Cloneable {
 
     /**
      * query conditions
-     * -- GETTER --
-     *  Allow user to manipulate the conditions
-
      */
     private final Map<String, Condition<?>> query = new HashMap<>();
+
+    public void setQuery(Map<String, Condition<?>> query) {
+        // 从 JSON 反序列化时允许简化的格式，即 Condition 中的 column 字段可以省略
+        // 如果 column 字段为空，会在这里将其补完为 key
+        query.forEach((k, v) -> v.setColumn(k));
+        this.query.putAll(query);
+    }
 
     private List<String> projection = Collections.emptyList();
 

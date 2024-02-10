@@ -52,6 +52,13 @@
       <version>1.7.36</version>
     </dependency>
 
+    <!-- ////////////////////////// Utility ////////////////////////// -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.4</version>
+    </dependency>
+
     <!-- ////////////////////////// Compile ////////////////////////// -->
     <dependency>
       <groupId>org.projectlombok</groupId>

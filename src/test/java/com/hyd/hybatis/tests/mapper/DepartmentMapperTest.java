@@ -37,9 +37,10 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
         var department = new Department();
         department.setDeptNo("d010");
         department.setDeptName("AAAAAAAAAAAA");
-        departmentMapper.insertIgnore(department);
+        assertEquals(0, departmentMapper.insertIgnore(department));
 
-        assertEquals("新的部门", departmentMapper.findById("d010").getDeptName());
+        department = departmentMapper.findById("d010");
+        assertEquals("新的部门", department.getDeptName());
     }
 
     @Test

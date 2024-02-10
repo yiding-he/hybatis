@@ -12,9 +12,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
- * BatchExecutor 类负责执行 SQL 批量操作。
- * 它提供了用于添加参数、刷新批处理和重置计数器的方法。
- * 执行可以根据线程池的可用性同步或异步进行。
+ * The BatchExecutor is a tool for executing SQL bulk operations.
+ * Execution can be performed synchronously or asynchronously
+ * based on the availability of a thread pool.
  */
 @Slf4j
 public class BatchExecutor {

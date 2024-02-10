@@ -37,7 +37,7 @@ public class Str {
     }
 
     public static String capitalize(String s) {
-        return s == null ? null : s.length() == 0 ? "" :
+        return s == null ? null : s.isEmpty() ? "" :
             Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 

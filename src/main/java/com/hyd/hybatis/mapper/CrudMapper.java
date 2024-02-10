@@ -68,8 +68,17 @@ public interface CrudMapper<T> {
         return selectList(conditions.limit(1)).stream().findFirst().orElse(null);
     }
 
+    /**
+     * Create conditions for finding entity by primary key.
+     * The primary key names needs to be defined in the {@code @HbMapper} or
+     * {@code @HbEntity} annotation, otherwise an error will be thrown.
+     *
+     * @param primaryKeyValues primary key values
+     *
+     * @return conditions
+     */
     default Conditions findByIdConditions(Object... primaryKeyValues) {
-        var primaryKeyNames = MapperUtil.primaryKeyNames(getClass());
+        var primaryKeyNames = MapperUtil.getPrimaryKeys(getClass());
         if (primaryKeyNames == null || primaryKeyNames.length == 0) {
             throw new IllegalStateException("No primary keys defined");
         } else if (primaryKeyValues == null || primaryKeyValues.length < primaryKeyNames.length) {
@@ -86,6 +95,8 @@ public interface CrudMapper<T> {
 
     /**
      * Retrieve entity by primary key.
+     * The primary key names needs to be defined in the {@code @HbMapper} or
+     * {@code @HbEntity} annotation, otherwise an error will be thrown.
      *
      * @param primaryKeyValues primary key values
      *
@@ -97,6 +108,8 @@ public interface CrudMapper<T> {
 
     /**
      * Update entity by primary key.
+     * The primary key names needs to be defined in the {@code @HbMapper} or
+     * {@code @HbEntity} annotation, otherwise an error will be thrown.
      *
      * @param primaryKeyValuesAndUpdate key and update values. The last argument is the update entity.
      */
@@ -112,6 +125,8 @@ public interface CrudMapper<T> {
 
     /**
      * Delete entity by primary key.
+     * The primary key names needs to be defined in the {@code @HbMapper} or
+     * {@code @HbEntity} annotation, otherwise an error will be thrown.
      *
      * @param primaryKeyValues primary key values.
      *

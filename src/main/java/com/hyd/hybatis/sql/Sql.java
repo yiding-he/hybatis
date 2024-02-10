@@ -5,23 +5,20 @@ import com.hyd.hybatis.utils.Str;
 
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 
 /**
- * Dynamic SQL generator
- * <p>
- * 本类中的有些方法命名以大写字母开头，这是因为考虑到 SQL 属于
- * 不同语种，即使是用 Java 语法来模拟 SQL，也应该保持这种感觉
+ * 用于动态的生成 SQL 语句
+ * 本类中的有些方法命名以大写字母开头，是为了避免与关键字冲突
  *
  * @author yiding.he
  */
 @SuppressWarnings({
-    "unused", "BooleanMethodIsAlwaysInverted", "unchecked", "UnusedReturnValue"
+    "unused", "BooleanMethodIsAlwaysInverted", "unchecked",
+    "UnusedReturnValue", "LombokGetterMayBeUsed"
 })
 public abstract class Sql<T extends Sql<?>> {
 
@@ -45,7 +42,7 @@ public abstract class Sql<T extends Sql<?>> {
         }
 
         String str = obj.toString();
-        return str.length() == 0 || str.trim().length() == 0;
+        return Str.isBlank(str);
     }
 
     public abstract SqlCommand toCommand();
@@ -82,11 +79,13 @@ public abstract class Sql<T extends Sql<?>> {
         return !params.isEmpty();
     }
 
+    // sample: .LeftJoin("t2 on t2.parent_id=t1.id and t2.deleted=?", 0)
     public T LeftJoin(String statement, Object... params) {
         this.joins.add(new Join(JoinType.LeftJoin, statement, params));
         return (T) this;
     }
 
+    // sample: .RightJoin("t2 on t2.parent_id=t1.id and t2.deleted=?", 0)
     public T RightJoin(String statement, Object... params) {
         this.joins.add(new Join(JoinType.RightJoin, statement, params));
         return (T) this;
@@ -164,110 +163,17 @@ public abstract class Sql<T extends Sql<?>> {
         return (T) this;
     }
 
+    // for sql like 'select * from t1 where id in (select...)'
     public T And(String statement, Sql<T> child) {
-        return And(true, statement, child);
-    }
-
-    public T And(boolean exp, String statement) {
-        if (exp) {
-            this.conditions.add(new Pair(Joint.AND, statement));
-        }
+        SqlCommand childCmd = child.toCommand();
+        this.conditions.add(new Pair(Joint.AND, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
         return (T) this;
     }
 
-    public T And(boolean exp, String statement, Object... args) {
-        if (exp) {
-            this.conditions.add(new Pair(Joint.AND, statement, args));
-        }
-        return (T) this;
-    }
-
-    public T And(boolean exp, String statement, Sql<T> child) {
-        if (exp) {
-            SqlCommand childCmd = child.toCommand();
-            this.conditions.add(new Pair(Joint.AND, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
-        }
-        return (T) this;
-    }
-
-    public T AndIfNotEmpty(String statement, Object value) {
-        return And(!isEmpty(value), statement, value);
-    }
-
-    public <V> T IfNotEmpty(V value, Consumer<T> consumer) {
-        if (!isEmpty(value) && consumer != null) {
-            consumer.accept((T) this);
-        }
-        return (T) this;
-    }
-
-    public <V> T IfNotEmpty(V value, BiConsumer<T, V> consumer) {
-        if (!isEmpty(value) && consumer != null) {
-            consumer.accept((T) this, value);
-        }
-        return (T) this;
-    }
-
-    public T Or(String statement) {
-        this.conditions.add(new Pair(Joint.OR, statement));
-        return (T) this;
-    }
-
-    public T Or(String statement, Object... args) {
-        this.conditions.add(new Pair(Joint.OR, statement, args));
-        return (T) this;
-    }
-
-    public T Or(String statement, Sql<T> child) {
-        return Or(true, statement, child);
-    }
-
-    public T Or(boolean exp, String statement) {
-        if (exp) {
-            this.conditions.add(new Pair(Joint.OR, statement));
-        }
-        return (T) this;
-    }
-
-    public T Or(boolean exp, String statement, Object... args) {
-        if (exp) {
-            this.conditions.add(new Pair(Joint.OR, statement, args));
-        }
-        return (T) this;
-    }
-
-    public T Or(boolean exp, String statement, Sql<T> child) {
-        if (exp) {
-            SqlCommand childCmd = child.toCommand();
-            this.conditions.add(new Pair(Joint.OR, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
-        }
-        return (T) this;
-    }
-
-    public T OrIfNotEmpty(String column, Object value) {
-        return Or(!isEmpty(value), column, value);
-    }
-
-    public T Append(String statement) {
-        this.conditions.add(new Pair(statement));
-        return (T) this;
-    }
-
-    public T Append(String column, Object... args) {
-        this.conditions.add(new Pair(column, args));
-        return (T) this;
-    }
-
-    public T Append(boolean exp, String statement) {
-        if (exp) {
-            this.conditions.add(new Pair(statement));
-        }
-        return (T) this;
-    }
-
-    public T Append(boolean exp, String statement, Object... args) {
-        if (exp) {
-            this.conditions.add(new Pair(statement, args));
+    // if exp is false, remove the last condition
+    public T If(boolean exp) {
+        if (!exp && !this.conditions.isEmpty()) {
+            this.conditions.remove(this.conditions.size() - 1);
         }
         return (T) this;
     }

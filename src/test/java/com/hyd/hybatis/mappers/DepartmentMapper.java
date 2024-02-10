@@ -16,5 +16,5 @@ public interface DepartmentMapper extends CrudMapper<Department> {
     }
 
     @HbInsert(table = "DEPARTMENTS", onDuplicateKeyIgnore = true)
-    void insertIgnore(Department department);
+    int insertIgnore(Department department);
 }
