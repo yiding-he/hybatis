@@ -4,10 +4,14 @@ import com.hyd.hybatis.query.aggregate.Count;
 
 public interface Aggregate<A extends Aggregate<A>> {
 
-    static Count count(String field) {
+    static Count count(Projection projection) {
         var count = new Count();
-        count.setProjection(Projection.col(field));
+        count.setProjection(projection);
         return count;
+    }
+
+    static Count count(String field) {
+        return count(Projection.col(field));
     }
 
     Projection getProjection();
