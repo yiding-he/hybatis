@@ -205,7 +205,7 @@ public class SampleController {
     private SampleMapper sampleMapper;
     
     // 使用示例
-    // curl "http://host:port/sample/search?projection=id,name&id.between=1,9&name.contains=test&limit=5"
+    // curl "http://host:port/sample/search?column=id,name&id.between=1,9&name.contains=test&limit=5"
     // 将得到查询语句 "SELECT id, name FROM sample WHERE id BETWEEN 1 AND 9 AND name LIKE '%test%' LIMIT 5"。
     @GetMapping("/sample/search")
     public List<Sample> selectByConditions(Conditions conditions) {

@@ -1,13 +1,13 @@
 ### 动态条件查询并返回指定字段
-GET http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4&projection=empNo,firstName
+GET http://localhost:8080/emp/select-by-conditions?firstName.eq=Bikash&limit=4&column=empNo,firstName
 Accept: application/json
 
 ### 动态条件查询并返回指定字段（使用$分隔符）
-GET http://localhost:8080/emp/select-by-conditions?firstName$eq=Bikash&limit=4&projection=empNo,firstName
+GET http://localhost:8080/emp/select-by-conditions?firstName$eq=Bikash&limit=4&column=empNo,firstName
 Accept: application/json
 
 ### 动态条件查询并返回指定字段（使用[]包裹操作符）
-GET http://localhost:8080/emp/select-by-conditions?firstName[eq]=Bikash&limit=4&projection=empNo,firstName
+GET http://localhost:8080/emp/select-by-conditions?firstName[eq]=Bikash&limit=4&column=empNo,firstName
 Accept: application/json
 
 ### 动态条件分页查询

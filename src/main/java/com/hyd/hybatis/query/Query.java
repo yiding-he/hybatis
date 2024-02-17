@@ -1,5 +1,6 @@
 package com.hyd.hybatis.query;
 
+import com.hyd.hybatis.query.column.Col;
 import com.hyd.hybatis.sql.SqlCommand;
 import com.hyd.hybatis.utils.Obj;
 
@@ -9,35 +10,42 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.hyd.hybatis.utils.Obj.defaultValue;
+import static com.hyd.hybatis.utils.Obj.isNotEmpty;
+
 /**
  * 表示一个查询结构，查询结构与查询结构之间可以相互组合，以实现查询结构的复用。
  */
-public interface Query<Q extends Query<Q>> {
+public interface Query<Q extends Query<Q>> extends Alias {
 
     /**
-     * 定义过滤条件
+     * 过滤条件列表
      */
     List<Match> getMatches();
 
     /**
-     * 定义聚合操作
+     * 聚合操作列表
      */
     List<Aggregate<?>> getAggregates();
 
     /**
-     * 定义选取字段
+     * 直接选取的字段列表
      */
-    List<Projection> getProjections();
+    List<Column<?>> getColumns();
 
     /**
-     * 当前查询的别名
+     * 跳过的行数
      */
-    String getAlias();
+    default int getSkip() {
+        return 0;
+    }
 
     /**
-     * 生成 SQL Command 对象
+     * 最多返回记录数，-1 表示不限制
      */
-    SqlCommand toSqlCommand();
+    default int getLimit() {
+        return -1;
+    }
 
     ////////////////////////////////////////
 
@@ -46,18 +54,18 @@ public interface Query<Q extends Query<Q>> {
      *
      * @param column 字段名或表达式
      */
-    default Projection col(String column) {
+    default Col col(String column) {
         if (Obj.isEmpty(column)) {
             return null;
         } else {
-            return Projection.from(this).col(column);
+            return new Col(this, column, null);
         }
     }
 
     /**
      * 选取指定的字段
      */
-    default List<Projection> cols(String... columns) {
+    default List<Column<?>> cols(String... columns) {
         if (columns == null) {
             return Collections.emptyList();
         }
@@ -72,8 +80,8 @@ public interface Query<Q extends Query<Q>> {
 
         // 从 getProjections() 拼接查询字段
         list.addAll(
-            this.getProjections().stream()
-                .map(Projection::toSqlExpression)
+            this.getColumns().stream()
+                .map(Column::toSqlExpression)
                 .collect(Collectors.toList())
         );
 
@@ -87,4 +95,27 @@ public interface Query<Q extends Query<Q>> {
         return String.join(",", list);
     }
 
+    ////////////////////////////////////////
+
+    /**
+     * 生成 SQL Command 对象
+     */
+    default SqlCommand toSqlCommand() {
+
+        var fromSegment = getFromSegment();
+        var params = new ArrayList<>(fromSegment.getParams());
+
+        var statement = "SELECT " + defaultValue(getProjectionsStatement(), "*") +
+            " FROM " + fromSegment.getStatement() + appendAlias();
+
+        if (isNotEmpty(this.getMatches())) {
+            var matchSql = Match.AND(this.getMatches()).toSqlCommand();
+            statement += " WHERE " + matchSql.getStatement();
+            params.addAll(matchSql.getParams());
+        }
+
+        return new SqlCommand(statement, params);
+    }
+
+    SqlCommand getFromSegment();
 }

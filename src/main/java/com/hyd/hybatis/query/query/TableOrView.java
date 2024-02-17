@@ -1,7 +1,6 @@
 package com.hyd.hybatis.query.query;
 
 import com.hyd.hybatis.query.Match;
-import com.hyd.hybatis.query.Projection;
 import com.hyd.hybatis.sql.SqlCommand;
 import com.hyd.hybatis.utils.Obj;
 import com.hyd.hybatis.utils.Str;
@@ -9,10 +8,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.hyd.hybatis.utils.Obj.defaultValue;
 import static com.hyd.hybatis.utils.Obj.isNotEmpty;
+import static java.util.Collections.emptyList;
 
 /**
  * 直接从表或视图中进行查询
@@ -35,30 +34,15 @@ public class TableOrView extends AbstractQuery<TableOrView> {
         return Str.firstNonBlank(super.getAlias(), this.name);
     }
 
-    @Override
-    public List<Projection> getProjections() {
-        // TODO 合并 aggregates 和 projections
-    }
 
     @Override
-    public SqlCommand toSqlCommand() {
-
-        var statement = "SELECT " + defaultValue(getProjectionsStatement(), "*") +
-            " FROM " + getName() + (isNotEmpty(getAlias()) ? " AS " + getAlias() : "");
-
-        final var params = new ArrayList<>();
-        if (isNotEmpty(this.getMatches())) {
-            var matchSql = Match.AND(this.getMatches()).toSqlCommand();
-            statement += " WHERE " + matchSql.getStatement();
-            params.addAll(matchSql.getParams());
-        }
-
-        return new SqlCommand(statement, params);
+    public SqlCommand getFromSegment() {
+        return new SqlCommand(getName(), emptyList());
     }
 
     @Override
     public void validate() {
-        getProjections().stream().filter(p -> Obj.isNotEmpty(p.getFrom())).forEach(p -> {
+        getColumns().stream().filter(p -> Obj.isNotEmpty(p.getFrom())).forEach(p -> {
             if (!p.getFrom().equals(getAlias())) {
                 throw new IllegalArgumentException("Projection '" + p.toSqlExpression() +
                     "' cannot be selected from table or view '" + getAlias() + "'"

@@ -1,8 +1,8 @@
 package com.hyd.hybatis.query.query;
 
 import com.hyd.hybatis.query.Aggregate;
+import com.hyd.hybatis.query.Column;
 import com.hyd.hybatis.query.Match;
-import com.hyd.hybatis.query.Projection;
 import com.hyd.hybatis.query.Query;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
 
     protected List<Match> matches = new ArrayList<>();
 
-    protected List<Projection> projections = new ArrayList<>();
+    protected List<Column<?>> columns = new ArrayList<>();
 
     protected List<Aggregate<?>> aggregates = new ArrayList<>();
 
@@ -34,6 +34,11 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
         return this.alias;
     }
 
+    @Override
+    public List<Column<?>> getColumns() {
+        return columns;
+    }
+
     public void validate() {
     }
 
@@ -46,13 +51,13 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
         return matches(List.of(matches));
     }
 
-    public Q projections(List<Projection> projections) {
-        this.projections.addAll(projections);
+    public Q columns(List<Column<?>> columns) {
+        this.columns.addAll(columns);
         return (Q) this;
     }
 
-    public Q projections(Projection... projections) {
-        return projections(List.of(projections));
+    public Q columns(Column<?>... columns) {
+        return columns(List.of(columns));
     }
 
     public Q aggregates(List<Aggregate<?>> aggregates) {

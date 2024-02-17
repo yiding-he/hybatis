@@ -1,6 +1,6 @@
 package com.hyd.hybatis.query.match;
 
-import com.hyd.hybatis.query.Projection;
+import com.hyd.hybatis.query.Column;
 import com.hyd.hybatis.sql.SqlCommand;
 
 import java.util.Collections;
@@ -10,8 +10,8 @@ public class Equal extends AbstractMatch {
     public Equal() {
     }
 
-    public Equal(Projection projection, Object value) {
-        setProjection(projection);
+    public Equal(Column<?> column, Object value) {
+        setColumn(column);
         setValue(value);
     }
 
@@ -22,7 +22,7 @@ public class Equal extends AbstractMatch {
             return null;
         }
         return new SqlCommand(
-            getProjection().toSqlExpression() + " = ?",
+            getColumn().toSqlExpression() + " = ?",
             Collections.singletonList(value)
         );
     }

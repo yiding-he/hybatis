@@ -1,10 +1,9 @@
 package com.hyd.hybatis.query.aggregate;
 
-public class Count extends AbstractAggregate<Count> {
+public class Count extends SingleColumnAggregate<Count> {
 
     @Override
     public String toSqlExpression() {
-        return "COUNT(" + getProjection().toSqlExpression() + ")"
-            + (getAlias() != null ? " AS " + getAlias() : "");
+        return "COUNT(" + getColumn().toSqlExpression() + ")" + appendAlias();
     }
 }
