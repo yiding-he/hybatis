@@ -1,5 +1,6 @@
 package com.hyd.hybatis.query.match;
 
+import com.hyd.hybatis.query.Projection;
 import com.hyd.hybatis.sql.SqlCommand;
 
 import java.util.Collections;
@@ -9,8 +10,8 @@ public class Equal extends AbstractMatch {
     public Equal() {
     }
 
-    public Equal(String field, Object value) {
-        setField(field);
+    public Equal(Projection projection, Object value) {
+        setProjection(projection);
         setValue(value);
     }
 
@@ -21,7 +22,7 @@ public class Equal extends AbstractMatch {
             return null;
         }
         return new SqlCommand(
-            getField() + " = ?",
+            getProjection().toSqlExpression() + " = ?",
             Collections.singletonList(value)
         );
     }

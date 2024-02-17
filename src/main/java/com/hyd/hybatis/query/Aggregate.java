@@ -10,10 +10,6 @@ public interface Aggregate<A extends Aggregate<A>> {
         return count;
     }
 
-    static Count count(String field) {
-        return count(Projection.col(field));
-    }
-
     Projection getProjection();
 
     String getAlias();
