@@ -14,15 +14,15 @@ public interface Projection {
     /**
      * 定义从 Query 中选取的字段
      */
-    static QueryProjection from(Query query) {
+    static QueryProjection from(Query<?> query) {
         return QueryProjection.from(query);
     }
 
     /**
-     * 定义从表名或 Query 的别名中选取的字段
+     * 以表达式作为字段
      */
-    static QueryProjection from(String from) {
-        return QueryProjection.from(from);
+    static PlainProjection plain(String expression) {
+        return new PlainProjection().with(expression);
     }
 
     /**
@@ -48,8 +48,8 @@ public interface Projection {
     String getAlias();
 
     default String toSqlExpression() {
-        return (Str.isBlank(getFrom())? "": (getFrom() + ".")) +
+        return (Str.isBlank(getFrom()) ? "" : (getFrom() + ".")) +
             getField() +
-            (Str.isBlank(getAlias())? "": " AS " + getAlias());
+            (Str.isBlank(getAlias()) ? "" : " AS " + getAlias());
     }
 }

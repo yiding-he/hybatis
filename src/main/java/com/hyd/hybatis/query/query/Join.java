@@ -3,12 +3,11 @@ package com.hyd.hybatis.query.query;
 import com.hyd.hybatis.query.Aggregate;
 import com.hyd.hybatis.query.Match;
 import com.hyd.hybatis.query.Projection;
-import com.hyd.hybatis.query.Query;
 import com.hyd.hybatis.sql.SqlCommand;
 
 import java.util.List;
 
-public class Join implements Query {
+public class Join extends AbstractQuery<Join> {
 
     @Override
     public String getAlias() {

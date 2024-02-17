@@ -1,6 +1,7 @@
 package com.hyd.hybatis.query.projection;
 
 import com.hyd.hybatis.query.Projection;
+import com.hyd.hybatis.query.Query;
 import lombok.Data;
 
 @Data
@@ -23,5 +24,9 @@ public class PlainProjection implements Projection {
     public PlainProjection as(String alias) {
         this.alias = alias;
         return this;
+    }
+
+    public QueryProjection from(Query<?> from) {
+        return Projection.from(from).col(getField()).as(getAlias());
     }
 }

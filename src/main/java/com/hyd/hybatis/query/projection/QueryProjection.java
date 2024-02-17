@@ -10,21 +10,22 @@ import lombok.Data;
 @Data
 public class QueryProjection implements Projection {
 
-    public static QueryProjection from(Query query) {
-        return from(query.getAlias());
-    }
-
-    public static QueryProjection from(String from) {
+    public static QueryProjection from(Query<?> query) {
         var p = new QueryProjection();
-        p.from = from;
+        p.from = query;
         return p;
     }
 
-    private String from;
+    private Query<?> from;
 
     private String field;
 
     private String alias;
+
+    @Override
+    public String getFrom() {
+        return from.getAlias();
+    }
 
     public QueryProjection col(String field) {
         this.field = field;

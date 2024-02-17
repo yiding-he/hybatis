@@ -1,9 +1,8 @@
 package com.hyd.hybatis.query.match;
 
 import com.hyd.hybatis.query.Match;
+import com.hyd.hybatis.query.Projection;
 import com.hyd.hybatis.sql.SqlCommand;
-import com.hyd.hybatis.utils.Obj;
-import com.hyd.hybatis.utils.Str;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +24,7 @@ public class CompositeMatch implements Match {
     private Operator operator;
 
     @Override
-    public String getField() {
+    public Projection getProjection() {
         return null;
     }
 

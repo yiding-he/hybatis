@@ -1,12 +1,13 @@
 package com.hyd.hybatis.query;
 
 import com.hyd.hybatis.sql.SqlCommand;
+import com.hyd.hybatis.utils.Obj;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.hyd.hybatis.utils.Obj.isNotEmpty;
+import java.util.stream.Stream;
 
 /**
  * 表示一个查询结构，查询结构与查询结构之间可以相互组合，以实现查询结构的复用。
@@ -33,9 +34,38 @@ public interface Query<Q extends Query<Q>> {
      */
     String getAlias();
 
+    /**
+     * 生成 SQL Command 对象
+     */
     SqlCommand toSqlCommand();
 
     ////////////////////////////////////////
+
+    /**
+     * 选取指定的字段
+     *
+     * @param column 字段名或表达式
+     */
+    default Projection col(String column) {
+        if (Obj.isEmpty(column)) {
+            return null;
+        } else {
+            return Projection.from(this).col(column);
+        }
+    }
+
+    /**
+     * 选取指定的字段
+     */
+    default List<Projection> cols(String... columns) {
+        if (columns == null) {
+            return Collections.emptyList();
+        }
+        return Stream.of(columns)
+            .map(this::col)
+            .filter(Obj::isNotEmpty)
+            .collect(Collectors.toList());
+    }
 
     default String getProjectionsStatement() {
         var list = new ArrayList<String>();
