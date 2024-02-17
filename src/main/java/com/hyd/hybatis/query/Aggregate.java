@@ -2,17 +2,13 @@ package com.hyd.hybatis.query;
 
 import com.hyd.hybatis.query.aggregate.Count;
 
-public interface Aggregate<A extends Aggregate<A>> {
+public interface Aggregate<A extends Aggregate<A>> extends Alias {
 
-    static Count count(Projection projection) {
+    static Count count(Column<?> column) {
         var count = new Count();
-        count.setProjection(projection);
+        count.setColumn(column);
         return count;
     }
-
-    Projection getProjection();
-
-    String getAlias();
 
     String toSqlExpression();
 }

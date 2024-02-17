@@ -20,6 +20,17 @@ public class HybatisBasicTest extends HybatisSpringBootTestApplicationTest {
     }
 
     @Test
+    public void testQueryWithParam() throws Exception {
+        var rows = hybatis.queryList(
+            "select " +
+                "emp_no, emp_no + ? as emp_no2, " +
+                "concat(first_name, ?, last_name) as emp_name " +
+                "from EMPLOYEES limit 10", 1, ":");
+        assertFalse(rows.isEmpty());
+        rows.forEach(System.out::println);
+    }
+
+    @Test
     public void testQueryBeanList() throws Exception {
         var employees = hybatis.queryList(Employee.class, "select * from EMPLOYEES limit 10");
         assertFalse(employees.isEmpty());

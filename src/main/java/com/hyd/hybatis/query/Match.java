@@ -33,14 +33,14 @@ public interface Match {
         return OR(List.of(matches));
     }
 
-    static Equal equal(Projection projection, Object value) {
-        return new Equal(projection, value);
+    static Equal equal(Column<?> column, Object value) {
+        return new Equal(column, value);
     }
 
     /**
      * 要过滤的字段
      */
-    Projection getProjection();
+    Column<?> getColumn();
 
     /**
      * 过滤操作的目标对象，可以是字符串表达式，或 Projection
