@@ -16,14 +16,13 @@ public class Equal extends AbstractMatch {
     }
 
     @Override
-    public SqlCommand toSqlCommand() {
+    public SqlCommand toSqlFragment() {
         var value = getValue();
         if (value == null) {
             return null;
         }
-        return new SqlCommand(
-            getColumn().toSqlExpression() + " = ?",
-            Collections.singletonList(value)
-        );
+        return new SqlCommand()
+            .append(getColumn().toSqlFragment())
+            .append("=?", Collections.singletonList(value));
     }
 }

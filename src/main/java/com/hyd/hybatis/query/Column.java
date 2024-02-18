@@ -1,7 +1,10 @@
 package com.hyd.hybatis.query;
 
 import com.hyd.hybatis.query.column.Lit;
+import com.hyd.hybatis.sql.SqlCommand;
 import com.hyd.hybatis.utils.Str;
+
+import java.util.Collections;
 
 /**
  * 表示字段
@@ -27,9 +30,10 @@ public interface Column<C extends Column<C>> extends Alias {
 
     // TODO 字段表达式也应该是可以带参数的
 
-    default String toSqlExpression() {
-        return (Str.isBlank(getFrom()) ? "" : (getFrom() + ".")) +
-            getName() +
-            (Str.isBlank(getAlias()) ? "" : " AS " + getAlias());
+    default SqlCommand toSqlFragment() {
+        return new SqlCommand(
+            (Str.isBlank(getFrom()) ? "" : (getFrom() + ".")) + getName() + appendAlias(),
+            Collections.emptyList()
+        );
     }
 }

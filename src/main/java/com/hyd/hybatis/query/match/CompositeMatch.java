@@ -36,14 +36,14 @@ public class CompositeMatch implements Match {
     }
 
     @Override
-    public SqlCommand toSqlCommand() {
+    public SqlCommand toSqlFragment() {
         var statements = new ArrayList<String>();
         var params = new ArrayList<>();
         for (var match : matches) {
             if (match == null) {
                 continue;
             }
-            var sql = match.toSqlCommand();
+            var sql = match.toSqlFragment();
             if (sql == null || isEmpty(sql.getStatement())) {
                 continue;
             }

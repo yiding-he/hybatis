@@ -5,7 +5,7 @@ import com.hyd.hybatis.sql.SqlCommand;
 public class Join extends AbstractQuery<Join> {
 
     @Override
-    public SqlCommand getFromSegment() {
+    public SqlCommand getFromFragment() {
         // TODO implement this
         return null;
     }
