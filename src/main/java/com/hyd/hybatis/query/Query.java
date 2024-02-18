@@ -5,13 +5,12 @@ import com.hyd.hybatis.sql.SqlCommand;
 import com.hyd.hybatis.utils.Obj;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.hyd.hybatis.utils.Obj.defaultValue;
 import static com.hyd.hybatis.utils.Obj.isNotEmpty;
+import static java.util.Collections.emptyList;
 
 /**
  * 表示一个查询结构，查询结构与查询结构之间可以相互组合，以实现查询结构的复用。
@@ -67,7 +66,7 @@ public interface Query<Q extends Query<Q>> extends Alias {
      */
     default List<Column<?>> cols(String... columns) {
         if (columns == null) {
-            return Collections.emptyList();
+            return emptyList();
         }
         return Stream.of(columns)
             .map(this::col)
@@ -75,24 +74,27 @@ public interface Query<Q extends Query<Q>> extends Alias {
             .collect(Collectors.toList());
     }
 
-    default String getProjectionsStatement() {
-        var list = new ArrayList<String>();
+    default SqlCommand getSelectFragment() {
+        var columnsList = new ArrayList<String>();
+        var paramsList = new ArrayList<>();
 
         // 从 getProjections() 拼接查询字段
-        list.addAll(
-            this.getColumns().stream()
-                .map(Column::toSqlExpression)
-                .collect(Collectors.toList())
-        );
+        this.getColumns().stream().map(Column::toSqlFragment).forEach(f -> {
+            columnsList.add(f.getStatement());
+            paramsList.addAll(f.getParams());
+        });
 
         // 从 getAggregates() 拼接查询字段
-        list.addAll(
-            this.getAggregates().stream()
-                .map(Aggregate::toSqlExpression)
-                .collect(Collectors.toList())
-        );
+        this.getAggregates().stream().map(Aggregate::toSqlFragment).forEach(f -> {
+            columnsList.add(f.getStatement());
+            paramsList.addAll(f.getParams());
+        });
 
-        return String.join(",", list);
+        if (columnsList.isEmpty()) {
+            return new SqlCommand("*", emptyList());
+        } else {
+            return new SqlCommand(String.join(",", columnsList), paramsList);
+        }
     }
 
     ////////////////////////////////////////
@@ -101,21 +103,21 @@ public interface Query<Q extends Query<Q>> extends Alias {
      * 生成 SQL Command 对象
      */
     default SqlCommand toSqlCommand() {
-
-        var fromSegment = getFromSegment();
-        var params = new ArrayList<>(fromSegment.getParams());
-
-        var statement = "SELECT " + defaultValue(getProjectionsStatement(), "*") +
-            " FROM " + fromSegment.getStatement() + appendAlias();
+        var sqlCommand = new SqlCommand("SELECT ")
+            .append(getSelectFragment())
+            .append(" FROM ")
+            .append(getFromFragment())
+            .append(appendAlias());
 
         if (isNotEmpty(this.getMatches())) {
-            var matchSql = Match.AND(this.getMatches()).toSqlCommand();
-            statement += " WHERE " + matchSql.getStatement();
-            params.addAll(matchSql.getParams());
+            sqlCommand = sqlCommand
+                .append(" WHERE ")
+                .append(Match.AND(this.getMatches()).toSqlFragment());
         }
 
-        return new SqlCommand(statement, params);
+        // TODO 自动添加 group by
+        return sqlCommand;
     }
 
-    SqlCommand getFromSegment();
+    SqlCommand getFromFragment();
 }

@@ -19,6 +19,10 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
 
     protected List<Aggregate<?>> aggregates = new ArrayList<>();
 
+    protected int limit = -1;
+
+    protected int skip = 0;
+
     @Override
     public List<Match> getMatches() {
         return this.matches;
@@ -39,7 +43,14 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
         return columns;
     }
 
-    public void validate() {
+    @Override
+    public int getLimit() {
+        return limit;
+    }
+
+    @Override
+    public int getSkip() {
+        return skip;
     }
 
     public Q matches(List<Match> matches) {
@@ -71,6 +82,16 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
 
     public Q as(String alias) {
         this.alias = alias;
+        return (Q) this;
+    }
+
+    public Q limit(int limit) {
+        this.limit = limit;
+        return (Q) this;
+    }
+
+    public Q skip(int skip) {
+        this.skip = skip;
         return (Q) this;
     }
 }

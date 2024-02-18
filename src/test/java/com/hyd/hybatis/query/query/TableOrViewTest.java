@@ -10,18 +10,18 @@ class TableOrViewTest extends HybatisSpringBootTestApplicationTest {
 
     @Test
     void testQuery1() throws Exception {
-        TableOrView u = new TableOrView("DEPARTMENTS").as("d");
-        u = u.matches(
+        TableOrView d = new TableOrView("DEPARTMENTS").as("d");
+        d = d.matches(
             AND(
-                equal(u.col("dept_no"), "d005"),
-                equal(u.col("dept_name"), "Development")
+                equal(d.col("dept_no"), "d005"),
+                equal(d.col("dept_name"), "Development")
             )
         ).columns(
-            u.col("dept_no").as("DepartmentNumber")
+            d.col("dept_no").as("DepartmentNumber")
         );
 
         hybatis
-            .queryList(u.toSqlCommand())
+            .queryList(d.toSqlCommand())
             .forEach(System.out::println);
     }
 }

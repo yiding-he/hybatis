@@ -47,5 +47,5 @@ public interface Match {
      */
     Object getValue();
 
-    SqlCommand toSqlCommand();
+    SqlCommand toSqlFragment();
 }
