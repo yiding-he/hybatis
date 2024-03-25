@@ -15,7 +15,7 @@ import static java.util.Collections.emptyList;
 /**
  * 表示一个查询结构，查询结构与查询结构之间可以相互组合，以实现查询结构的复用。
  */
-public interface Query<Q extends Query<Q>> extends Alias {
+public interface Query<Q extends Query<Q>> extends Alias, Limit {
 
     /**
      * 过滤条件列表
@@ -33,18 +33,9 @@ public interface Query<Q extends Query<Q>> extends Alias {
     List<Column<?>> getColumns();
 
     /**
-     * 跳过的行数
+     * 分组字段列表
      */
-    default int getSkip() {
-        return 0;
-    }
-
-    /**
-     * 最多返回记录数，-1 表示不限制
-     */
-    default int getLimit() {
-        return -1;
-    }
+    List<Column<?>> getGroupBy();
 
     ////////////////////////////////////////
 
@@ -97,6 +88,18 @@ public interface Query<Q extends Query<Q>> extends Alias {
         }
     }
 
+    default SqlCommand getGroupByFragment() {
+        var groupBy = getGroupBy();
+        if (groupBy.isEmpty()) {
+            return new SqlCommand("");
+        }
+        return new SqlCommand(" GROUP BY " + groupBy.stream()
+            .map(Column::toSqlFragment)
+            .map(SqlCommand::getStatement)
+            .collect(Collectors.joining(","))
+        );
+    }
+
     ////////////////////////////////////////
 
     /**
@@ -116,8 +119,13 @@ public interface Query<Q extends Query<Q>> extends Alias {
         }
 
         // TODO 自动添加 group by
-        return sqlCommand;
+        return sqlCommand
+            .append(getGroupByFragment())
+            .append(appendLimit());
     }
 
+    /**
+     * 生成 From 子句内容，可以是表名/视图名，也可以是一个子查询
+     */
     SqlCommand getFromFragment();
 }
