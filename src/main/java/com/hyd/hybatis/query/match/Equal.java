@@ -21,8 +21,11 @@ public class Equal extends AbstractMatch {
         if (value == null) {
             return null;
         }
-        return new SqlCommand()
-            .append(getColumn().toSqlFragment())
-            .append("=?", Collections.singletonList(value));
+        var command = new SqlCommand().append(getColumn().toSqlFragment());
+        if (value instanceof Column<?>) {
+            return command.append("=").append(((Column<?>) value).toSqlFragment());
+        } else {
+            return command.append("=?", Collections.singletonList(value));
+        }
     }
 }

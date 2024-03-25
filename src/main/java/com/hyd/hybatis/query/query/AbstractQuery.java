@@ -4,9 +4,11 @@ import com.hyd.hybatis.query.Aggregate;
 import com.hyd.hybatis.query.Column;
 import com.hyd.hybatis.query.Match;
 import com.hyd.hybatis.query.Query;
+import com.hyd.hybatis.query.column.Col;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
 public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query<Q> {
@@ -17,11 +19,13 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
 
     protected List<Column<?>> columns = new ArrayList<>();
 
+    protected List<Column<?>> groupBy = new ArrayList<>();
+
     protected List<Aggregate<?>> aggregates = new ArrayList<>();
 
     protected int limit = -1;
 
-    protected int skip = 0;
+    protected int offset = 0;
 
     @Override
     public List<Match> getMatches() {
@@ -49,8 +53,13 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
     }
 
     @Override
-    public int getSkip() {
-        return skip;
+    public int getOffset() {
+        return offset;
+    }
+
+    @Override
+    public List<Column<?>> getGroupBy() {
+        return groupBy;
     }
 
     public Q matches(List<Match> matches) {
@@ -69,6 +78,23 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
 
     public Q columns(Column<?>... columns) {
         return columns(List.of(columns));
+    }
+
+    public Q columnNames(List<String> columns) {
+        return columns(columns.stream().map(this::col).collect(Collectors.toList()));
+    }
+
+    public Q columnNames(String... columns) {
+        return columnNames(List.of(columns));
+    }
+
+    public Q groupBy(List<Column<?>> columns) {
+        this.groupBy.addAll(columns);
+        return (Q) this;
+    }
+
+    public Q groupBy(Column<?>... columns) {
+        return groupBy(List.of(columns));
     }
 
     public Q aggregates(List<Aggregate<?>> aggregates) {
@@ -91,7 +117,7 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
     }
 
     public Q skip(int skip) {
-        this.skip = skip;
+        this.offset = skip;
         return (Q) this;
     }
 }

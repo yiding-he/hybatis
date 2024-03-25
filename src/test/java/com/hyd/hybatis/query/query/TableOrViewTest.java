@@ -18,7 +18,7 @@ class TableOrViewTest extends HybatisSpringBootTestApplicationTest {
             )
         ).columns(
             d.col("dept_no").as("DepartmentNumber")
-        );
+        ).limit(10);
 
         hybatis
             .queryList(d.toSqlCommand())
