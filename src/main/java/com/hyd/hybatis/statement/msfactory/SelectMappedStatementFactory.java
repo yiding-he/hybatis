@@ -38,7 +38,7 @@ public class SelectMappedStatementFactory extends AbstractMappedStatementFactory
 
     private static Class<?> getReturnEntityType(Class<?> mapperClass, Method method) {
         if (CrudMapper.class.isAssignableFrom(mapperClass)) {
-            return Reflections.getGenericTypeArg(mapperClass);
+            return Reflections.getMapperGenericTypeArg(mapperClass);
         } else {
             return Reflections.getReturnEntityType(method);
         }

@@ -1,5 +1,9 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.mappers.BasePageCrudMapper;
+import com.hyd.hybatis.mappers.EmployeeCrudMapper;
+import com.hyd.hybatis.mappers.EmployeeMapper;
+import com.hyd.hybatis.mappers.EmployeeRowMapper;
 import com.hyd.hybatis.reflection.Reflections;
 import org.junit.jupiter.api.Test;
 
@@ -40,5 +44,21 @@ public class JavaGenericsTest {
         System.out.println("field.getGenericType() = " + field.getGenericType());
         Class<?> genericTypeArg = Reflections.getGenericTypeArg(field.getGenericType());
         System.out.println("genericTypeArg = " + genericTypeArg);
+    }
+
+    @Test
+    public void testMapperGenericTypeArg() throws Exception {
+        System.out.println("-- getMapperGenericTypeArg: ");
+        System.out.println(Reflections.getMapperGenericTypeArg(EmployeeMapper.class));
+        System.out.println(Reflections.getMapperGenericTypeArg(EmployeeCrudMapper.class));
+        System.out.println(Reflections.getMapperGenericTypeArg(EmployeeRowMapper.class));
+        System.out.println(Reflections.getMapperGenericTypeArg(BasePageCrudMapper.class));
+
+        System.out.println();
+        System.out.println("-- getGenericTypeArg: ");
+        System.out.println(Reflections.getGenericTypeArg(EmployeeMapper.class));
+        System.out.println(Reflections.getGenericTypeArg(EmployeeCrudMapper.class));
+        System.out.println(Reflections.getGenericTypeArg(EmployeeRowMapper.class));
+        System.out.println(Reflections.getGenericTypeArg(BasePageCrudMapper.class));
     }
 }
