@@ -5,6 +5,9 @@ import com.hyd.hybatis.query.Query;
 import com.hyd.hybatis.sql.SqlCommand;
 import lombok.Getter;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Getter
 public class Join extends AbstractQuery<Join> {
 
@@ -18,22 +21,27 @@ public class Join extends AbstractQuery<Join> {
 
     private JoinType joinType = JoinType.Left;
 
-    private Match match;
+    private Set<String> joinColumns;
 
     public Join() {
     }
 
-    public Join(Query<?> leftQuery, Query<?> rightQuery, JoinType joinType, Match match) {
+    public Join(Query<?> leftQuery, Query<?> rightQuery, JoinType joinType, String... joinColumns) {
         this.leftQuery = leftQuery;
         this.rightQuery = rightQuery;
         this.joinType = joinType;
-        this.match = match;
+        this.joinColumns = Set.of(joinColumns);
     }
 
     @Override
     public SqlCommand getFromFragment() {
         var leftCommand = leftQuery.getFromFragment();
         var rightCommand = rightQuery.getFromFragment();
+        var match = Match.AND(
+            joinColumns.stream()
+                .map(column -> Match.equal(leftQuery.col(column), rightQuery.col(column)))
+                .collect(Collectors.toList())
+        );
         return new SqlCommand()
             .append("(")
             .append(leftCommand.getStatement(), leftCommand.getParams())

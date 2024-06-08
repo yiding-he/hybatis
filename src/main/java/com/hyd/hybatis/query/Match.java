@@ -11,6 +11,8 @@ import java.util.List;
  */
 public interface Match {
 
+    ////////////////////////// 构建 CompositeMatch 对象的静态方法
+
     static CompositeMatch AND(List<Match> matches) {
         var compositeMatch = new CompositeMatch();
         compositeMatch.setOperator(CompositeMatch.Operator.AND);
@@ -33,9 +35,13 @@ public interface Match {
         return OR(List.of(matches));
     }
 
+    ////////////////////////// 构建 AbstractMatch 对象的静态方法
+
     static Equal equal(Column<?> column, Object value) {
         return new Equal(column, value);
     }
+
+    //////////////////////////
 
     /**
      * 要过滤的字段
