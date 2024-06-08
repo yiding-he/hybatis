@@ -58,7 +58,7 @@ public class Reflections {
     public static boolean isPojoClassQueryable(Class<?> pojoType) {
         return
             Conditions.class.isAssignableFrom(pojoType) ||
-            !getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).isEmpty();
+                !getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).isEmpty();
     }
 
     /**
@@ -69,12 +69,23 @@ public class Reflections {
         return getGenericTypeArg(type);
     }
 
+    public static Class<?> getMapperGenericTypeArg(Class<?> mapperClass) {
+        var typeClass = getGenericTypeArg(mapperClass);
+        if (typeClass != null) {
+            return typeClass;
+        }
+        for (Class<?> i : mapperClass.getInterfaces()) {
+            return getMapperGenericTypeArg(i);
+        }
+        return null;
+    }
+
     public static Class<?> getGenericTypeArg(Type type) {
         if (type instanceof Class && ((Class<?>) type).getGenericInterfaces().length > 0) {
             if (((Class<?>) type).getGenericInterfaces()[0] instanceof ParameterizedType) {
                 var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
                 var arg0 = genericInterface.getActualTypeArguments()[0];
-                return arg0 instanceof Class? (Class<?>) arg0: null;
+                return arg0 instanceof Class ? (Class<?>) arg0 : null;
             } else {
                 return null;
             }
@@ -148,7 +159,7 @@ public class Reflections {
         if (field.isAnnotationPresent(HbColumn.class)) {
             return field.getAnnotation(HbColumn.class).value();
         } else {
-            return camelToUnderline? Str.camel2Underline(field.getName()): field.getName();
+            return camelToUnderline ? Str.camel2Underline(field.getName()) : field.getName();
         }
     }
 
