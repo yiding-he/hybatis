@@ -1,39 +1,36 @@
 package com.hyd.hybatis.query;
 
-import com.hyd.hybatis.query.column.Lit;
+import com.hyd.hybatis.query.column.ExpColumn;
+import com.hyd.hybatis.query.column.LitColumn;
+import com.hyd.hybatis.query.column.QueryColumn;
 import com.hyd.hybatis.sql.SqlCommand;
-import com.hyd.hybatis.utils.Str;
-
-import java.util.Collections;
 
 /**
- * 表示字段
+ * 表示字段。字段可以是三种情况之一：
+ * 1. 来自某个表的字段；
+ * 2. 常量值；
+ * 3. 表达式。
  */
-public interface Column<C extends Column<C>> extends Alias {
+public interface Column<C extends Column<C>> extends Alias, SqlFragment {
 
-    /**
-     * 以表达式作为字段
-     */
-    static Lit lit(String expression) {
-        return new Lit(expression);
+    static QueryColumn from(Query<?> query, String colName) {
+        return new QueryColumn(query, colName, null);
     }
 
-    /**
-     * 字段来源，如果来自 Query，则取其别名；如果是表达式，则没有来源
-     */
-    String getFrom();
+    static LitColumn lit(Object value) {
+        return new LitColumn(value);
+    }
 
-    /**
-     * 字段名或表达式
-     */
-    String getName();
+    static ExpColumn exp(String statement, Object... params) {
+        return new ExpColumn(statement, params);
+    }
 
-    // TODO 字段表达式也应该是可以带参数的
+    //////////////////////////
 
-    default SqlCommand toSqlFragment() {
-        return new SqlCommand(
-            (Str.isBlank(getFrom()) ? "" : (getFrom() + ".")) + getName() + appendAlias(),
-            Collections.emptyList()
-        );
+    static ExpColumn count(Column<?> column) {
+        var sqlCommand = new SqlCommand("count(")
+            .append(column.toSqlFragment())
+            .append(")");
+        return new ExpColumn(sqlCommand);
     }
 }

@@ -1,6 +1,7 @@
 package com.hyd.hybatis.query;
 
-import com.hyd.hybatis.query.column.Col;
+import com.hyd.hybatis.query.column.QueryColumn;
+import com.hyd.hybatis.query.query.Join;
 import com.hyd.hybatis.sql.SqlCommand;
 import com.hyd.hybatis.utils.Obj;
 
@@ -23,11 +24,6 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
     List<Match> getMatches();
 
     /**
-     * 聚合操作列表
-     */
-    List<Aggregate<?>> getAggregates();
-
-    /**
      * 直接选取的字段列表
      */
     List<Column<?>> getColumns();
@@ -44,11 +40,11 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
      *
      * @param column 字段名或表达式
      */
-    default Col col(String column) {
+    default QueryColumn col(String column) {
         if (Obj.isEmpty(column)) {
             return null;
         } else {
-            return new Col(this, column, null);
+            return new QueryColumn(this, column, null);
         }
     }
 
@@ -70,13 +66,14 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
         var paramsList = new ArrayList<>();
 
         // 从 getProjections() 拼接查询字段
-        this.getColumns().stream().map(Column::toSqlFragment).forEach(f -> {
+        this.getColumns().forEach(c -> {
+            var f = c.toSqlFragment();
             columnsList.add(f.getStatement());
             paramsList.addAll(f.getParams());
         });
 
-        // 从 getAggregates() 拼接查询字段
-        this.getAggregates().stream().map(Aggregate::toSqlFragment).forEach(f -> {
+        // 从 getGroupBy() 拼接分组字段
+        this.getGroupBy().stream().map(Column::toSqlFragment).forEach(f -> {
             columnsList.add(f.getStatement());
             paramsList.addAll(f.getParams());
         });
@@ -98,6 +95,16 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
             .map(SqlCommand::getStatement)
             .collect(Collectors.joining(","))
         );
+    }
+
+    ////////////////////////////////////////
+
+    default Join leftJoin(Query<?> other, String... joinColumns) {
+        return new Join(this, other, Join.JoinType.Left, joinColumns);
+    }
+
+    default Join rightJoin(Query<?> other, String... joinColumns) {
+        return new Join(this, other, Join.JoinType.Right, joinColumns);
     }
 
     ////////////////////////////////////////
