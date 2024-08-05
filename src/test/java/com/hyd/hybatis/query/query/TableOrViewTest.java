@@ -24,4 +24,11 @@ class TableOrViewTest extends HybatisSpringBootTestApplicationTest {
             .queryList(d.toSqlCommand())
             .forEach(System.out::println);
     }
+
+    @Test
+    public void testQuery2() throws Exception {
+        hybatis.queryList(
+            new TableOrView("EMPLOYEES").limit(10).toSqlCommand()
+        ).forEach(System.out::println);
+    }
 }

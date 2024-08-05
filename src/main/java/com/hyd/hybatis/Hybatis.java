@@ -421,6 +421,8 @@ public class Hybatis {
             Object param = params.get(i);
             if (param == null) {
                 ps.setNull(i + 1, Types.NULL);
+            } else if (param instanceof Integer) {
+                ps.setInt(i + 1, (Integer) param);
             } else {
                 ps.setObject(i + 1, param);
             }

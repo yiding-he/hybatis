@@ -23,11 +23,14 @@ public class RawSqlFragment implements SqlFragment {
 
     public void setSqlCommand(String statement, Object... params) {
         this.sqlCommand = new SqlCommand(statement, List.of(params));
+    }
 
+    public SqlCommand getSqlCommand() {
+        return this.sqlCommand;
     }
 
     @Override
     public SqlCommand toSqlFragment() {
-        return this.sqlCommand;
+        return this.getSqlCommand();
     }
 }

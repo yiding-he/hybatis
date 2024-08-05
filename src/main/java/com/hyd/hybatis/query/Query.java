@@ -73,12 +73,6 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
             paramsList.addAll(f.getParams());
         });
 
-        // 从 getGroupBy() 拼接分组字段
-        this.getGroupBy().stream().map(Column::toSqlFragment).forEach(f -> {
-            columnsList.add(f.getStatement());
-            paramsList.addAll(f.getParams());
-        });
-
         if (columnsList.isEmpty()) {
             return new SqlCommand("*", emptyList());
         } else {
