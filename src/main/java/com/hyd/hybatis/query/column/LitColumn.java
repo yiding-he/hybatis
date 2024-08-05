@@ -13,7 +13,13 @@ public class LitColumn extends AbstractColumn<LitColumn> {
     }
 
     public void setValue(Object value) {
-        setSqlCommand("?", value);
+        if (value == null) {
+            setSqlCommand(null);
+        } else if (value instanceof Integer) {
+            setSqlCommand(String.valueOf(value));
+        } else {
+            setSqlCommand("?", value);
+        }
     }
 
     @SuppressWarnings("unchecked")
