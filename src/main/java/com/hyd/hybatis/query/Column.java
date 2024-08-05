@@ -3,6 +3,7 @@ package com.hyd.hybatis.query;
 import com.hyd.hybatis.query.column.ExpColumn;
 import com.hyd.hybatis.query.column.LitColumn;
 import com.hyd.hybatis.query.column.QueryColumn;
+import com.hyd.hybatis.query.match.Equal;
 import com.hyd.hybatis.sql.SqlCommand;
 
 /**
@@ -32,5 +33,11 @@ public interface Column<C extends Column<C>> extends Alias, SqlFragment {
             .append(column.toSqlFragment())
             .append(")");
         return new ExpColumn(sqlCommand);
+    }
+
+    //////////////////////////
+
+    default Equal eq(Object value) {
+        return new Equal(this, value);
     }
 }
