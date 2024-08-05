@@ -8,8 +8,39 @@ import lombok.Getter;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * 连接两个二维表对象，得到一个新的二维表。
+ */
 @Getter
 public class Join extends AbstractQuery<Join> {
+
+    public static class JoinBuilder {
+
+        private final Join join = new Join();
+
+        public JoinBuilder(Query<?> leftQuery) {
+            join.leftQuery = leftQuery;
+        }
+
+        public JoinBuilder with(Query<?> rightQuery) {
+            join.rightQuery = rightQuery;
+            return this;
+        }
+
+        public JoinBuilder type(JoinType joinType) {
+            join.joinType = joinType;
+            return this;
+        }
+
+        public JoinBuilder using(String... joinColumns) {
+            join.joinColumns = Set.of(joinColumns);
+            return this;
+        }
+
+        public Join build() {
+            return join;
+        }
+    }
 
     public enum JoinType {
         Left, Right, Inner

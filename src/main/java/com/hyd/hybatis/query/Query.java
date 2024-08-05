@@ -7,6 +7,7 @@ import com.hyd.hybatis.utils.Obj;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,6 +106,12 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
 
     default Join rightJoin(Query<?> other, String... joinColumns) {
         return new Join(this, other, Join.JoinType.Right, joinColumns);
+    }
+
+    default Join join(Consumer<Join.JoinBuilder> builderConsumer) {
+        var builder = new Join.JoinBuilder(this);
+        builderConsumer.accept(builder);
+        return builder.build();
     }
 
     ////////////////////////////////////////

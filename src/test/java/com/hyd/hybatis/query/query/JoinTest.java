@@ -1,6 +1,7 @@
 package com.hyd.hybatis.query.query;
 
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
+import com.hyd.hybatis.query.query.Join.JoinType;
 import org.junit.jupiter.api.Test;
 
 import static com.hyd.hybatis.query.Column.count;
@@ -12,8 +13,8 @@ class JoinTest extends HybatisSpringBootTestApplicationTest {
         var e = new TableOrView("EMPLOYEES").as("e");
         var de = new TableOrView("DEPT_EMP").as("de");
 
-        var join = e.leftJoin(
-            de, "EMP_NO"
+        var join = e.join(
+            _join -> _join.with(de).type(JoinType.Left).using("EMP_NO")
         ).columns(
             count(e.col("EMP_NO")).as("EMP_COUNT")
         ).groupBy(
