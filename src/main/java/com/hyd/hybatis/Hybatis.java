@@ -14,6 +14,7 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
@@ -27,12 +28,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.apache.ibatis.session.TransactionIsolationLevel.READ_COMMITTED;
-
 @Slf4j
 public class Hybatis {
-
-    private static final ThreadLocal<Transaction> currentTransaction = new ThreadLocal<>();
 
     private static void closeWhenNecessary(Connection conn, boolean doCloseByDefault) {
         try {
@@ -326,33 +323,40 @@ public class Hybatis {
         });
     }
 
-    @Transactional
+    private Transaction getTransaction() {
+        // 在 Spring 框架中，newTransaction() 方法的后面两个参数不起作用
+        return transactionFactory.newTransaction(dataSource, null, false);
+    }
+
+    /**
+     * 通过 @Transactional 注解，让 Spring 框架开启事务
+     * 如果已经在事务中则取现有的事务, 否则就创建一个新的事务
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
     public void runTransaction(DatabaseTask databaseTask) throws HybatisException {
+        Transaction transaction = null;
         try {
-            // 在 Spring 框架中，newTransaction() 方法的后面两个参数不起作用
-            var transaction = transactionFactory.newTransaction(dataSource, READ_COMMITTED, false);
-            currentTransaction.set(transaction);
+            transaction = getTransaction();
             databaseTask.run();
-            currentTransaction.get().commit();
+            transaction.commit();
 
         } catch (Exception e) {
-            if (currentTransaction.get() != null) {
+            if (transaction != null) {
                 try {
-                    currentTransaction.get().rollback();
+                    transaction.rollback();
                 } catch (SQLException ex) {
-                    log.warn("Transaction rollback failed: {}", ex.toString());
+                    log.warn("Transaction rollback failed", ex);
                 }
             }
             throw new HybatisException(e);
         } finally {
-            if (currentTransaction.get() != null) {
+            if (transaction != null) {
                 try {
-                    currentTransaction.get().close();
+                    transaction.close();
                 } catch (SQLException e) {
-                    log.warn("Transaction close failed: {}", e.toString());
+                    log.warn("Transaction close failed", e);
                 }
             }
-            currentTransaction.remove();
         }
     }
 
@@ -383,25 +387,7 @@ public class Hybatis {
     }
 
     private Connection getOrCreateConnection() throws SQLException {
-        return getOrCreateConnection(true);
-    }
-
-    private Connection getOrCreateConnection(boolean autoCommit) throws SQLException {
-        Connection connection;
-        if (currentTransaction.get() != null) {
-            connection = currentTransaction.get().getConnection();
-            if (connection.getAutoCommit()) {
-                connection.setAutoCommit(false);
-            }
-        } else {
-            connection = DataSourceUtils.getConnection(dataSource);
-        }
-
-        // 如果是 DataSourceUtils 新创建的连接，而不在事务当中，则可以随意设置 autoCommit
-        if (connection.getAutoCommit()) {
-            connection.setAutoCommit(autoCommit);
-        }
-        return connection;
+        return DataSourceUtils.getConnection(dataSource);
     }
 
     private int executeCommand(Connection conn, SqlCommand command) throws SQLException {
