@@ -140,7 +140,7 @@ public class SqlHelper {
         select.OrderBy(orderBy);
     }
 
-    private static void injectCondition(Sql<?> sql, Condition<?> condition) {
+    public static void injectCondition(Sql<?> sql, Condition<?> condition) {
         if (condition != null) {
             String columnName = condition.getColumn();
             if (condition.getStartsWith() != null) {
