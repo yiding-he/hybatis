@@ -6,6 +6,9 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 查询条件。这里允许为一个字段设置多个查询条件
+ */
 @Data
 public class Condition<T> implements Serializable {
 

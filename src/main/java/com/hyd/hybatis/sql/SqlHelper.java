@@ -157,11 +157,19 @@ public class SqlHelper {
             }
             if (condition.getEq() != null) {
                 var value = condition.getEq();
-                sql.And(columnName + "=?", value);
+                if (Sql.isNowConstant(value)) {
+                    sql.And(columnName + "=" + sql.getDialect().nowFunction());
+                } else {
+                    sql.And(columnName + "=?", value);
+                }
             }
             if (condition.getNe() != null) {
                 var value = condition.getNe();
-                sql.And(columnName + "<>?", value);
+                if (Sql.isNowConstant(value)) {
+                    sql.And(columnName + "<>" + sql.getDialect().nowFunction());
+                } else {
+                    sql.And(columnName + "<>?", value);
+                }
             }
             if (condition.getNull() != null) {
                 var value = condition.getNull();
@@ -173,19 +181,35 @@ public class SqlHelper {
             }
             if (condition.getLt() != null) {
                 var value = condition.getLt();
-                sql.And(columnName + "<?", value);
+                if (Sql.isNowConstant(value)) {
+                    sql.And(columnName + "<" + sql.getDialect().nowFunction());
+                } else {
+                    sql.And(columnName + "<?", value);
+                }
             }
             if (condition.getLte() != null) {
                 var value = condition.getLte();
-                sql.And(columnName + "<=?", value);
+                if (Sql.isNowConstant(value)) {
+                    sql.And(columnName + "<=" + sql.getDialect().nowFunction());
+                } else {
+                    sql.And(columnName + "<=?", value);
+                }
             }
             if (condition.getGt() != null) {
                 var value = condition.getGt();
-                sql.And(columnName + ">?", value);
+                if (Sql.isNowConstant(value)) {
+                    sql.And(columnName + ">" + sql.getDialect().nowFunction());
+                } else {
+                    sql.And(columnName + ">?", value);
+                }
             }
             if (condition.getGte() != null) {
                 var value = condition.getGte();
-                sql.And(columnName + ">=?", value);
+                if (Sql.isNowConstant(value)) {
+                    sql.And(columnName + ">=" + sql.getDialect().nowFunction());
+                } else {
+                    sql.And(columnName + ">=?", value);
+                }
             }
             if (condition.getIn() != null) {
                 var value = condition.getIn();

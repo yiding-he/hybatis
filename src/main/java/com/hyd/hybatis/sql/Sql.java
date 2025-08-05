@@ -3,9 +3,14 @@ package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
+import com.hyd.hybatis.sql.dialect.DefaultDialect;
+import com.hyd.hybatis.sql.dialect.Dialect;
 import com.hyd.hybatis.utils.Str;
 
 import java.lang.reflect.Array;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,6 +30,16 @@ import static java.util.Collections.emptyList;
 public abstract class Sql<T extends Sql<?>> {
 
     public static final Object NULL = new Object();
+
+    public static final Date NOW_DATE = new Date(-1);
+
+    public static final LocalDateTime NOW_LOCAL_DATETIME = LocalDateTime.of(-1, 1, 1, 0, 0, 0, 0);
+
+    public static final ZonedDateTime NOW_ZONED_DATETIME = ZonedDateTime.of(NOW_LOCAL_DATETIME, ZoneId.systemDefault());
+
+    public static boolean isNowConstant(Object obj) {
+        return obj == NOW_DATE || obj == NOW_LOCAL_DATETIME || obj == NOW_ZONED_DATETIME;
+    }
 
     private Sql() {
 
@@ -61,6 +76,8 @@ public abstract class Sql<T extends Sql<?>> {
 
     protected String suffix;
 
+    protected Dialect dialect = new DefaultDialect();
+
     public String getSql() {
         return toCommand().getStatement();
     }
@@ -71,6 +88,10 @@ public abstract class Sql<T extends Sql<?>> {
 
     public List<Object> getParams() {
         return params;
+    }
+
+    public Dialect getDialect() {
+        return dialect;
     }
 
     public boolean hasConditions() {
@@ -184,6 +205,11 @@ public abstract class Sql<T extends Sql<?>> {
         for (Condition<?> condition : conditions.conditionsList()) {
             SqlHelper.injectCondition(this, condition);
         }
+        return (T) this;
+    }
+
+    public T withDialect(Dialect dialect) {
+        this.dialect = dialect;
         return (T) this;
     }
 
