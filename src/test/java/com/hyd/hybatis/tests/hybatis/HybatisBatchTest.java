@@ -1,5 +1,6 @@
-package com.hyd.hybatis;
+package com.hyd.hybatis.tests.hybatis;
 
+import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
 import com.hyd.hybatis.sql.BatchCommand;
 import org.junit.jupiter.api.Test;
 

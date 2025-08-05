@@ -1,4 +1,4 @@
-package com.hyd.hybatis.tests;
+package com.hyd.hybatis.tests.mapper;
 
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
@@ -10,6 +10,14 @@ public class EmployeeCrudMapperTest extends HybatisSpringBootTestApplicationTest
 
     @Autowired
     private EmployeeCrudMapper employeeCrudMapper;
+
+    @Test
+    public void testCount() throws Exception {
+        var count = employeeCrudMapper.count(
+            new Conditions().withColumn("first_name").startWith("B")
+        );
+        System.out.println("count = " + count);
+    }
 
     @Test
     void testSelectList() {

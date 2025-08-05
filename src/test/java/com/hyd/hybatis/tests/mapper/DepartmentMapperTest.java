@@ -1,4 +1,4 @@
-package com.hyd.hybatis.tests;
+package com.hyd.hybatis.tests.mapper;
 
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
@@ -15,13 +15,32 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
     private DepartmentMapper departmentMapper;
 
     @Test
+    public void testSelectAll() throws Exception {
+        departmentMapper.selectAll().forEach(System.out::println);
+    }
+
+    @Test
     public void testSelectList() {
         var departments = departmentMapper.selectList(
             new Conditions()
+                .withColumn("dept_name").nin("Finance", "Development")
+                .withColumn("dept_no").gt("d001")
                 .orderAsc("dept_name")
                 .limit(5)
         );
+        assertFalse(departments.isEmpty());
         departments.forEach(System.out::println);
+    }
+
+    @Test
+    public void testInsertIgnore() throws Exception {
+        var department = new Department();
+        department.setDeptNo("d010");
+        department.setDeptName("AAAAAAAAAAAA");
+        assertEquals(0, departmentMapper.insertIgnore(department));
+
+        department = departmentMapper.findById("d010");
+        assertEquals("新的部门", department.getDeptName());
     }
 
     @Test
@@ -39,10 +58,17 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
 
     @Test
     public void testUpdate() {
+        var conditions = new Conditions()
+            .withColumn("dept_no").eq("d009")
+            .withColumn("dept_name").startWith("Customer");
+
         var update = new Department();
-        update.setDeptName("Customer Service 客户服务");
-        departmentMapper.update(
-            new Conditions().withColumn("dept_no").eq("d009"), update);
+        update.setDeptName("Customer Service 客户服务2");
+
+        var count = departmentMapper.update(conditions, update);
+        assertTrue(count > 0);
+
+        System.out.println(departmentMapper.selectOne(conditions));
     }
 
     @Test

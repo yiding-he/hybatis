@@ -27,6 +27,7 @@ public class DeleteMappedStatementFactory extends AbstractMappedStatementFactory
             sqlId, getCore(), configuration, getTableName(mapperClass, method).getOrThrow(),
             method
         );
-        return MappedStatementHelper.buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.DELETE);
+        return MappedStatementHelper.buildMappedStatement(
+                configuration, sqlId,mapperClass, sqlSource, SqlCommandType.DELETE);
     }
 }

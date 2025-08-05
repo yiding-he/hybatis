@@ -2,11 +2,17 @@ package com.hyd.hybatis.row;
 
 import com.hyd.hybatis.HybatisException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.Map;
 
@@ -16,12 +22,29 @@ import java.util.Map;
  * @author yiding.he
  */
 @Slf4j
-public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, Object> {
+public class Row extends CaseInsensitiveMap<String, Object> {
+
+    private static final long serialVersionUID = -2500693152518809831L;
 
     /**
      * 缺省日期格式
      */
     public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    public Row(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    public Row(int initialCapacity) {
+        super(initialCapacity);
+    }
+
+    public Row() {
+    }
+
+    public Row(Map<? extends String, ?> m) {
+        super(m);
+    }
 
     public Double getDoubleObject(String key) {
         Object value = get(key);
@@ -171,6 +194,8 @@ public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, O
             return new Date(((Double) value).longValue());
         } else if (value instanceof Date) {
             return (Date) value;
+        } else if (value instanceof Temporal) {
+            return parseDate((Temporal) value);
         } else {
             try {
                 return parseDate(value.toString(), pattern);
@@ -178,6 +203,20 @@ public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, O
                 throw new HybatisException(e);
             }
         }
+    }
+
+    private Date parseDate(Temporal value) {
+        if (value instanceof Instant) {
+            return Date.from((Instant) value);
+        }
+        if (value instanceof ZonedDateTime) {
+            return Date.from(((ZonedDateTime) value).toInstant());
+        }
+        if (value instanceof LocalDateTime) {
+            return Date.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant());
+        }
+        Instant instant = Instant.from(value);
+        return Date.from(instant);
     }
 
     private Date parseDate(String dateStr, String pattern) throws ParseException {
@@ -191,6 +230,13 @@ public class Row extends CaseInsensitiveHashMap<Object> implements Map<String, O
         } else {
             return value.toString();
         }
+    }
+
+    //////////////////////////////////////////
+
+    public Row putValue(String key, Object value) {
+        put(key, value);
+        return this;
     }
 
     //////////////////////////////////////////

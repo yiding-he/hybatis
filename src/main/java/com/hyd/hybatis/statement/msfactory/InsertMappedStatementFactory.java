@@ -24,6 +24,7 @@ public class InsertMappedStatementFactory extends AbstractMappedStatementFactory
         var sqlSource = new SqlSourceForInsert(
             sqlId, getCore(), configuration, getTableName(mapperClass, method).getOrThrow(), method
         );
-        return MappedStatementHelper.buildMappedStatement(configuration, sqlId, sqlSource, SqlCommandType.INSERT);
+        return MappedStatementHelper.buildMappedStatement(
+                configuration, sqlId, mapperClass, sqlSource, SqlCommandType.INSERT);
     }
 }

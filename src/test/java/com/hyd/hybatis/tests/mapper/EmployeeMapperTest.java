@@ -1,10 +1,10 @@
-package com.hyd.hybatis.tests;
+package com.hyd.hybatis.tests.mapper;
 
 import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
-import com.hyd.hybatis.entity.EmployeeQuery;
 import com.hyd.hybatis.mappers.EmployeeMapper;
+import com.hyd.hybatis.query.EmployeeQuery;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,12 +36,30 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
     }
 
     @Test
+    public void testSelectLimit1() {
+        var employees = employeeMapper.selectByConditions(new Conditions()
+           .withColumn("first_name").startWith("B")
+           .orderDesc("last_name", "emp_no")
+           .limit(1)
+        );
+        assertFalse(employees.isEmpty());
+        employees.forEach(System.out::println);
+    }
+
+    @Test
     public void testSelectByConditions() {
-        var rows = employeeMapper.selectByConditions(new Conditions()
+        var rows = employeeMapper.selectRowsByConditions(new Conditions()
             .withColumn("first_name").startWith("B")
             .orderDesc("last_name", "emp_no")
             .limit(10)
         );
         rows.forEach(System.out::println);
+    }
+
+    @Test
+    public void testCountByConditions() throws Exception {
+        var count = employeeMapper.countByConditions(new Conditions()
+            .withColumn("first_name").startWith("B"));
+        System.out.println("count = " + count);
     }
 }

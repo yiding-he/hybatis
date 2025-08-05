@@ -8,6 +8,7 @@ import com.hyd.hybatis.utils.Bean;
 import com.hyd.hybatis.utils.Str;
 import org.apache.ibatis.reflection.TypeParameterResolver;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,13 +52,13 @@ public class Reflections {
     }
 
     /**
-     * 判断指定的类是否属于查询条件。只要类中存在至少一个 Condition 类型的成员，或该类自身就是 Conditions
-     * 就认为它是查询条件。
+     * 判断 pojoType 是否属于查询条件。只要类中存在至少一个 Condition 类型的成员，
+     * 或该类自身就是 Conditions 或其子类，就认为它是查询条件。
      */
     public static boolean isPojoClassQueryable(Class<?> pojoType) {
         return
             Conditions.class.isAssignableFrom(pojoType) ||
-                getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).size() > 0;
+            !getPojoFieldsOfType(pojoType, Condition.class, Collections.emptyList()).isEmpty();
     }
 
     /**
@@ -70,8 +71,13 @@ public class Reflections {
 
     public static Class<?> getGenericTypeArg(Type type) {
         if (type instanceof Class && ((Class<?>) type).getGenericInterfaces().length > 0) {
-            var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
-            return (Class<?>) genericInterface.getActualTypeArguments()[0];
+            if (((Class<?>) type).getGenericInterfaces()[0] instanceof ParameterizedType) {
+                var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
+                var arg0 = genericInterface.getActualTypeArguments()[0];
+                return arg0 instanceof Class? (Class<?>) arg0: null;
+            } else {
+                return null;
+            }
         } else if (type instanceof ParameterizedType) {
             var parameterizedType = (ParameterizedType) type;
             Type args0 = parameterizedType.getActualTypeArguments()[0];
@@ -178,5 +184,30 @@ public class Reflections {
 
         Stream.of(interfaceClass.getInterfaces())
             .forEach(i -> scanInterfaceAndAddMethod(i, nonDefaultMethods));
+    }
+
+    ////////////////////////////////////////
+
+    /**
+     * Recursively enumerate all interfaces implemented by {@code type}.
+     */
+    public static List<Class<?>> allInterfaces(Class<?> type) {
+        var list = new ArrayList<Class<?>>();
+        allInterfaces(type, list);
+        return list;
+    }
+
+    private static void allInterfaces(Class<?> type, ArrayList<Class<?>> collector) {
+        if (type.isInterface()) {
+            collector.add(type);
+        }
+        Collections.addAll(collector, type.getInterfaces());
+    }
+
+    public static <T extends Annotation> T getAnnotationFromInterface(Class<?> type, Class<T> annotationType) {
+        return allInterfaces(type).stream()
+            .filter(i -> i.isAnnotationPresent(annotationType))
+            .map(i -> i.getAnnotation(annotationType))
+            .findFirst().orElse(null);
     }
 }

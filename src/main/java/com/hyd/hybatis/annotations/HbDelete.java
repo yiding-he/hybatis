@@ -13,5 +13,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface HbDelete {
 
-    String table();
+    /**
+     * 表示本方法针对的是哪张表。如果为空，则框架会从 Mapper 类那里取
+     */
+    String table() default "";
 }

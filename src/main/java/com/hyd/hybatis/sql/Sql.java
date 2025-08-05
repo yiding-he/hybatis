@@ -1,24 +1,30 @@
 package com.hyd.hybatis.sql;
 
 
+import com.hyd.hybatis.Condition;
+import com.hyd.hybatis.Conditions;
+import com.hyd.hybatis.utils.Str;
+
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Collections.emptyList;
 
 /**
- * Dynamic SQL generator
- * <p>
- * 本类中的有些方法命名以大写字母开头，这是因为考虑到 SQL 属于
- * 不同语种，即使是用 Java 语法来模拟 SQL，也应该保持这种感觉
+ * 用于动态的生成 SQL 语句
+ * 本类中的有些方法命名以大写字母开头，是为了避免与关键字冲突
  *
  * @author yiding.he
  */
 @SuppressWarnings({
-    "unused", "BooleanMethodIsAlwaysInverted", "unchecked", "UnusedReturnValue"
+    "unused", "BooleanMethodIsAlwaysInverted", "unchecked",
+    "UnusedReturnValue", "LombokGetterMayBeUsed"
 })
 public abstract class Sql<T extends Sql<?>> {
+
+    public static final Object NULL = new Object();
 
     private Sql() {
 
@@ -38,7 +44,7 @@ public abstract class Sql<T extends Sql<?>> {
         }
 
         String str = obj.toString();
-        return str.length() == 0 || str.trim().length() == 0;
+        return Str.isBlank(str);
     }
 
     public abstract SqlCommand toCommand();
@@ -75,11 +81,13 @@ public abstract class Sql<T extends Sql<?>> {
         return !params.isEmpty();
     }
 
+    // sample: .LeftJoin("t2 on t2.parent_id=t1.id and t2.deleted=?", 0)
     public T LeftJoin(String statement, Object... params) {
         this.joins.add(new Join(JoinType.LeftJoin, statement, params));
         return (T) this;
     }
 
+    // sample: .RightJoin("t2 on t2.parent_id=t1.id and t2.deleted=?", 0)
     public T RightJoin(String statement, Object... params) {
         this.joins.add(new Join(JoinType.RightJoin, statement, params));
         return (T) this;
@@ -157,110 +165,24 @@ public abstract class Sql<T extends Sql<?>> {
         return (T) this;
     }
 
+    // for sql like 'select * from t1 where id in (select...)'
     public T And(String statement, Sql<T> child) {
-        return And(true, statement, child);
+        SqlCommand childCmd = child.toCommand();
+        this.conditions.add(new Pair(Joint.AND, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
+        return (T) this;
     }
 
-    public T And(boolean exp, String statement) {
-        if (exp) {
-            this.conditions.add(new Pair(Joint.AND, statement));
+    // if exp is false, remove the last condition
+    public T If(boolean exp) {
+        if (!exp && !this.conditions.isEmpty()) {
+            this.conditions.remove(this.conditions.size() - 1);
         }
         return (T) this;
     }
 
-    public T And(boolean exp, String statement, Object... args) {
-        if (exp) {
-            this.conditions.add(new Pair(Joint.AND, statement, args));
-        }
-        return (T) this;
-    }
-
-    public T And(boolean exp, String statement, Sql<T> child) {
-        if (exp) {
-            SqlCommand childCmd = child.toCommand();
-            this.conditions.add(new Pair(Joint.AND, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
-        }
-        return (T) this;
-    }
-
-    public T AndIfNotEmpty(String statement, Object value) {
-        return And(!isEmpty(value), statement, value);
-    }
-
-    public <V> T IfNotEmpty(V value, Consumer<T> consumer) {
-        if (!isEmpty(value) && consumer != null) {
-            consumer.accept((T) this);
-        }
-        return (T) this;
-    }
-
-    public <V> T IfNotEmpty(V value, BiConsumer<T, V> consumer) {
-        if (!isEmpty(value) && consumer != null) {
-            consumer.accept((T) this, value);
-        }
-        return (T) this;
-    }
-
-    public T Or(String statement) {
-        this.conditions.add(new Pair(Joint.OR, statement));
-        return (T) this;
-    }
-
-    public T Or(String statement, Object... args) {
-        this.conditions.add(new Pair(Joint.OR, statement, args));
-        return (T) this;
-    }
-
-    public T Or(String statement, Sql<T> child) {
-        return Or(true, statement, child);
-    }
-
-    public T Or(boolean exp, String statement) {
-        if (exp) {
-            this.conditions.add(new Pair(Joint.OR, statement));
-        }
-        return (T) this;
-    }
-
-    public T Or(boolean exp, String statement, Object... args) {
-        if (exp) {
-            this.conditions.add(new Pair(Joint.OR, statement, args));
-        }
-        return (T) this;
-    }
-
-    public T Or(boolean exp, String statement, Sql<T> child) {
-        if (exp) {
-            SqlCommand childCmd = child.toCommand();
-            this.conditions.add(new Pair(Joint.OR, statement + "(" + childCmd.getStatement() + ")", childCmd.getParams()));
-        }
-        return (T) this;
-    }
-
-    public T OrIfNotEmpty(String column, Object value) {
-        return Or(!isEmpty(value), column, value);
-    }
-
-    public T Append(String statement) {
-        this.conditions.add(new Pair(statement));
-        return (T) this;
-    }
-
-    public T Append(String column, Object... args) {
-        this.conditions.add(new Pair(column, args));
-        return (T) this;
-    }
-
-    public T Append(boolean exp, String statement) {
-        if (exp) {
-            this.conditions.add(new Pair(statement));
-        }
-        return (T) this;
-    }
-
-    public T Append(boolean exp, String statement, Object... args) {
-        if (exp) {
-            this.conditions.add(new Pair(statement, args));
+    public T injectConditions(Conditions conditions) {
+        for (Condition<?> condition : conditions.conditionsList()) {
+            SqlHelper.injectCondition(this, condition);
         }
         return (T) this;
     }
@@ -306,7 +228,7 @@ public abstract class Sql<T extends Sql<?>> {
         } else if (condition.args.size() == 1 && condition.firstArg() instanceof List) {   // 参数为 List 的条件（即 in 条件）
             List<?> objects = (List<?>) condition.firstArg();
 
-            // marks = "(?,?,?,...,?)"
+            // "(?,?,?,...,?)"
             String marks = "(" +
                 objects.stream()
                     .map(o -> {
@@ -316,7 +238,7 @@ public abstract class Sql<T extends Sql<?>> {
                     .collect(Collectors.joining(",")) +
                 ")";
 
-            // "A in ?" -> "A in (?,?,?)"
+            // "A in ?" -> "A in (?,?,...,?)"
             where += condition.statement.replace("?", marks);
 
         } else if (condition.statement.endsWith("in ?")) {
@@ -341,7 +263,7 @@ public abstract class Sql<T extends Sql<?>> {
         return where;
     }
 
-    /////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////
 
     public static Select Select(String columns) {
         return new Select(columns);
@@ -363,7 +285,7 @@ public abstract class Sql<T extends Sql<?>> {
         return new Delete(table);
     }
 
-    /////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////
 
     public enum Joint {
         AND, OR
@@ -406,7 +328,7 @@ public abstract class Sql<T extends Sql<?>> {
         public Pair(Joint joint, String statement, Object... args) {
             this.joint = joint;
             this.statement = statement.trim();
-            this.args = args == null ? Collections.emptyList() : Arrays.asList(args);
+            this.args = args == null ? emptyList() : Arrays.asList(args);
         }
 
         public Pair(Joint joint, String statement, List<Object> args) {
@@ -446,7 +368,7 @@ public abstract class Sql<T extends Sql<?>> {
 
         protected static List<Object> joinPairValue(List<Pair> pairs) {
             if (pairs.isEmpty()) {
-                return Collections.emptyList();
+                return emptyList();
             }
 
             List<Object> result = new ArrayList<>();
@@ -467,7 +389,7 @@ public abstract class Sql<T extends Sql<?>> {
         public final List<Object> params;
 
         public Join(JoinType type, String statement) {
-            this(type, statement, Collections.emptyList());
+            this(type, statement, emptyList());
         }
 
         public Join(JoinType type, String statement, Object... params) {
@@ -477,11 +399,17 @@ public abstract class Sql<T extends Sql<?>> {
         }
     }
 
-    /////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////
 
     public static class Insert extends Sql<Insert> {
 
         private final List<Pair> pairs = new ArrayList<>();
+
+        private boolean onDuplicateKeyUpdate = false;
+
+        private boolean onDuplicateKeyIgnore = false;
+
+        private List<String> duplicateKeyUpdateColumns = emptyList();
 
         public Insert(String table) {
             this.table = table;
@@ -505,18 +433,36 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
-        public Insert OnDuplicateKeyUpdate() {
-            this.suffix = " on duplicate key update";
+        public Insert OnDuplicateKeyUpdate(String... updateColumns) {
+            this.onDuplicateKeyUpdate = true;
+            this.duplicateKeyUpdateColumns = List.of(updateColumns);
+            this.suffix = Str.isBlank(this.suffix) ? "" : this.suffix;
+            this.suffix += Stream.of(updateColumns).map(c -> c + "=?").collect(Collectors.joining(","));
+            return this;
+        }
+
+        public Insert OnDuplicateKeyIgnore() {
+            this.onDuplicateKeyIgnore = true;
             return this;
         }
 
         @Override
         public SqlCommand toCommand() {
-            this.statement = "insert into " + table +
-                "(" + Pair.joinPairName(pairs) + ") values " +
-                "(" + Pair.joinPairHolder(pairs) + ")" +
-                (suffix == null ? "" : suffix);
-            this.params = Pair.joinPairValue(pairs);
+            this.statement =
+                "insert " +
+                    (onDuplicateKeyIgnore ? "ignore " : "") +
+                    "into " + table +
+                    "(" + Pair.joinPairName(pairs) + ") values " +
+                    "(" + Pair.joinPairHolder(pairs) + ")" +
+                    (onDuplicateKeyUpdate ? " on duplicate key update " : "") +
+                    (suffix == null ? "" : suffix);
+
+            params = Pair.joinPairValue(pairs);
+            if (onDuplicateKeyUpdate) {
+                var pairMap = new HashMap<String, Object>();
+                pairs.forEach(p -> pairMap.put(p.statement, p.firstArg()));
+                duplicateKeyUpdateColumns.forEach(c -> params.add(pairMap.get(c)));
+            }
 
             return new SqlCommand(statement, params);
         }
@@ -556,6 +502,8 @@ public abstract class Sql<T extends Sql<?>> {
                 Pair pair = updates.get(i);
                 if (!pair.hasArg()) {
                     statement += pair.statement;
+                } else if (pair.args.get(0) == NULL) {
+                    statement += pair.statement + "=null";
                 } else if (pair.statement.contains("?")) {
                     this.params.addAll(pair.args);
                     statement += pair.statement;
@@ -612,17 +560,19 @@ public abstract class Sql<T extends Sql<?>> {
      */
     public static class Select extends Sql<Select> {
 
-        private String columns;
+        private final List<CTE> ctes = new ArrayList<>();
 
-        private String from;
+        protected String alias;
 
-        private String orderBy;
+        protected String columns;
 
-        private String groupBy;
+        protected String orderBy;
 
-        private long offset = -1;
+        protected String groupBy;
 
-        private long limit = -1;
+        protected long offset = -1;
+
+        protected long limit = -1;
 
         public Select(String columns) {
             this.columns = columns;
@@ -637,13 +587,27 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
+        public Select As(String alias) {
+            this.alias = alias;
+            return this;
+        }
+
+        public CTE AsCTE(String cteAlias) {
+            return new CTE(this).As(cteAlias);
+        }
+
+        public Select Ctes(CTE... ctes) {
+            this.ctes.addAll(Arrays.asList(ctes));
+            return this;
+        }
+
         public Select From(String from) {
-            this.from = from;
+            this.table = from;
             return this;
         }
 
         public Select From(String... from) {
-            this.from = String.join(",", from);
+            this.table = String.join(",", from);
             return this;
         }
 
@@ -670,7 +634,9 @@ public abstract class Sql<T extends Sql<?>> {
         @Override
         public SqlCommand toCommand() {
             this.params.clear();
-            this.statement = "select " + this.columns + " from " + this.from + " ";
+            this.statement = "";
+            this.statement += generateCteBlock();
+            this.statement += "select " + this.columns + " from " + getTableWithAlias() + " ";
             this.statement += generateJoinBlock();
             this.statement += generateWhereBlock();
             this.statement += generateGroupBy();
@@ -678,6 +644,30 @@ public abstract class Sql<T extends Sql<?>> {
             this.statement += this.limit > 0 ? (" limit " + this.limit + " ") : "";
             this.statement += this.offset > 0 ? (" offset " + this.offset + " ") : "";
             return new SqlCommand(this.statement, this.params);
+        }
+
+        public String getAlias() {
+            return isEmpty(this.alias) ? this.table : this.alias;
+        }
+
+        private String getTableWithAlias() {
+            return this.table + " " + (isEmpty(this.alias) ? "" : "as " + this.alias);
+        }
+
+        private String generateCteBlock() {
+            if (this.ctes.isEmpty()) {
+                return "";
+            }
+
+            StringBuilder sb = new StringBuilder("with ");
+            for (Select cte : this.ctes) {
+                sb.append(cte.getAlias())
+                    .append(" as (").append(cte.getSql())
+                    .append("),");
+                this.params.addAll(cte.getParams());
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            return sb.toString();
         }
 
         private String generateGroupBy() {
@@ -689,7 +679,38 @@ public abstract class Sql<T extends Sql<?>> {
         }
     }
 
-    /////////////////////////////////////////////////////////
+    public static class CTE extends Select {
+
+        private String cteAlias;
+
+        public CTE(Select select) {
+            this.table = select.table;
+            this.columns = select.columns;
+            this.statement = select.statement;
+            this.params = select.params;
+            this.joins = select.joins;
+            this.conditions = select.conditions;
+            this.suffix = select.suffix;
+            this.alias = select.alias;
+            this.orderBy = select.orderBy;
+            this.groupBy = select.groupBy;
+            this.offset = select.offset;
+            this.limit = select.limit;
+        }
+
+        @Override
+        public String getAlias() {
+            return isEmpty(this.cteAlias) ? this.table : this.cteAlias;
+        }
+
+        @Override
+        public CTE As(String alias) {
+            this.cteAlias = alias;
+            return this;
+        }
+    }
+
+    /// //////////////////////////////////////////////////////
 
     public static class Delete extends Sql<Delete> {
 

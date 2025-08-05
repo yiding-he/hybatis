@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * How to use: Add {@code @Import(HybatisConfigurator.class)} to your Spring Boot application class.
+ * How to use: Add {@code @Import(HybatisConfigurator.class)} to your Spring Boot Configuration class.
  */
 @Slf4j
 @Configuration

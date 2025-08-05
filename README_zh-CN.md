@@ -1,25 +1,35 @@
 [![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# Hybatis
+<img src="docs/imgs/logo.png" alt="LOGO" width="300">
 
 一个在 [Spring Boot](https://spring.io/projects/spring-boot) 项目中使用的 MyBatis 扩展框架。
 
 Hybatis 提供的主要功能：
 
 1. 直接执行 SQL
-2. 为 Mapper 方法生成简单的动态增删改查
+2. 提供 CrudMapper 基础接口
+3. 从 SpringMVC Controller 直接透传给 Mapper 的查询条件封装
 
 ## 0. 启用 Hybatis
 
 启用 Hybatis 需要先编译本项目然后包含到你的项目依赖关系中。如果你用 Maven，则可以直接用 `mvn install -maven.test.skip=true` 来安装到本地 Maven 库。
 
-#### 将 Hybatis 加入项目
+### 将 Hybatis 加入项目
 
-可以使用两种方式之一：
+在包含了 MyBatis 框架的 Spring Boot 
+项目中的配置类上添加注解 `@Import(HybatisConfigurator.class)` 即可。例如：
 
-1. 在包含了 MyBatis 框架的 Spring Boot 项目中的配置类上添加注解 `@Import(HybatisConfigurator.class)` 即可；
-2. 自己创建 Hybatis 对象：`new Hybatis(dataSource)`
+```java
+@SpringBootApplication
+@Import(HybatisConfigurator.class)  // 加上这行
+public class MyApplication {
+
+   public static void main(String[] args) {
+      SpringApplication.run(MyApplication.class, args);
+   }
+}
+```
 
 ## 1. 执行 SQL
 

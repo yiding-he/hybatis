@@ -53,6 +53,13 @@
       <version>2.0.5</version>
     </dependency>
 
+    <!-- ////////////////////////// Utility ////////////////////////// -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.4</version>
+    </dependency>
+
     <!-- ////////////////////////// Compile ////////////////////////// -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -67,7 +74,7 @@
       <scope>compile</scope>
     </dependency>
 
-    <!-- ////////////////////////// MyBatis(Optional) ////////////////////////// -->
+    <!-- ////////////////////////// MyBatis ////////////////////////// -->
     <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
     <dependency>
       <groupId>org.mybatis</groupId>
@@ -80,8 +87,26 @@
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis</artifactId>
       <version>3.5.11</version>
+    </dependency>
+
+    <!-- ////////////////////////// Cache (Optional) ////////////////////////// -->
+    <!-- https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>3.1.7</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- ////////////////////////// Jakarta Validation (Optional) ////////////////////////// -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ////////////////////////// MyBatis Page Helper (Optional) ////////////////////////// -->
     <!-- https://mvnrepository.com/artifact/com.github.pagehelper/pagehelper-spring-boot-starter -->
     <dependency>
       <groupId>com.github.pagehelper</groupId>
@@ -108,7 +133,7 @@
       </exclusions>
     </dependency>
 
-    <!-- ////////////////////////// Spring MVC & SpringBoot ////////////////////////// -->
+    <!-- ////////////////////////// Spring MVC & SpringBoot (Optional) ////////////////////////// -->
     <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -172,6 +197,13 @@
       </exclusions>
       <scope>test</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2 -->
+    <dependency>
+      <groupId>com.alibaba.fastjson2</groupId>
+      <artifactId>fastjson2</artifactId>
+      <version>2.0.41</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -188,6 +220,12 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <!-- Need newer version of maven-deploy-plugin to use 'alt*DeploymentRepository' properties -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>3.1.1</version>
       </plugin>
     </plugins>
   </build>
