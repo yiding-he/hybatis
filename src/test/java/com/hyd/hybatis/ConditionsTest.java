@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ConditionsTest {
 
@@ -15,7 +16,7 @@ class ConditionsTest {
         assertEquals(1, conditions.getQuery().size());
         assertEquals("a", conditions.getQuery().keySet().iterator().next());
 
-        Condition<?> condition = conditions.conditionsList().get(0);
+        Condition condition = conditions.conditionsList().get(0);
         assertNotNull(condition.getNin());
         assertFalse(condition.getNin().isEmpty());
 

@@ -18,7 +18,7 @@ public class HybatisMvcConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(0, new HybatisHandlerMethodArgumentResolver(hybatisConfiguration));
+        resolvers.add(0, new HybatisHandlerMethodArgumentResolver2(hybatisConfiguration));
         log.info("HybatisHandlerMethodArgumentResolver added to resolvers");
     }
 }

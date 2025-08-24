@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -202,7 +203,7 @@ public abstract class Sql<T extends Sql<?>> {
     }
 
     public T injectConditions(Conditions conditions) {
-        for (Condition<?> condition : conditions.conditionsList()) {
+        for (Condition condition : conditions.conditionsList()) {
             SqlHelper.injectCondition(this, condition);
         }
         return (T) this;
@@ -592,7 +593,7 @@ public abstract class Sql<T extends Sql<?>> {
 
         protected String columns;
 
-        protected String orderBy;
+        protected List<OrderItem> orderItems = new ArrayList<>();
 
         protected String groupBy;
 
@@ -637,8 +638,38 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
+        /**
+         * 使用字符串来设置排序，例如 "id, -create_time"
+         * 其中符号 "-" 表示降序，其他表示升序
+         */
         public Select OrderBy(String orderBy) {
-            this.orderBy = orderBy;
+            if (Str.isBlank(orderBy)) {
+                return this;
+            }
+            var counter = new AtomicInteger();
+            this.orderItems = Arrays.stream(orderBy.split(","))
+                .map(s -> {
+                    var item = new OrderItem();
+                    item.column = s.trim();
+                    item.index = counter.getAndIncrement();
+                    item.asc = !s.startsWith("-");
+                    return item;
+                })
+                .collect(Collectors.toList());
+            return this;
+        }
+
+        public Select OrderBy(OrderItem... orderItems) {
+            this.orderItems.addAll(Arrays.asList(orderItems));
+            return this;
+        }
+
+        public Select OrderBy(String column, boolean asc, int index) {
+            var item = new OrderItem();
+            item.column = column;
+            item.asc = asc;
+            item.index = index;
+            this.orderItems.add(item);
             return this;
         }
 
@@ -701,8 +732,17 @@ public abstract class Sql<T extends Sql<?>> {
         }
 
         private String generateOrderBy() {
-            return isEmpty(this.orderBy) ? "" : (" order by " + this.orderBy);
+            return isEmpty(this.orderItems) ? "" : (" order by " + this.orderItems.stream()
+                .sorted(Comparator.comparingInt(item -> item.index))
+                .map(item -> item.column + (item.asc ? "" : " desc"))
+                .collect(Collectors.joining(", ")));
         }
+    }
+
+    public static class OrderItem {
+        public String column;
+        public boolean asc;
+        public int index;
     }
 
     public static class CTE extends Select {
@@ -718,7 +758,7 @@ public abstract class Sql<T extends Sql<?>> {
             this.conditions = select.conditions;
             this.suffix = select.suffix;
             this.alias = select.alias;
-            this.orderBy = select.orderBy;
+            this.orderItems = select.orderItems;
             this.groupBy = select.groupBy;
             this.offset = select.offset;
             this.limit = select.limit;

@@ -3,11 +3,13 @@ package com.hyd.hybatis;
 import com.hyd.hybatis.sql.Sql;
 import com.hyd.hybatis.sql.SqlHelper;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Getter
 public class Conditions implements Serializable, Cloneable {
@@ -64,7 +66,7 @@ public class Conditions implements Serializable, Cloneable {
         return new Conditions().withColumn(columnName).nonNull();
     }
 
-    ////////////////////////////////////////
+    /// /////////////////////////////////////
 
     @SuppressWarnings({"Convert2MethodRef", "unused"})
     public class Wrapper {
@@ -76,66 +78,67 @@ public class Conditions implements Serializable, Cloneable {
         }
 
         public Conditions startWith(String s) {
-            return Conditions.this.with(column, c -> c.startsWith(s));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.StartsWith, s));
         }
 
         public Conditions endsWith(String s) {
-            return Conditions.this.with(column, c -> c.endsWith(s));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.EndsWith, s));
         }
 
         public Conditions contains(String s) {
-            return Conditions.this.with(column, c -> c.contains(s));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Contains, s));
         }
 
         public Conditions eq(Object o) {
-            return Conditions.this.with(column, c -> c.eq(o));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Eq, o));
         }
 
         public Conditions ne(Object o) {
-            return Conditions.this.with(column, c -> c.ne(o));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Ne, o));
         }
 
         public Conditions beNull() {
-            return Conditions.this.with(column, c -> c.beNull());
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Null));
         }
 
         public Conditions nonNull() {
-            return Conditions.this.with(column, c -> c.nonNull());
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.NonNull));
         }
 
         public Conditions lt(Object o) {
-            return Conditions.this.with(column, c -> c.lt(o));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Lt, o));
         }
 
         public Conditions lte(Object o) {
-            return Conditions.this.with(column, c -> c.lte(o));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Lte, o));
         }
 
         public Conditions gt(Object o) {
-            return Conditions.this.with(column, c -> c.gt(o));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Gt, o));
         }
 
         public Conditions gte(Object o) {
-            return Conditions.this.with(column, c -> c.gte(o));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Gte, o));
         }
 
         public Conditions between(Object o1, Object o2) {
-            return Conditions.this.with(column, c -> c.between(o1, o2));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Between, o1, o2));
         }
 
         public Conditions in(List<?> tt) {
             return inList(tt);
         }
+
         public Conditions nin(List<?> tt) {
             return ninList(tt);
         }
 
         public Conditions orderAsc(int order) {
-            return Conditions.this.with(column, c -> c.setOrderAsc(order));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.OrderAsc, order));
         }
 
         public Conditions orderDesc(int order) {
-            return Conditions.this.with(column, c -> c.setOrderDesc(order));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.OrderDesc, order));
         }
 
         @SafeVarargs
@@ -151,7 +154,7 @@ public class Conditions implements Serializable, Cloneable {
         }
 
         private Conditions inList(List<?> tt) {
-            return Conditions.this.with(column, c -> c.in(tt));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.In, tt));
         }
 
         @SafeVarargs
@@ -167,7 +170,7 @@ public class Conditions implements Serializable, Cloneable {
         }
 
         private Conditions ninList(List<?> tt) {
-            return Conditions.this.with(column, c -> c.nin(tt));
+            return Conditions.this.with(column, c -> c.update(ConditionOperator.Nin, tt));
         }
     }
 
@@ -176,20 +179,23 @@ public class Conditions implements Serializable, Cloneable {
     /**
      * query conditions
      */
-    private final Map<String, Condition<?>> query = new HashMap<>();
+    private final List<Condition> query = new ArrayList<>();
 
-    public void setQuery(Map<String, Condition<?>> query) {
-        // 从 JSON 反序列化时允许简化的格式，即 Condition 中的 column 字段可以省略
-        // 如果 column 字段为空，会在这里将其补完为 key
-        query.forEach((k, v) -> v.setColumn(k));
-        this.query.putAll(query);
+    public void setQuery(List<Condition> query) {
+        this.query.clear();
+        this.query.addAll(query);
     }
 
+    @Setter
     private List<String> projection = Collections.emptyList();
 
+    @Setter
+    private int offset = 0;
+
+    @Setter
     private int limit = -1;
 
-    ////////////////////////////////// equals and hashcode
+    //-------------------------- equals and hashcode --------------------------
 
     @Override
     public boolean equals(Object o) {
@@ -204,7 +210,7 @@ public class Conditions implements Serializable, Cloneable {
         return Objects.hash(query, projection, limit);
     }
 
-    //////////////////////////////////
+    //-------------------------- operators --------------------------
 
     public Conditions projection(String... projection) {
         this.projection = List.of(projection);
@@ -232,20 +238,13 @@ public class Conditions implements Serializable, Cloneable {
         return this;
     }
 
-    @SuppressWarnings("unchecked")
-    public Condition<Object> with(String column) {
-        Condition<Object> c;
-        if (this.query.containsKey(column)) {
-            c = (Condition<Object>) this.query.get(column);
-        } else {
-            c = new Condition<>();
-            c.setColumn(column);
-            this.query.put(column, c);
-        }
+    public Condition with(String column) {
+        Condition c = new Condition(column);
+        this.query.add(c);
         return c;
     }
 
-    public Conditions with(String column, Consumer<Condition<Object>> consumer) {
+    public Conditions with(String column, Consumer<Condition> consumer) {
         consumer.accept(with(column));
         return this;
     }
@@ -253,9 +252,8 @@ public class Conditions implements Serializable, Cloneable {
     public Conditions orderAsc(String... ascColumns) {
         var index = new AtomicInteger(maxOrderIndex());
         for (String column : ascColumns) {
-            var c = this.query.computeIfAbsent(column, __ -> new Condition<>());
-            c.setColumn(column);
-            c.setOrderAsc(index.incrementAndGet());
+            this.getOrCreateCondition(column)
+                .update(ConditionOperator.OrderAsc, index.incrementAndGet());
         }
         return this;
     }
@@ -263,17 +261,16 @@ public class Conditions implements Serializable, Cloneable {
     public Conditions orderDesc(String... ascColumns) {
         var index = new AtomicInteger(maxOrderIndex());
         for (String column : ascColumns) {
-            var c = this.query.computeIfAbsent(column, __ -> new Condition<>());
-            c.setColumn(column);
-            c.setOrderDesc(index.incrementAndGet());
+            this.getOrCreateCondition(column)
+                .update(ConditionOperator.OrderDesc, index.incrementAndGet());
         }
         return this;
     }
 
     private int maxOrderIndex() {
-        return this.query.values().stream()
-            .filter(c -> c.getOrderAsc() != null || c.getOrderDesc() != null)
-            .mapToInt(c -> c.getOrderAsc() == null ? c.getOrderDesc() : c.getOrderAsc())
+        return this.query.stream()
+            .filter(c -> c.getOperator() == ConditionOperator.OrderAsc || c.getOperator() == ConditionOperator.OrderDesc)
+            .mapToInt(c -> Integer.parseInt(String.valueOf(c.getValues().get(0))))
             .max().orElse(0);
     }
 
@@ -282,19 +279,34 @@ public class Conditions implements Serializable, Cloneable {
     }
 
     public Set<String> conditionKeySet() {
-        return query.keySet();
+        return this.query.stream().map(Condition::getColumn).collect(Collectors.toSet());
     }
 
-    public List<Condition<?>> conditionsList() {
-        return new ArrayList<>(query.values());
+    public List<Condition> conditionsList() {
+        return new ArrayList<>(query);
     }
 
-    public Condition<?> getCondition(String column) {
-        return query.getOrDefault(column, Condition.EMPTY);
+    public Condition getCondition(String column, ConditionOperator operator) {
+        return this.query.stream()
+            .filter(c -> c.getColumn().equals(column) && c.getOperator() == operator)
+            .findFirst().orElse(null);
+    }
+
+    public Condition getOrCreateCondition(String column) {
+        var condition = this.query.stream()
+            .filter(c -> c.getColumn().equals(column))
+            .findFirst().orElse(null);
+
+        if (condition == null) {
+            condition = new Condition(column);
+            this.query.add(condition);
+        }
+
+        return condition;
     }
 
     public boolean containsColumn(String column) {
-        return query.containsKey(column);
+        return query.stream().anyMatch(c -> c.getColumn().equals(column));
     }
 
     public Sql.Select toSelect(String tableName) {
@@ -306,14 +318,15 @@ public class Conditions implements Serializable, Cloneable {
      */
     public Conditions pick(String... keys) {
         var conditions = new Conditions();
-        for (String key : keys) {
-            var condition = query.get(key);
-            if (condition != null) {
-                conditions.query.put(key, condition);
-            }
-        }
+        var keySet = Set.of(keys);
+
+        this.query.stream()
+            .filter(c -> keySet.contains(c.getColumn()))
+            .forEach(conditions.query::add);
+
         conditions.projection = new ArrayList<>(this.projection);
         conditions.limit = this.limit;
+        conditions.offset = this.offset;
         return conditions;
     }
 
@@ -321,9 +334,10 @@ public class Conditions implements Serializable, Cloneable {
     public Conditions clone() {
         try {
             Conditions clone = (Conditions) super.clone();
-            clone.query.putAll(query);
+            clone.query.addAll(query);
             clone.projection = new ArrayList<>(this.projection);
             clone.limit = this.limit;
+            clone.offset = this.offset;
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);

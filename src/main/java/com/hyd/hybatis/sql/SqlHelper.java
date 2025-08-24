@@ -7,11 +7,8 @@ import com.hyd.hybatis.reflection.Reflections;
 import lombok.Data;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 
 public class SqlHelper {
 
@@ -40,7 +37,7 @@ public class SqlHelper {
 
     public static Sql.Delete buildDeleteFromConditions(Conditions conditions, String tableName) {
         Sql.Delete delete = new Sql.Delete(tableName);
-        for (Condition<?> condition : conditions.conditionsList()) {
+        for (Condition condition : conditions.conditionsList()) {
             injectCondition(delete, condition);
         }
         return delete;
@@ -50,8 +47,7 @@ public class SqlHelper {
 
     public static Sql.Select buildSelect(Context context) {
         var select = Sql.Select("*").From(context.tableName);
-        HashMap<Field, Condition<?>> conditionMappings = injectConditionObject(context, select);
-        injectOrderBy(select, conditionMappings.values());
+        injectConditionObject(context, select);
         return select;
     }
 
@@ -65,10 +61,9 @@ public class SqlHelper {
         var projection = conditions.getProjection();
         var columns = projection.isEmpty() ? "*" : String.join(",", projection);
         Sql.Select select = new Sql.Select(columns).From(tableName);
-        for (Condition<?> condition : conditions.conditionsList()) {
+        for (Condition condition : conditions.conditionsList()) {
             injectCondition(select, condition);
         }
-        injectOrderBy(select, conditions.conditionsList());
 
         if (conditions.getLimit() >= 0) {
             select.Limit(conditions.getLimit());
@@ -76,18 +71,18 @@ public class SqlHelper {
         return select;
     }
 
-    ////////////////////////////////////////
+    /// /////////////////////////////////////
 
-    private static HashMap<Field, Condition<?>> injectConditionObject(Context context, Sql<?> sql) {
+    private static void injectConditionObject(Context context, Sql<?> sql) {
         var queryObject = context.paramObject;
 
         var conditionFields = Reflections
             .getPojoFieldsOfType(queryObject.getClass(), Condition.class, Collections.emptyList());
 
-        var conditionMappings = new HashMap<Field, Condition<?>>();
+        var conditionMappings = new HashMap<Field, Condition>();
         var camelToUnderline = context.getConfig().isCamelToUnderline();
         for (Field f : conditionFields) {
-            Condition<?> condition = Reflections.getFieldValue(queryObject, f);
+            Condition condition = Reflections.getFieldValue(queryObject, f);
             if (condition == null) {
                 continue;
             }
@@ -101,7 +96,6 @@ public class SqlHelper {
             var condition = conditionMappings.get(conditionField);
             injectCondition(sql, condition);
         }
-        return conditionMappings;
     }
 
     /**
@@ -119,7 +113,7 @@ public class SqlHelper {
             .getPojoFieldsOfType(queryObject.getClass(), Condition.class, Collections.emptyList());
 
         for (Field f : conditionFields) {
-            Condition<?> c = Reflections.getFieldValue(queryObject, f);
+            Condition c = Reflections.getFieldValue(queryObject, f);
             if (c == null) {
                 continue;
             }
@@ -130,95 +124,9 @@ public class SqlHelper {
 
     ///////////////////////////////////////////////////////////////////
 
-    private static void injectOrderBy(Sql.Select select, Collection<Condition<?>> conditions) {
-        String orderBy = conditions.stream()
-            .filter(c -> c != null && (c.getOrderAsc() != null || c.getOrderDesc() != null))
-            .sorted(Comparator.comparing(c -> c.getOrderAsc() == null ? c.getOrderDesc() : c.getOrderAsc()))
-            .map(c -> c.getColumn() + (c.getOrderAsc() == null ? " desc" : " asc"))
-            .collect(Collectors.joining(","));
-
-        select.OrderBy(orderBy);
-    }
-
-    public static void injectCondition(Sql<?> sql, Condition<?> condition) {
-        if (condition != null) {
-            String columnName = condition.getColumn();
-            if (condition.getStartsWith() != null) {
-                var value = condition.getStartsWith() + "%";
-                sql.And(columnName + " like ?", value);
-            }
-            if (condition.getEndsWith() != null) {
-                var value = "%" + condition.getEndsWith();
-                sql.And(columnName + " like ?", value);
-            }
-            if (condition.getContains() != null) {
-                var value = "%" + condition.getContains() + "%";
-                sql.And(columnName + " like ?", value);
-            }
-            if (condition.getEq() != null) {
-                var value = condition.getEq();
-                if (Sql.isNowConstant(value)) {
-                    sql.And(columnName + "=" + sql.getDialect().nowFunction());
-                } else {
-                    sql.And(columnName + "=?", value);
-                }
-            }
-            if (condition.getNe() != null) {
-                var value = condition.getNe();
-                if (Sql.isNowConstant(value)) {
-                    sql.And(columnName + "<>" + sql.getDialect().nowFunction());
-                } else {
-                    sql.And(columnName + "<>?", value);
-                }
-            }
-            if (condition.getNull() != null) {
-                var value = condition.getNull();
-                if (value) {
-                    sql.And(columnName + " is null");
-                } else {
-                    sql.And(columnName + " is not null");
-                }
-            }
-            if (condition.getLt() != null) {
-                var value = condition.getLt();
-                if (Sql.isNowConstant(value)) {
-                    sql.And(columnName + "<" + sql.getDialect().nowFunction());
-                } else {
-                    sql.And(columnName + "<?", value);
-                }
-            }
-            if (condition.getLte() != null) {
-                var value = condition.getLte();
-                if (Sql.isNowConstant(value)) {
-                    sql.And(columnName + "<=" + sql.getDialect().nowFunction());
-                } else {
-                    sql.And(columnName + "<=?", value);
-                }
-            }
-            if (condition.getGt() != null) {
-                var value = condition.getGt();
-                if (Sql.isNowConstant(value)) {
-                    sql.And(columnName + ">" + sql.getDialect().nowFunction());
-                } else {
-                    sql.And(columnName + ">?", value);
-                }
-            }
-            if (condition.getGte() != null) {
-                var value = condition.getGte();
-                if (Sql.isNowConstant(value)) {
-                    sql.And(columnName + ">=" + sql.getDialect().nowFunction());
-                } else {
-                    sql.And(columnName + ">=?", value);
-                }
-            }
-            if (condition.getIn() != null) {
-                var value = condition.getIn();
-                sql.And(columnName + " in ?", value);
-            }
-            if (condition.getNin() != null) {
-                var value = condition.getNin();
-                sql.And(columnName + " not in ?", value);
-            }
+    public static void injectCondition(Sql<?> sql, Condition condition) {
+        if (sql != null && condition != null) {
+            condition.getOperator().operate(sql, condition.getColumn(), condition.getValues());
         }
     }
 }
