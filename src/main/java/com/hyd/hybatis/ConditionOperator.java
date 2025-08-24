@@ -2,6 +2,11 @@ package com.hyd.hybatis;
 
 import com.hyd.hybatis.sql.Sql;
 
+import java.beans.Introspector;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import static com.hyd.hybatis.sql.Sql.isNowConstant;
 
 /**
@@ -51,4 +56,26 @@ public interface ConditionOperator {
     ConditionOperator In = (sql, column, values) -> sql.And(column + " IN ?", values);
 
     ConditionOperator Nin = (sql, column, values) -> sql.And(column + " NOT IN ?", values);
+
+    Map<String, ConditionOperator> VALUES = new HashMap<>(){{
+        put("startsWith", StartsWith);
+        put("endsWith", EndsWith);
+        put("contains", Contains);
+        put("eq", Eq);
+        put("ne", Ne);
+        put("null", Null);
+        put("nonNull", NonNull);
+        put("lt", Lt);
+        put("lte", Lte);
+        put("gt", Gt);
+        put("gte", Gte);
+        put("between", Between);
+        put("in", In);
+        put("nin", Nin);
+    }};
+
+    static ConditionOperator of(String operator) {
+        operator = Introspector.decapitalize(operator);
+        return VALUES.get(operator);
+    }
 }
