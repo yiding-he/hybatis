@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ConditionsTest {
 
@@ -14,11 +13,7 @@ class ConditionsTest {
     public void testNin() throws Exception {
         var conditions = new Conditions().withColumn("a").nin(1, 2, 3);
         assertEquals(1, conditions.getQuery().size());
-        assertEquals("a", conditions.getQuery().keySet().iterator().next());
-
-        Condition condition = conditions.conditionsList().get(0);
-        assertNotNull(condition.getNin());
-        assertFalse(condition.getNin().isEmpty());
+        assertEquals("a", conditions.getCondition("a", ConditionOperator.Nin).getColumn());
 
         var command = conditions.toSelect("t").toCommand();
         assertEquals(3, command.getParams().size());

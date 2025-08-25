@@ -3,8 +3,6 @@ package com.hyd.hybatis.query;
 import com.hyd.hybatis.Condition;
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * Query condition object used to restrict the query parameters,
  * preventing the query request from containing unauthorized conditions.
@@ -12,16 +10,16 @@ import java.util.Date;
 @Data
 public class EmployeeQuery {
 
-    private Condition<Integer> empNo;
+    private Condition empNo;
 
-    private Condition<Date> birthDate;
+    private Condition birthDate;
 
-    private Condition<String> firstName;
+    private Condition firstName;
 
-    private Condition<String> lastName;
+    private Condition lastName;
 
-    private Condition<String> gender;
+    private Condition gender;
 
-    private Condition<Date> hireDate;
+    private Condition hireDate;
 
 }

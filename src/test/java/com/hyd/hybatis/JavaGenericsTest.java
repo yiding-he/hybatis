@@ -4,9 +4,10 @@ import com.hyd.hybatis.reflection.Reflections;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Type;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.ibatis.reflection.TypeParameterResolver.resolveReturnType;
 
@@ -20,7 +21,7 @@ public class JavaGenericsTest {
 
     public static class MyQuery {
 
-        public Condition<Date> startDate;
+        public Set<LocalDate> startDate;
     }
 
     @Test

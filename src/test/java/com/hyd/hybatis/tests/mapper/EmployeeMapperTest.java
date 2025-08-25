@@ -1,6 +1,7 @@
 package com.hyd.hybatis.tests.mapper;
 
 import com.hyd.hybatis.Condition;
+import com.hyd.hybatis.ConditionOperator;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisSpringBootTestApplicationTest;
 import com.hyd.hybatis.mappers.EmployeeMapper;
@@ -23,7 +24,7 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
     @Test
     public void testSelectByQuery() throws Exception {
         var query = new EmployeeQuery();
-        query.setEmpNo(new Condition<Integer>().lt(10100));
+        query.setEmpNo(new Condition().update(ConditionOperator.Lt, 10100));
 
         var employees = employeeMapper.selectByQuery(query);
         assertFalse(employees.isEmpty());

@@ -68,7 +68,7 @@ public class Conditions implements Serializable, Cloneable {
 
     /// /////////////////////////////////////
 
-    @SuppressWarnings({"Convert2MethodRef", "unused"})
+    @SuppressWarnings({"unused"})
     public class Wrapper {
 
         private final String column;
