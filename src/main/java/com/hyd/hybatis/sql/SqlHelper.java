@@ -1,6 +1,7 @@
 package com.hyd.hybatis.sql;
 
 import com.hyd.hybatis.Condition;
+import com.hyd.hybatis.ConditionOperator;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
@@ -125,8 +126,12 @@ public class SqlHelper {
     ///////////////////////////////////////////////////////////////////
 
     public static void injectCondition(Sql<?> sql, Condition condition) {
-        if (sql != null && condition != null) {
-            condition.getOperator().operate(sql, condition.getColumn(), condition.getValues());
+        if (sql != null && condition != null && condition.getColumn() != null && condition.getOperator() != null) {
+            ConditionOperator operator = Conditions.getOperator(condition.getOperator());
+            if (operator == null) {
+                throw new RuntimeException("ConditionOperator '" + condition.getOperator() + "' not found.");
+            }
+            operator.operate(sql, condition.getColumn(), condition.getValues());
         }
     }
 }

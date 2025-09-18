@@ -1,5 +1,6 @@
 package com.hyd.hybatis;
 
+import com.hyd.hybatis.ConditionOperator.*;
 import com.hyd.hybatis.sql.Sql;
 import com.hyd.hybatis.sql.SqlHelper;
 import lombok.Getter;
@@ -10,9 +11,58 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 public class Conditions implements Serializable, Cloneable {
+
+    public static final ConditionOperator StartsWith = new StartsWith();
+
+    public static final ConditionOperator EndsWith = new EndsWith();
+
+    public static final ConditionOperator Contains = new Contains();
+
+    public static final ConditionOperator Eq = new Eq();
+
+    public static final ConditionOperator Ne = new Ne();
+
+    public static final ConditionOperator Null = new Null();
+
+    public static final ConditionOperator NonNull = new NonNull();
+
+    public static final ConditionOperator Lt = new Lt();
+
+    public static final ConditionOperator Lte = new Lte();
+
+    public static final ConditionOperator Gt = new Gt();
+
+    public static final ConditionOperator Gte = new Gte();
+
+    public static final ConditionOperator Between = new Between();
+
+    public static final ConditionOperator In = new In();
+
+    public static final ConditionOperator Nin = new Nin();
+
+    public static final ConditionOperator OrderAsc = new OrderAsc();
+
+    public static final ConditionOperator OrderDesc = new OrderDesc();
+
+    private static final Map<String, ConditionOperator> OPERATORS = new HashMap<>();
+
+    static {
+        Stream.of(
+            StartsWith, EndsWith, Contains, Eq, Ne, Null, NonNull, Lt, Lte, Gt, Gte, Between, In, Nin, OrderAsc, OrderDesc
+        ).forEach(Conditions::registerOperator);
+    }
+
+    public static void registerOperator(ConditionOperator operator) {
+        OPERATORS.put(operator.getClass().getSimpleName(), operator);
+    }
+
+    public static ConditionOperator getOperator(String name) {
+        return OPERATORS.get(name);
+    }
 
     public static Conditions eq(String columnName, Object value) {
         return new Conditions().withColumn(columnName).eq(value);
@@ -66,7 +116,7 @@ public class Conditions implements Serializable, Cloneable {
         return new Conditions().withColumn(columnName).nonNull();
     }
 
-    /// /////////////////////////////////////
+    //----------------------------------------------------
 
     @SuppressWarnings({"unused"})
     public class Wrapper {
@@ -78,51 +128,51 @@ public class Conditions implements Serializable, Cloneable {
         }
 
         public Conditions startWith(String s) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.StartsWith, s));
+            return Conditions.this.with(column, c -> c.update(StartsWith, s));
         }
 
         public Conditions endsWith(String s) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.EndsWith, s));
+            return Conditions.this.with(column, c -> c.update(EndsWith, s));
         }
 
         public Conditions contains(String s) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Contains, s));
+            return Conditions.this.with(column, c -> c.update(Contains, s));
         }
 
         public Conditions eq(Object o) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Eq, o));
+            return Conditions.this.with(column, c -> c.update(Eq, o));
         }
 
         public Conditions ne(Object o) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Ne, o));
+            return Conditions.this.with(column, c -> c.update(Ne, o));
         }
 
         public Conditions beNull() {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Null));
+            return Conditions.this.with(column, c -> c.update(Null));
         }
 
         public Conditions nonNull() {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.NonNull));
+            return Conditions.this.with(column, c -> c.update(NonNull));
         }
 
         public Conditions lt(Object o) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Lt, o));
+            return Conditions.this.with(column, c -> c.update(Lt, o));
         }
 
         public Conditions lte(Object o) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Lte, o));
+            return Conditions.this.with(column, c -> c.update(Lte, o));
         }
 
         public Conditions gt(Object o) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Gt, o));
+            return Conditions.this.with(column, c -> c.update(Gt, o));
         }
 
         public Conditions gte(Object o) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Gte, o));
+            return Conditions.this.with(column, c -> c.update(Gte, o));
         }
 
         public Conditions between(Object o1, Object o2) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Between, o1, o2));
+            return Conditions.this.with(column, c -> c.update(Between, o1, o2));
         }
 
         public Conditions in(List<?> tt) {
@@ -134,11 +184,11 @@ public class Conditions implements Serializable, Cloneable {
         }
 
         public Conditions orderAsc(int order) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.OrderAsc, order));
+            return Conditions.this.with(column, c -> c.update(OrderAsc, order));
         }
 
         public Conditions orderDesc(int order) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.OrderDesc, order));
+            return Conditions.this.with(column, c -> c.update(OrderDesc, order));
         }
 
         @SafeVarargs
@@ -154,7 +204,7 @@ public class Conditions implements Serializable, Cloneable {
         }
 
         private Conditions inList(List<?> tt) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.In, tt));
+            return Conditions.this.with(column, c -> c.update(In, tt));
         }
 
         @SafeVarargs
@@ -170,7 +220,7 @@ public class Conditions implements Serializable, Cloneable {
         }
 
         private Conditions ninList(List<?> tt) {
-            return Conditions.this.with(column, c -> c.update(ConditionOperator.Nin, tt));
+            return Conditions.this.with(column, c -> c.update(Nin, tt));
         }
     }
 
@@ -199,15 +249,26 @@ public class Conditions implements Serializable, Cloneable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Conditions)) return false;
         Conditions that = (Conditions) o;
-        return limit == that.limit && Objects.equals(query, that.query) && Objects.equals(projection, that.projection);
+        return offset == that.offset && limit == that.limit
+            && Objects.equals(query, that.query)
+            && Objects.equals(projection, that.projection);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(query, projection, limit);
+        return Objects.hash(query, projection, offset, limit);
+    }
+
+    @Override
+    public String toString() {
+        return "Conditions{" +
+            "query=" + query +
+            ", projection=" + projection +
+            ", offset=" + offset +
+            ", limit=" + limit +
+            '}';
     }
 
     //-------------------------- operators --------------------------
@@ -253,7 +314,7 @@ public class Conditions implements Serializable, Cloneable {
         var index = new AtomicInteger(maxOrderIndex());
         for (String column : ascColumns) {
             this.getOrCreateCondition(column)
-                .update(ConditionOperator.OrderAsc, index.incrementAndGet());
+                .update(OrderAsc, index.incrementAndGet());
         }
         return this;
     }
@@ -262,14 +323,14 @@ public class Conditions implements Serializable, Cloneable {
         var index = new AtomicInteger(maxOrderIndex());
         for (String column : ascColumns) {
             this.getOrCreateCondition(column)
-                .update(ConditionOperator.OrderDesc, index.incrementAndGet());
+                .update(OrderDesc, index.incrementAndGet());
         }
         return this;
     }
 
     private int maxOrderIndex() {
         return this.query.stream()
-            .filter(c -> c.getOperator() == ConditionOperator.OrderAsc || c.getOperator() == ConditionOperator.OrderDesc)
+            .filter(c -> OrderAsc.matchName(c.getOperator()) || OrderDesc.matchName(c.getOperator()))
             .mapToInt(c -> Integer.parseInt(String.valueOf(c.getValues().get(0))))
             .max().orElse(0);
     }
@@ -288,7 +349,7 @@ public class Conditions implements Serializable, Cloneable {
 
     public Condition getCondition(String column, ConditionOperator operator) {
         return this.query.stream()
-            .filter(c -> c.getColumn().equals(column) && c.getOperator() == operator)
+            .filter(c -> c.getColumn().equals(column) && operator.matchName(c.getOperator()))
             .findFirst().orElse(null);
     }
 

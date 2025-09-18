@@ -1,7 +1,6 @@
 package com.hyd.hybatis.springmvc;
 
 import com.hyd.hybatis.Condition;
-import com.hyd.hybatis.ConditionOperator;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
@@ -81,7 +80,7 @@ public class HybatisHandlerMethodArgumentResolver2 implements HandlerMethodArgum
 
             Condition c = new Condition();
             c.setColumn(param.column);
-            c.setOperator(ConditionOperator.of(param.operator, param.values));
+            c.setOperator(param.operator);
         });
 
         //-------------------------- limit, offset 和 projection 是不针对字段的 --------------------------
@@ -132,7 +131,7 @@ public class HybatisHandlerMethodArgumentResolver2 implements HandlerMethodArgum
                 param.column = Reflections.getColumnName(field, camelToUnderline);
 
                 Condition condition = new Condition();
-                condition.setOperator(ConditionOperator.of(param.operator, param.values));
+                condition.setOperator(param.operator);
                 condition.setColumn(param.column);
                 condition.setValues(List.of(param.values));
                 Reflections.setFieldValue(t, field, condition);
