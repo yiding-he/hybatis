@@ -47,6 +47,8 @@ public class Condition {
                 this.values = Collections.emptyList();
             } else if (values[0] instanceof Collection) {
                 this.values = new ArrayList<>((Collection<?>) values[0]);
+            } else {
+                this.values = List.of(values[0]);
             }
         } else {
             this.values = List.of(values);

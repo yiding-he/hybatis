@@ -127,7 +127,7 @@ public class Conditions implements Serializable, Cloneable {
             this.column = column;
         }
 
-        public Conditions startWith(String s) {
+        public Conditions startsWith(String s) {
             return Conditions.this.with(column, c -> c.update(StartsWith, s));
         }
 
@@ -313,7 +313,7 @@ public class Conditions implements Serializable, Cloneable {
     public Conditions orderAsc(String... ascColumns) {
         var index = new AtomicInteger(maxOrderIndex());
         for (String column : ascColumns) {
-            this.getOrCreateCondition(column)
+            this.getOrCreateOrderCondition(column)
                 .update(OrderAsc, index.incrementAndGet());
         }
         return this;
@@ -322,7 +322,7 @@ public class Conditions implements Serializable, Cloneable {
     public Conditions orderDesc(String... ascColumns) {
         var index = new AtomicInteger(maxOrderIndex());
         for (String column : ascColumns) {
-            this.getOrCreateCondition(column)
+            this.getOrCreateOrderCondition(column)
                 .update(OrderDesc, index.incrementAndGet());
         }
         return this;
@@ -353,9 +353,24 @@ public class Conditions implements Serializable, Cloneable {
             .findFirst().orElse(null);
     }
 
-    public Condition getOrCreateCondition(String column) {
+    public Condition getOrCreateQueryCondition(String column) {
         var condition = this.query.stream()
             .filter(c -> c.getColumn().equals(column))
+            .filter(c -> !OrderAsc.matchName(c.getOperator()) && !OrderDesc.matchName(c.getOperator()))
+            .findFirst().orElse(null);
+
+        if (condition == null) {
+            condition = new Condition(column);
+            this.query.add(condition);
+        }
+
+        return condition;
+    }
+
+    public Condition getOrCreateOrderCondition(String column) {
+        var condition = this.query.stream()
+            .filter(c -> c.getColumn().equals(column))
+            .filter(c -> OrderAsc.matchName(c.getOperator()) || OrderDesc.matchName(c.getOperator()))
             .findFirst().orElse(null);
 
         if (condition == null) {

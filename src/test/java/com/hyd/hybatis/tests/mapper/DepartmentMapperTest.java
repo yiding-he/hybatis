@@ -25,7 +25,9 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
             new Conditions()
                 .withColumn("dept_name").nin("Finance", "Development")
                 .withColumn("dept_no").gt("d001")
+                .withColumn("dept_no").between("d001", "d100")
                 .orderAsc("dept_name")
+                .orderDesc("dept_no")
                 .limit(5)
         );
         assertFalse(departments.isEmpty());
@@ -60,7 +62,7 @@ public class DepartmentMapperTest extends HybatisSpringBootTestApplicationTest {
     public void testUpdate() {
         var conditions = new Conditions()
             .withColumn("dept_no").eq("d009")
-            .withColumn("dept_name").startWith("Customer");
+            .withColumn("dept_name").startsWith("Customer");
 
         var update = new Department();
         update.setDeptName("Customer Service 客户服务2");
