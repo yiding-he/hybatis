@@ -3,6 +3,7 @@ package com.hyd.hybatis;
 import com.hyd.hybatis.ConditionOperator.*;
 import com.hyd.hybatis.sql.Sql;
 import com.hyd.hybatis.sql.SqlHelper;
+import com.hyd.hybatis.utils.Str;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -61,6 +62,10 @@ public class Conditions implements Serializable, Cloneable {
     }
 
     public static ConditionOperator getOperator(String name) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+        name = Str.capitalize(name);
         return OPERATORS.get(name);
     }
 

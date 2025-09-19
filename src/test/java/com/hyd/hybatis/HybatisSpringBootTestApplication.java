@@ -43,6 +43,7 @@ public class HybatisSpringBootTestApplication {
         // curl "http://localhost:8080/dep/query?deptNo.gt=d004"
         @GetMapping("/query")
         public List<Department> queryDepartments(Conditions conditions) {
+            log.info("Conditions = {}", conditions);
             return departmentMapper.selectList(conditions);
         }
     }

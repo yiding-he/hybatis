@@ -27,9 +27,9 @@ import java.util.stream.Stream;
  * 将 WebRequest 中的查询参数封装成 JavaBean 对象
  */
 @Slf4j
-public class HybatisHandlerMethodArgumentResolver2 implements HandlerMethodArgumentResolver {
+public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-    public HybatisHandlerMethodArgumentResolver2(HybatisConfiguration config) {
+    public HybatisHandlerMethodArgumentResolver(HybatisConfiguration config) {
         this.config = config;
     }
 
@@ -81,6 +81,8 @@ public class HybatisHandlerMethodArgumentResolver2 implements HandlerMethodArgum
             Condition c = new Condition();
             c.setColumn(param.column);
             c.setOperator(param.operator);
+            c.setValues(Arrays.asList(param.values));
+            conditions.getQuery().add(c);
         });
 
         //-------------------------- limit, offset 和 projection 是不针对字段的 --------------------------
