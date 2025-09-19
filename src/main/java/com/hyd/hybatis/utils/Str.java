@@ -57,4 +57,12 @@ public class Str {
     public static boolean isBlank(String s) {
         return !isNotBlank(s);
     }
+
+    public static boolean isInteger(String s) {
+        return s != null && s.matches("[+-]?\\d+");
+    }
+
+    public static boolean isPositiveInteger(String s) {
+        return s != null && s.matches("\\d+");
+    }
 }

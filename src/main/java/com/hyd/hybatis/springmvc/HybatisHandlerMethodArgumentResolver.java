@@ -14,40 +14,38 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.hyd.hybatis.reflection.Reflections.getGenericTypeArg;
-import static com.hyd.hybatis.utils.Bean.convertValue;
-
 /**
- * Used to resolve the parameter values of Conditions type in SpringMVC Controller methods.
+ * 将 WebRequest 中的查询参数封装成 JavaBean 对象
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
 @Slf4j
 public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private static class Param {
+    public HybatisHandlerMethodArgumentResolver(HybatisConfiguration config) {
+        this.config = config;
+    }
 
-        private String key;
+    private static class Param {
 
         private String column;
 
         private String field;
 
-        private String condition;
+        private String operator;
 
         private String[] values;
 
-        private List<String> parsedValues;
     }
 
     private final HybatisConfiguration config;
-
-    public HybatisHandlerMethodArgumentResolver(HybatisConfiguration config) {
-        this.config = config;
-    }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -59,10 +57,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
     }
 
     @Override
-    public Object resolveArgument(
-        MethodParameter parameter, ModelAndViewContainer mavContainer,
-        NativeWebRequest webRequest, WebDataBinderFactory binderFactory
-    ) {
+    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         Class<?> parameterType = parameter.getParameterType();
         if (parameterType == Conditions.class) {
             return buildConditionsObject(webRequest);
@@ -71,7 +66,51 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
         }
     }
 
-    private <T> T buildJavaBeanObject(Class<T> parameterType, NativeWebRequest webRequest) {
+    /**
+     * 将参数封装成 Conditions 对象
+     */
+    private Object buildConditionsObject(NativeWebRequest webRequest) {
+
+        Conditions conditions = new Conditions();
+        webRequest.getParameterMap().forEach((key, values) -> {
+            Param param = parseParamValues(key, values);
+            if (param == null) {
+                return;
+            }
+
+            Condition c = new Condition();
+            c.setColumn(param.column);
+            c.setOperator(param.operator);
+            c.setValues(Arrays.asList(param.values));
+            conditions.getQuery().add(c);
+        });
+
+        //-------------------------- limit, offset 和 projection 是不针对字段的 --------------------------
+
+        var limit = webRequest.getParameter("limit");
+        if (limit != null) {
+            conditions.setLimit(Integer.parseInt(limit));
+        }
+
+        var offset = webRequest.getParameter("offset");
+        if (offset != null) {
+            conditions.setOffset(Integer.parseInt(offset));
+        }
+
+        var projection = webRequest.getParameter("projection");
+        if (projection != null) {
+            conditions.setProjection(parseProjection(projection));
+        }
+
+        return conditions;
+    }
+
+    /**
+     * 将参数封装成 JavaBean 对象
+     * 当查询参数被封装成 JavaBean 对象时，Hybatis 要求其属性类型必须是 Condition
+     * 本方法将 webRequest 中的查询条件转换为 Condition 对象，然后设置到新创建的 Bean 对象中
+     */
+    private Object buildJavaBeanObject(Class<?> parameterType, NativeWebRequest webRequest) {
 
         var conditionFields = Reflections.getPojoFieldsOfType(
             parameterType, Condition.class, config.getHideBeanFieldsFrom()
@@ -81,6 +120,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
             conditionFieldsMap.put(field.getName(), field);
         }
 
+        // 创建 Bean 对象，然后解析 webRequest
         var t = BeanUtils.instantiateClass(parameterType);
         var camelToUnderline = config.isCamelToUnderline();
         webRequest.getParameterMap().forEach((key, values) -> {
@@ -92,103 +132,63 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
                 var field = conditionFieldsMap.get(param.field);
                 param.column = Reflections.getColumnName(field, camelToUnderline);
 
-                Condition condition = Reflections.getFieldValue(t, field);
-                if (condition == null) {
-                    condition = new Condition();
-                    Reflections.setFieldValue(t, field, condition);
-                }
-                injectCondition(param, condition, getGenericTypeArg(field.getGenericType()));
+                Condition condition = new Condition();
+                condition.setOperator(param.operator);
+                condition.setColumn(param.column);
+                condition.setValues(List.of(param.values));
+                Reflections.setFieldValue(t, field, condition);
             }
         });
         return t;
     }
 
-    private Conditions buildConditionsObject(NativeWebRequest webRequest) {
-        Conditions conditions = new Conditions();
-        webRequest.getParameterMap().forEach((key, values) -> {
-            Param param = parseParamValues(key, values);
-            if (param == null) {
-                return;
-            }
+    static class KeyPattern {
 
-            Condition c = conditions.with(param.column);
-            injectCondition(param, c, String.class);
-        });
+        private final Pattern pattern;
 
-        var limit = webRequest.getParameter("limit");
-        if (limit != null) {
-            conditions.limit(Integer.parseInt(limit));
+        // 将不同的 key 格式替换成统一的 "column.operator" 格式
+        private final Function<String, String> normalizer;
+
+        KeyPattern(String pattern, Function<String, String> normalizer) {
+            this.pattern = Pattern.compile(pattern);
+            this.normalizer = normalizer;
         }
 
-        var projection = webRequest.getParameter("projection");
-        if (projection != null) {
-            conditions.projection(parseProjection(projection));
+        boolean matches(String key) {
+            return pattern.matcher(key).matches();
         }
 
-        return conditions;
-    }
-
-    private <T> void injectCondition(Param param, Condition<T> c, Class<T> type) {
-        if (param.condition.equals("in")) {
-            List<T> list = param.parsedValues.stream()
-                .map(v -> convertValue(v, type))
-                .collect(Collectors.toList());
-            c.in(list);
-        } else if (param.condition.equals("nin")) {
-            List<T> list = param.parsedValues.stream()
-                .map(v -> convertValue(v, type))
-                .collect(Collectors.toList());
-            c.nin(list);
-        } else if (param.condition.equals("between") && param.parsedValues.size() == 2) {
-            c.between(
-                convertValue(param.parsedValues.get(0), type),
-                convertValue(param.parsedValues.get(1), type)
-            );
-        } else if (param.condition.equals("startsWith")) {
-            c.startsWith(param.values[0]);
-        } else if (param.condition.equals("endsWith")) {
-            c.endsWith(param.values[0]);
-        } else if (param.condition.equals("contains")) {
-            c.contains(param.values[0]);
-        } else if (param.condition.equals("eq")) {
-            c.eq(convertValue(param.values[0], type));
-        } else if (param.condition.equals("ne")) {
-            c.ne(convertValue(param.values[0], type));
-        } else if (param.condition.equals("null")) {
-            if (param.values[0].equals("true")) {
-                c.beNull();
-            } else {
-                c.nonNull();
-            }
-        } else if (param.condition.equals("lt")) {
-            c.lt(convertValue(param.values[0], type));
-        } else if (param.condition.equals("lte")) {
-            c.lte(convertValue(param.values[0], type));
-        } else if (param.condition.equals("gt")) {
-            c.gt(convertValue(param.values[0], type));
-        } else if (param.condition.equals("gte")) {
-            c.gte(convertValue(param.values[0], type));
-        } else if (param.condition.equals("orderAsc")) {
-            c.setOrderAsc(Integer.parseInt(param.values[0]));
-        } else if (param.condition.equals("orderDesc")) {
-            c.setOrderDesc(Integer.parseInt(param.values[0]));
+        String normalize(String key) {
+            return normalizer.apply(key);
         }
     }
+
+    // 这里允许三种表达方式："column.operator"，"column[operator]" 和 "column$operator"。
+    // 之所以允许三种表达方式，是为了兼容不同框架下的前端在构造查询参数时可能存在的限制。
+    private static final KeyPattern[] VALID_PARAM_PATTERNS = new KeyPattern[]{
+        new KeyPattern("^([a-zA-Z0-9_]+)\\.([a-zA-Z0-9_]+)$", key -> key),
+        new KeyPattern("^([a-zA-Z0-9_]+)\\[([a-zA-Z0-9_]+)]$", key -> key.replace("[", ".").replace("]", "")),
+        new KeyPattern("^([a-zA-Z0-9_]+)\\$([a-zA-Z0-9_]+)$", key -> key.replace("$", "."))
+    };
 
     private Param parseParamValues(String key, String[] values) {
-        if (key.contains("[")) {
-            key = key.replace("[", ".").replace("]", "");
-        }
-        if (key.contains("$")) {
-            key = key.replace("$", ".");
-        }
-        if (!key.contains(".")) {
+
+        var keyPattern = Stream.of(VALID_PARAM_PATTERNS)
+            .filter(p -> p.matches(key))
+            .findFirst()
+            .orElse(null);
+
+        // 不符合三种表达方式，说明这个参数不是查询条件，因此没有 Param 对象可返回
+        if (keyPattern == null) {
             return null;
         }
-        var split = key.split("\\.");
+
+        // 这里用 "+" 是为了兼容可能出现多个连续 "." 的情况，提升健壮性
+        var finalKey = keyPattern.normalize(key);
+        var split = finalKey.split("\\.+");
         var field = split[0];
-        var column = config.isCamelToUnderline()? Str.camel2Underline(field): field;
-        var condition = split[1];
+        var column = config.isCamelToUnderline() ? Str.camel2Underline(field) : field;
+        var operator = split[1];
 
         var valuesList = new ArrayList<String>();
         for (String v : values) {
@@ -208,20 +208,18 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
         }
 
         Param param = new Param();
-        param.key = key;
         param.column = column;
         param.field = field;
-        param.condition = condition;
+        param.operator = operator;
         param.values = values;
-        param.parsedValues = valuesList;
         return param;
     }
 
-    private Set<String> parseProjection(String projection) {
+    private List<String> parseProjection(String projection) {
         var stream = Stream.of(projection.split(",")).filter(Str::isNotBlank);
         if (config.isCamelToUnderline()) {
             stream = stream.map(Str::camel2Underline);
         }
-        return stream.collect(Collectors.toSet());
+        return stream.collect(Collectors.toList());
     }
 }
