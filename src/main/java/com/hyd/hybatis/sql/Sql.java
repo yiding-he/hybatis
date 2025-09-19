@@ -678,6 +678,11 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
+        public Select GroupBy(String... groupBys) {
+            this.groupBy = String.join(",", groupBys);
+            return this;
+        }
+
         public Select Offset(long offset) {
             this.offset = offset;
             return this;
