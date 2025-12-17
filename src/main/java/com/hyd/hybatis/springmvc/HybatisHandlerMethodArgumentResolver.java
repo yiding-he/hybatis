@@ -4,10 +4,12 @@ import com.hyd.hybatis.Condition;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.HybatisConfiguration;
 import com.hyd.hybatis.reflection.Reflections;
+import com.hyd.hybatis.utils.Lst;
 import com.hyd.hybatis.utils.Str;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.MethodParameter;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -57,7 +59,10 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
     }
 
     @Override
-    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+    public Object resolveArgument(MethodParameter parameter,
+                                  ModelAndViewContainer mavContainer,
+                                  @NonNull NativeWebRequest webRequest,
+                                  WebDataBinderFactory binderFactory) {
         Class<?> parameterType = parameter.getParameterType();
         if (parameterType == Conditions.class) {
             return buildConditionsObject(webRequest);
@@ -81,7 +86,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
             Condition c = new Condition();
             c.setColumn(param.column);
             c.setOperator(param.operator);
-            c.setValues(Arrays.asList(param.values));
+            c.setValues(Lst.toObjectList(param.values));
             conditions.getQuery().add(c);
         });
 
@@ -135,7 +140,7 @@ public class HybatisHandlerMethodArgumentResolver implements HandlerMethodArgume
                 Condition condition = new Condition();
                 condition.setOperator(param.operator);
                 condition.setColumn(param.column);
-                condition.setValues(List.of(param.values));
+                condition.setValues(Lst.toObjectList(param.values));
                 Reflections.setFieldValue(t, field, condition);
             }
         });
