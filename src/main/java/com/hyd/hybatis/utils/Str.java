@@ -10,7 +10,9 @@ public class Str {
         for (int i = 0; i < camel.length(); i++) {
             char c = camel.charAt(i);
             if (Character.isUpperCase(c)) {
-                sb.append("_");
+                if (i > 0) {
+                    sb.append("_");
+                }
                 sb.append(Character.toLowerCase(c));
             } else {
                 sb.append(c);
@@ -76,5 +78,24 @@ public class Str {
 
     public static boolean isPositiveInteger(String s) {
         return s != null && s.matches("\\d+");
+    }
+
+    /**
+     * 在字符串中查询多个前缀，如果找到其中一个，则返回移除该前缀后的字符串。
+     */
+    public static String removeStart(String s, String... prefixes) {
+        if (s == null) {
+            return null;
+        }
+        for (String prefix : prefixes) {
+            if (prefix == null) {
+                continue;
+            }
+            if (!s.startsWith(prefix)) {
+                continue;
+            }
+            return s.substring(prefix.length());
+        }
+        return s;
     }
 }

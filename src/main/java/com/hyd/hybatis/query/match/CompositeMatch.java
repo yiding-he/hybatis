@@ -25,13 +25,13 @@ public class CompositeMatch implements Match {
     private Operator operator;
 
     @Override
-    public Column<?> getColumn() {
+    public Column getColumn() {
         // 组合过滤条件没有单一字段
         return null;
     }
 
     @Override
-    public Object getValue() {
+    public List<Object> getValues() {
         return null;
     }
 

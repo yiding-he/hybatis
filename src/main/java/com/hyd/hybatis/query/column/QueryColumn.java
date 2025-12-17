@@ -14,7 +14,7 @@ public class QueryColumn extends AbstractColumn<QueryColumn> {
 
     }
 
-    public QueryColumn(Query<?> from, String colName, String alias) {
+    public QueryColumn(Query from, String colName, String alias) {
         this.alias = alias;
         setSqlCommand(from.getAlias() + "." + colName);
     }

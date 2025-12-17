@@ -1,6 +1,7 @@
 package com.hyd.hybatis.query.query;
 
 import com.hyd.hybatis.sql.SqlCommand;
+import com.hyd.hybatis.utils.EntityUtil;
 import com.hyd.hybatis.utils.Str;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,19 +9,25 @@ import lombok.EqualsAndHashCode;
 import static java.util.Collections.emptyList;
 
 /**
- * 直接从表或视图中进行查询
+ * 以实体类来表示结构的数据集
+ *
+ * @param <T> 实体类
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TableOrView extends AbstractQuery<TableOrView> {
+public class Table<T> extends AbstractQuery<Table<T>> {
+
+    public static <E> Table<E> of(Class<E> entityClass) {
+        return new Table<>(entityClass);
+    }
 
     private String name;
 
-    public TableOrView() {
-    }
+    private Class<T> entityClass;
 
-    public TableOrView(String name) {
-        this.name = name;
+    public Table(Class<T> entityClass) {
+        this.entityClass = entityClass;
+        this.name = EntityUtil.getTableName(entityClass);
     }
 
     @Override

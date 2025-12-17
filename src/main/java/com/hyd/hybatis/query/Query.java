@@ -17,7 +17,7 @@ import static java.util.Collections.emptyList;
 /**
  * 表示一个查询结构，查询结构与查询结构之间可以相互组合，以实现查询结构的复用。
  */
-public interface Query<Q extends Query<Q>> extends Alias, Limit {
+public interface Query extends Alias, Limit {
 
     /**
      * 过滤条件列表
@@ -27,12 +27,12 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
     /**
      * 直接选取的字段列表
      */
-    List<Column<?>> getColumns();
+    List<Column> getColumns();
 
     /**
      * 分组字段列表
      */
-    List<Column<?>> getGroupBy();
+    List<Column> getGroupBy();
 
     ////////////////////////////////////////
 
@@ -49,10 +49,14 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
         }
     }
 
+    default <T> QueryColumn col(Getter<T, ?> getter) {
+        return Column.from(this, getter);
+    }
+
     /**
      * 选取指定的字段
      */
-    default List<Column<?>> cols(String... columns) {
+    default List<Column> cols(String... columns) {
         if (columns == null) {
             return emptyList();
         }
@@ -94,11 +98,11 @@ public interface Query<Q extends Query<Q>> extends Alias, Limit {
 
     ////////////////////////////////////////
 
-    default Join leftJoin(Query<?> other, String... joinColumns) {
+    default Join leftJoin(Query other, String... joinColumns) {
         return new Join(this, other, Join.JoinType.Left, joinColumns);
     }
 
-    default Join rightJoin(Query<?> other, String... joinColumns) {
+    default Join rightJoin(Query other, String... joinColumns) {
         return new Join(this, other, Join.JoinType.Right, joinColumns);
     }
 

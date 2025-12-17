@@ -5,7 +5,7 @@ import com.hyd.hybatis.query.RawSqlFragment;
 import com.hyd.hybatis.sql.SqlCommand;
 
 @SuppressWarnings("unchecked")
-public abstract class AbstractColumn<C extends AbstractColumn<C>> extends RawSqlFragment implements Column<C> {
+public abstract class AbstractColumn<C extends AbstractColumn<C>> extends RawSqlFragment implements Column {
 
     protected String alias;
 
@@ -22,5 +22,10 @@ public abstract class AbstractColumn<C extends AbstractColumn<C>> extends RawSql
     @Override
     public SqlCommand toSqlFragment() {
         return super.toSqlFragment().append(appendAlias());
+    }
+
+    @Override
+    public SqlCommand toSqlFragmentWithoutAlias() {
+        return super.toSqlFragment();
     }
 }

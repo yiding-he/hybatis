@@ -11,16 +11,16 @@ import java.util.List;
 
 public class CaseColumn extends AbstractColumn<CaseColumn> {
 
-    private List<KeyValue<Match, Column<?>>> cases = new ArrayList<>();
+    private List<KeyValue<Match, Column>> cases = new ArrayList<>();
 
-    private Column<?> defaultColumn;
+    private Column defaultColumn;
 
-    public CaseColumn when(Match match, Column<?> column) {
+    public CaseColumn when(Match match, Column column) {
         this.cases.add(new DefaultKeyValue<>(match, column));
         return this;
     }
 
-    public CaseColumn otherwise(Column<?> column) {
+    public CaseColumn otherwise(Column column) {
         this.defaultColumn = column;
         return this;
     }
@@ -29,7 +29,7 @@ public class CaseColumn extends AbstractColumn<CaseColumn> {
     public SqlCommand getSqlCommand() {
         var command = new SqlCommand();
         command.append("CASE ");
-        for (KeyValue<Match, Column<?>> caseItem : cases) {
+        for (KeyValue<Match, Column> caseItem : cases) {
             command.append("WHEN ");
             command.append(caseItem.getKey().toSqlFragment());
             command.append(" THEN ");
