@@ -11,9 +11,9 @@ import lombok.Setter;
 @Getter @Setter
 public class Wrap extends AbstractQuery<Wrap> {
 
-    protected Query<?> from;
+    protected Query from;
 
-    public Wrap(Query<?> from) {
+    public Wrap(Query from) {
         this.from = from;
     }
 

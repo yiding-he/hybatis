@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * 基于这三个基本功能，我们可以构建具有高度可复用的查询结构。
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query<Q> {
+public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query {
 
     /**
      * 本查询的别名。当嵌入另一个查询时，外部查询可以通过别名来引用本查询。
@@ -32,12 +32,12 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
      * 本查询提供哪些字段
      * 字段可以是直接选取的，也可以是聚合操作等等
      */
-    protected List<Column<?>> columns = new ArrayList<>();
+    protected List<Column> columns = new ArrayList<>();
 
     /**
      * 聚合维度，会出现在本查询提供的字段列表中
      */
-    protected List<Column<?>> groupBy = new ArrayList<>();
+    protected List<Column> groupBy = new ArrayList<>();
 
     protected int limit = -1;
 
@@ -54,7 +54,7 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
     }
 
     @Override
-    public List<Column<?>> getColumns() {
+    public List<Column> getColumns() {
         return columns;
     }
 
@@ -69,7 +69,7 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
     }
 
     @Override
-    public List<Column<?>> getGroupBy() {
+    public List<Column> getGroupBy() {
         return groupBy;
     }
 
@@ -82,12 +82,12 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
         return matches(List.of(matches));
     }
 
-    public Q columns(List<Column<?>> columns) {
+    public Q columns(List<Column> columns) {
         this.columns.addAll(columns);
         return (Q) this;
     }
 
-    public Q columns(Column<?>... columns) {
+    public Q columns(Column... columns) {
         return columns(List.of(columns));
     }
 
@@ -99,12 +99,12 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
         return columnNames(List.of(columns));
     }
 
-    public Q groupBy(List<Column<?>> columns) {
+    public Q groupBy(List<Column> columns) {
         this.groupBy.addAll(columns);
         return (Q) this;
     }
 
-    public Q groupBy(Column<?>... columns) {
+    public Q groupBy(Column... columns) {
         return groupBy(List.of(columns));
     }
 

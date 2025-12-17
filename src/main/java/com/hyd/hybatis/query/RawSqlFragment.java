@@ -33,4 +33,9 @@ public class RawSqlFragment implements SqlFragment {
     public SqlCommand toSqlFragment() {
         return this.getSqlCommand();
     }
+
+    @Override
+    public SqlCommand toSqlFragmentWithoutAlias() {
+        return toSqlFragment();
+    }
 }

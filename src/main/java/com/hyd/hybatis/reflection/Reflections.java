@@ -13,7 +13,6 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Reflections {
@@ -40,7 +39,7 @@ public class Reflections {
                     .filter(f -> fieldType == null || fieldType.isAssignableFrom(f.getType()))
                     .filter(f -> !Modifier.isTransient(f.getModifiers()))
                     .filter(f -> !isTypeToBeIgnored(hideBeanFieldsFrom, f))
-                    .collect(Collectors.toList())
+                    .toList()
             );
             t = t.getSuperclass();
         }
@@ -82,15 +81,13 @@ public class Reflections {
 
     public static Class<?> getGenericTypeArg(Type type) {
         if (type instanceof Class && ((Class<?>) type).getGenericInterfaces().length > 0) {
-            if (((Class<?>) type).getGenericInterfaces()[0] instanceof ParameterizedType) {
-                var genericInterface = (ParameterizedType) ((Class<?>) type).getGenericInterfaces()[0];
+            if (((Class<?>) type).getGenericInterfaces()[0] instanceof ParameterizedType genericInterface) {
                 var arg0 = genericInterface.getActualTypeArguments()[0];
                 return arg0 instanceof Class ? (Class<?>) arg0 : null;
             } else {
                 return null;
             }
-        } else if (type instanceof ParameterizedType) {
-            var parameterizedType = (ParameterizedType) type;
+        } else if (type instanceof ParameterizedType parameterizedType) {
             Type args0 = parameterizedType.getActualTypeArguments()[0];
             if (args0 instanceof ParameterizedType) {
                 return (Class<?>) ((ParameterizedType) args0).getRawType();
@@ -98,7 +95,11 @@ public class Reflections {
                 return (Class<?>) args0;
             }
         } else {
-            return (Class<?>) type;
+            if (type instanceof Class<?>) {
+                return (Class<?>) type;
+            } else {
+                throw new HybatisException("Cannot resolve generic type");
+            }
         }
     }
 

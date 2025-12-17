@@ -6,4 +6,5 @@ public interface SqlFragment {
 
     SqlCommand toSqlFragment();
 
+    SqlCommand toSqlFragmentWithoutAlias();
 }

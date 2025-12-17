@@ -1,7 +1,7 @@
 package com.hyd.hybatis.query.column;
 
 /**
- * 表示这个列是一个表达式的值
+ * 表示这个列是一个值，在生成 SQL 时直接作为一个占位符
  */
 public class LitColumn extends AbstractColumn<LitColumn> {
 
@@ -15,7 +15,7 @@ public class LitColumn extends AbstractColumn<LitColumn> {
     public void setValue(Object value) {
         if (value == null) {
             setSqlCommand(null);
-        } else if (value instanceof Integer) {
+        } else if (value instanceof Number) {
             setSqlCommand(String.valueOf(value));
         } else {
             setSqlCommand("?", value);

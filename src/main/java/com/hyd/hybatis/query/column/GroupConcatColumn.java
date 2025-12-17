@@ -5,11 +5,11 @@ import com.hyd.hybatis.sql.SqlCommand;
 
 public class GroupConcatColumn extends AbstractColumn<GroupConcatColumn> {
 
-    private final Column<?> column;
+    private final Column column;
 
     private String separator;
 
-    public GroupConcatColumn(Column<?> column) {
+    public GroupConcatColumn(Column column) {
         this.column = column;
     }
 
