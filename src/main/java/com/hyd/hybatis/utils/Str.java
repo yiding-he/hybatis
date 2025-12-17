@@ -69,4 +69,12 @@ public class Str {
         }
         return strings.length == 0 ? null : strings[strings.length - 1];
     }
+
+    public static boolean isInteger(String s) {
+        return s != null && s.matches("[+-]?\\d+");
+    }
+
+    public static boolean isPositiveInteger(String s) {
+        return s != null && s.matches("\\d+");
+    }
 }

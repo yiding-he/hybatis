@@ -57,7 +57,11 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
         var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         update.forEach((field, value) -> {
             var columnName = camelToUnderline ? Str.camel2Underline(field) : field;
-            updateSql.SetIfNotNull(columnName, value);
+            if (Sql.isNowConstant(value)) {
+                updateSql.Set(columnName + " = " + updateSql.getDialect().nowFunction());
+            } else {
+                updateSql.SetIfNotNull(columnName, value);
+            }
         });
     }
 
@@ -75,8 +79,12 @@ public class SqlSourceForUpdate extends HybatisSqlSource {
         var camelToUnderline = getHybatisConfiguration().isCamelToUnderline();
         pojoFields.forEach(f -> {
             var columnName = Reflections.getColumnName(f, camelToUnderline);
-            Object fieldValue = Reflections.getFieldValue(update, f);
-            updateSql.SetIfNotNull(columnName, fieldValue);
+            Object value = Reflections.getFieldValue(update, f);
+            if (Sql.isNowConstant(value)) {
+                updateSql.Set(columnName + " = " + updateSql.getDialect().nowFunction());
+            } else {
+                updateSql.SetIfNotNull(columnName, value);
+            }
         });
     }
 }

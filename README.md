@@ -5,14 +5,20 @@ _[中文版 |Chinese version](README_zh-CN.md)_
 
 # Hybatis
 
-A MyBatis extension for [Spring Boot](https://spring.io/projects/spring-boot) projects.
+这是一个 SpringBoot3 分支，clone 和安装需要注意的地方：
 
-It has two main functions:
+### 1. clone 命令
 
-1. Execute dynamic SQL statement (with parameters).
-2. Generate specified `Mapper` methods.
+使用下面的命令来 clone 本分支：
 
-### Requirement
+```bash
+git clone https://github.com/yiding-he/hybatis.git --depth=1 --branch=spring-boot-3
+```
 
-- MyBatis framework
-- Java 11 or later
+### 2. mvn 命令
+
+编译项目需要 JDK 17，假设 javac 路径为 `[JAVA17_JAVAC]`，则 mvn 命令为
+
+```shell
+mvn -Dmaven.compiler.fork=true -Dmaven.compiler.executable=[JAVA17_JAVAC] -Dmaven.test.skip=true clean install
+```

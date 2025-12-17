@@ -1,5 +1,6 @@
 package com.hyd.hybatis.sql;
 
+import com.hyd.hybatis.Conditions;
 import org.junit.jupiter.api.Test;
 
 class SqlTest {
@@ -63,5 +64,30 @@ class SqlTest {
             .OnDuplicateKeyIgnore();
 
         System.out.println("insert = " + insert.toCommand());
+    }
+
+    @Test
+    public void tstCTE() {
+        var t2 = Sql
+            .Select("id", "name", "price")
+            .From("table2").injectConditions(
+                new Conditions().withColumn("id").in(21, 22, 23)
+            ).AsCTE("t2");
+
+        var t3 = Sql
+            .Select("id", "name", "price")
+            .From("table3").injectConditions(
+                new Conditions().withColumn("id").in(31, 32, 33)
+            ).AsCTE("t3");
+
+        var select = Sql.Select("t1.id", "t2.name", "t3.price")
+            .From("t1")
+            .Where("t1.id between ? and ?", 11, 19)
+            .And("t1.type=?", "type1")
+            .Ctes(t2, t3)
+            .LeftJoin("t2 on t1.id=t2.id")
+            .LeftJoin("t3 on t1.id=t3.id");
+
+        System.out.println("select = " + select.toCommand());
     }
 }

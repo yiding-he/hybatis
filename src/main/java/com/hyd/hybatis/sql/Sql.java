@@ -1,10 +1,18 @@
 package com.hyd.hybatis.sql;
 
 
+import com.hyd.hybatis.Condition;
+import com.hyd.hybatis.Conditions;
+import com.hyd.hybatis.sql.dialect.DefaultDialect;
+import com.hyd.hybatis.sql.dialect.Dialect;
 import com.hyd.hybatis.utils.Str;
 
 import java.lang.reflect.Array;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,6 +31,16 @@ import static java.util.Collections.emptyList;
 public abstract class Sql<T extends Sql<?>> {
 
     public static final Object NULL = new Object();
+
+    public static final Date NOW_DATE = new Date(-1);
+
+    public static final LocalDateTime NOW_LOCAL_DATETIME = LocalDateTime.of(-1, 1, 1, 0, 0, 0, 0);
+
+    public static final ZonedDateTime NOW_ZONED_DATETIME = ZonedDateTime.of(NOW_LOCAL_DATETIME, ZoneId.systemDefault());
+
+    public static boolean isNowConstant(Object obj) {
+        return obj == NOW_DATE || obj == NOW_LOCAL_DATETIME || obj == NOW_ZONED_DATETIME;
+    }
 
     private Sql() {
 
@@ -59,6 +77,8 @@ public abstract class Sql<T extends Sql<?>> {
 
     protected String suffix;
 
+    protected Dialect dialect = new DefaultDialect();
+
     public String getSql() {
         return toCommand().getStatement();
     }
@@ -69,6 +89,10 @@ public abstract class Sql<T extends Sql<?>> {
 
     public List<Object> getParams() {
         return params;
+    }
+
+    public Dialect getDialect() {
+        return dialect;
     }
 
     public boolean hasConditions() {
@@ -178,6 +202,18 @@ public abstract class Sql<T extends Sql<?>> {
         return (T) this;
     }
 
+    public T injectConditions(Conditions conditions) {
+        for (Condition condition : conditions.conditionsList()) {
+            SqlHelper.injectCondition(this, condition);
+        }
+        return (T) this;
+    }
+
+    public T withDialect(Dialect dialect) {
+        this.dialect = dialect;
+        return (T) this;
+    }
+
     protected String generateJoinBlock() {
         StringBuilder joinBlock = new StringBuilder();
         for (Join join : joins) {
@@ -219,29 +255,29 @@ public abstract class Sql<T extends Sql<?>> {
         } else if (condition.args.size() == 1 && condition.firstArg() instanceof List) {   // 参数为 List 的条件（即 in 条件）
             List<?> objects = (List<?>) condition.firstArg();
 
-            // marks = "(?,?,?,...,?)"
+            // "(?,?,?,...,?)"
             String marks = "(" +
-                           objects.stream()
-                               .map(o -> {
-                                   this.params.add(o);
-                                   return "?";
-                               })
-                               .collect(Collectors.joining(",")) +
-                           ")";
+                objects.stream()
+                    .map(o -> {
+                        this.params.add(o);
+                        return "?";
+                    })
+                    .collect(Collectors.joining(",")) +
+                ")";
 
-            // "A in ?" -> "A in (?,?,?)"
+            // "A in ?" -> "A in (?,?,...,?)"
             where += condition.statement.replace("?", marks);
 
         } else if (condition.statement.endsWith("in ?")) {
 
             // marks = "(?,?,?,...,?)"
             String marks = "(" +
-                           condition.args.stream()
-                               .map(o -> {
-                                   this.params.add(o);
-                                   return "?";
-                               }).collect(Collectors.joining(",")) +
-                           ")";
+                condition.args.stream()
+                    .map(o -> {
+                        this.params.add(o);
+                        return "?";
+                    }).collect(Collectors.joining(",")) +
+                ")";
 
             // "A in ?" -> "A in (?,?,?)"
             where += condition.statement.replace("?", marks);
@@ -254,7 +290,7 @@ public abstract class Sql<T extends Sql<?>> {
         return where;
     }
 
-    /////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////
 
     public static Select Select(String columns) {
         return new Select(columns);
@@ -276,7 +312,7 @@ public abstract class Sql<T extends Sql<?>> {
         return new Delete(table);
     }
 
-    /////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////
 
     public enum Joint {
         AND, OR
@@ -390,7 +426,7 @@ public abstract class Sql<T extends Sql<?>> {
         }
     }
 
-    /////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////
 
     public static class Insert extends Sql<Insert> {
 
@@ -441,12 +477,12 @@ public abstract class Sql<T extends Sql<?>> {
         public SqlCommand toCommand() {
             this.statement =
                 "insert " +
-                (onDuplicateKeyIgnore ? "ignore " : "") +
-                "into " + table +
-                "(" + Pair.joinPairName(pairs) + ") values " +
-                "(" + Pair.joinPairHolder(pairs) + ")" +
-                (onDuplicateKeyUpdate ? " on duplicate key update " : "") +
-                (suffix == null ? "" : suffix);
+                    (onDuplicateKeyIgnore ? "ignore " : "") +
+                    "into " + table +
+                    "(" + Pair.joinPairName(pairs) + ") values " +
+                    "(" + Pair.joinPairHolder(pairs) + ")" +
+                    (onDuplicateKeyUpdate ? " on duplicate key update " : "") +
+                    (suffix == null ? "" : suffix);
 
             params = Pair.joinPairValue(pairs);
             if (onDuplicateKeyUpdate) {
@@ -481,7 +517,7 @@ public abstract class Sql<T extends Sql<?>> {
         public SqlCommand toCommand() {
             this.params.clear();
             this.statement = "update " + table +
-                             " set " + generateSetBlock() + " " + generateWhereBlock();
+                " set " + generateSetBlock() + " " + generateWhereBlock();
 
             return new SqlCommand(this.statement, this.params);
         }
@@ -551,17 +587,19 @@ public abstract class Sql<T extends Sql<?>> {
      */
     public static class Select extends Sql<Select> {
 
-        private String columns;
+        private final List<CTE> ctes = new ArrayList<>();
 
-        private String from;
+        protected String alias;
 
-        private String orderBy;
+        protected String columns;
 
-        private String groupBy;
+        protected List<OrderItem> orderItems = new ArrayList<>();
 
-        private long offset = -1;
+        protected String groupBy;
 
-        private long limit = -1;
+        protected long offset = -1;
+
+        protected long limit = -1;
 
         public Select(String columns) {
             this.columns = columns;
@@ -576,23 +614,72 @@ public abstract class Sql<T extends Sql<?>> {
             return this;
         }
 
+        public Select As(String alias) {
+            this.alias = alias;
+            return this;
+        }
+
+        public CTE AsCTE(String cteAlias) {
+            return new CTE(this).As(cteAlias);
+        }
+
+        public Select Ctes(CTE... ctes) {
+            this.ctes.addAll(Arrays.asList(ctes));
+            return this;
+        }
+
         public Select From(String from) {
-            this.from = from;
+            this.table = from;
             return this;
         }
 
         public Select From(String... from) {
-            this.from = String.join(",", from);
+            this.table = String.join(",", from);
             return this;
         }
 
+        /**
+         * 使用字符串来设置排序，例如 "id, -create_time"
+         * 其中符号 "-" 表示降序，其他表示升序
+         */
         public Select OrderBy(String orderBy) {
-            this.orderBy = orderBy;
+            if (Str.isBlank(orderBy)) {
+                return this;
+            }
+            var counter = new AtomicInteger();
+            this.orderItems = Arrays.stream(orderBy.split(","))
+                .map(s -> {
+                    var item = new OrderItem();
+                    item.column = s.trim();
+                    item.index = counter.getAndIncrement();
+                    item.asc = !s.startsWith("-");
+                    return item;
+                })
+                .collect(Collectors.toList());
+            return this;
+        }
+
+        public Select OrderBy(OrderItem... orderItems) {
+            this.orderItems.addAll(Arrays.asList(orderItems));
+            return this;
+        }
+
+        public Select OrderBy(String column, boolean asc, int index) {
+            var item = new OrderItem();
+            item.column = column;
+            item.asc = asc;
+            item.index = index;
+            this.orderItems.add(item);
             return this;
         }
 
         public Select GroupBy(String groupBy) {
             this.groupBy = groupBy;
+            return this;
+        }
+
+        public Select GroupBy(String... groupBys) {
+            this.groupBy = String.join(",", groupBys);
             return this;
         }
 
@@ -609,7 +696,9 @@ public abstract class Sql<T extends Sql<?>> {
         @Override
         public SqlCommand toCommand() {
             this.params.clear();
-            this.statement = "select " + this.columns + " from " + this.from + " ";
+            this.statement = "";
+            this.statement += generateCteBlock();
+            this.statement += "select " + this.columns + " from " + getTableWithAlias() + " ";
             this.statement += generateJoinBlock();
             this.statement += generateWhereBlock();
             this.statement += generateGroupBy();
@@ -619,16 +708,80 @@ public abstract class Sql<T extends Sql<?>> {
             return new SqlCommand(this.statement, this.params);
         }
 
+        public String getAlias() {
+            return isEmpty(this.alias) ? this.table : this.alias;
+        }
+
+        private String getTableWithAlias() {
+            return this.table + " " + (isEmpty(this.alias) ? "" : "as " + this.alias);
+        }
+
+        private String generateCteBlock() {
+            if (this.ctes.isEmpty()) {
+                return "";
+            }
+
+            StringBuilder sb = new StringBuilder("with ");
+            for (Select cte : this.ctes) {
+                sb.append(cte.getAlias())
+                    .append(" as (").append(cte.getSql())
+                    .append("),");
+                this.params.addAll(cte.getParams());
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            return sb.toString();
+        }
+
         private String generateGroupBy() {
             return isEmpty(this.groupBy) ? "" : (" group by " + this.groupBy);
         }
 
         private String generateOrderBy() {
-            return isEmpty(this.orderBy) ? "" : (" order by " + this.orderBy);
+            return isEmpty(this.orderItems) ? "" : (" order by " + this.orderItems.stream()
+                .sorted(Comparator.comparingInt(item -> item.index))
+                .map(item -> item.column + (item.asc ? "" : " desc"))
+                .collect(Collectors.joining(", ")));
         }
     }
 
-    /////////////////////////////////////////////////////////
+    public static class OrderItem {
+        public String column;
+        public boolean asc;
+        public int index;
+    }
+
+    public static class CTE extends Select {
+
+        private String cteAlias;
+
+        public CTE(Select select) {
+            this.table = select.table;
+            this.columns = select.columns;
+            this.statement = select.statement;
+            this.params = select.params;
+            this.joins = select.joins;
+            this.conditions = select.conditions;
+            this.suffix = select.suffix;
+            this.alias = select.alias;
+            this.orderItems = select.orderItems;
+            this.groupBy = select.groupBy;
+            this.offset = select.offset;
+            this.limit = select.limit;
+        }
+
+        @Override
+        public String getAlias() {
+            return isEmpty(this.cteAlias) ? this.table : this.cteAlias;
+        }
+
+        @Override
+        public CTE As(String alias) {
+            this.cteAlias = alias;
+            return this;
+        }
+    }
+
+    /// //////////////////////////////////////////////////////
 
     public static class Delete extends Sql<Delete> {
 

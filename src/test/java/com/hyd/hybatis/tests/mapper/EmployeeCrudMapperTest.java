@@ -14,7 +14,7 @@ public class EmployeeCrudMapperTest extends HybatisSpringBootTestApplicationTest
     @Test
     public void testCount() throws Exception {
         var count = employeeCrudMapper.count(
-            new Conditions().withColumn("first_name").startWith("B")
+            new Conditions().withColumn("first_name").startsWith("B")
         );
         System.out.println("count = " + count);
     }
@@ -22,7 +22,7 @@ public class EmployeeCrudMapperTest extends HybatisSpringBootTestApplicationTest
     @Test
     void testSelectList() {
         var employees = employeeCrudMapper.selectList(new Conditions()
-            .withColumn("first_name").startWith("B")
+            .withColumn("first_name").startsWith("B")
             .orderDesc("last_name", "emp_no")
             .limit(10)
         );
@@ -32,7 +32,7 @@ public class EmployeeCrudMapperTest extends HybatisSpringBootTestApplicationTest
     @Test
     void testSelectPage() {
         var page = employeeCrudMapper.selectPage(new Conditions()
-                .withColumn("first_name").startWith("B")
+                .withColumn("first_name").startsWith("B")
                 .orderDesc("last_name", "emp_no"),
             2, 10);
 

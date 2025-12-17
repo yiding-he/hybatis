@@ -3,8 +3,8 @@ package com.hyd.hybatis.pagination;
 import com.github.pagehelper.Page;
 import com.hyd.hybatis.Conditions;
 import com.hyd.hybatis.mapper.CrudMapper;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.function.Supplier;
 

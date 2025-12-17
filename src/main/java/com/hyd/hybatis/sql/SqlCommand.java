@@ -44,11 +44,35 @@ public class SqlCommand {
         return append(statement, Collections.emptyList());
     }
 
+    public SqlCommand clone() {
+        SqlCommand newInstance;
+        try {
+            newInstance = (SqlCommand) super.clone();
+        } catch (CloneNotSupportedException e) {
+            newInstance = new SqlCommand();
+        }
+        newInstance.statement = this.statement;
+        newInstance.params = this.params;
+        return newInstance;
+    }
+
+    /**
+     * 合并两个 SqlCommand，并返回一个新对象
+     */
+    public SqlCommand concat(SqlCommand another) {
+        var clone = clone();
+        if (another != null) {
+            clone.statement += another.statement;
+            clone.params.addAll(another.params);
+        }
+        return clone;
+    }
+
     @Override
     public String toString() {
         return "Command{" +
-                "statement='" + statement + '\'' +
-                ", params=" + params +
-                '}';
+            "statement='" + statement + '\'' +
+            ", params=" + params +
+            '}';
     }
 }

@@ -23,7 +23,7 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
     @Test
     public void testSelectByQuery() throws Exception {
         var query = new EmployeeQuery();
-        query.setEmpNo(new Condition<Integer>().lt(10100));
+        query.setEmpNo(new Condition().update(Conditions.Lt, 10100));
 
         var employees = employeeMapper.selectByQuery(query);
         assertFalse(employees.isEmpty());
@@ -38,7 +38,7 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
     @Test
     public void testSelectLimit1() {
         var employees = employeeMapper.selectByConditions(new Conditions()
-           .withColumn("first_name").startWith("B")
+           .withColumn("first_name").startsWith("B")
            .orderDesc("last_name", "emp_no")
            .limit(1)
         );
@@ -49,7 +49,7 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
     @Test
     public void testSelectByConditions() {
         var rows = employeeMapper.selectRowsByConditions(new Conditions()
-            .withColumn("first_name").startWith("B")
+            .withColumn("first_name").startsWith("B")
             .orderDesc("last_name", "emp_no")
             .limit(10)
         );
@@ -59,7 +59,7 @@ public class EmployeeMapperTest extends HybatisSpringBootTestApplicationTest {
     @Test
     public void testCountByConditions() throws Exception {
         var count = employeeMapper.countByConditions(new Conditions()
-            .withColumn("first_name").startWith("B"));
+            .withColumn("first_name").startsWith("B"));
         System.out.println("count = " + count);
     }
 }

@@ -9,6 +9,7 @@ import com.hyd.hybatis.mappers.EmployeeRowMapper;
 import com.hyd.hybatis.pagination.PageHelperPage;
 import com.hyd.hybatis.query.EmployeeQuery;
 import com.hyd.hybatis.row.Row;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -18,7 +19,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 import static com.hyd.hybatis.Conditions.eq;
@@ -43,6 +43,7 @@ public class HybatisSpringBootTestApplication {
         // curl "http://localhost:8080/dep/query?deptNo.gt=d004"
         @GetMapping("/query")
         public List<Department> queryDepartments(Conditions conditions) {
+            log.info("Conditions = {}", conditions);
             return departmentMapper.selectList(conditions);
         }
     }
