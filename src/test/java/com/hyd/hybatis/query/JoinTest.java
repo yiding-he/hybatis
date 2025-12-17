@@ -8,6 +8,10 @@ import com.hyd.hybatis.query.query.Table;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
+import java.util.List;
+
+import static com.hyd.hybatis.query.Match.equal;
+import static com.hyd.hybatis.query.Match.in;
 
 public class JoinTest extends HybatisSpringBootTestApplicationTest {
 
@@ -18,7 +22,11 @@ public class JoinTest extends HybatisSpringBootTestApplicationTest {
         var deptEmpTable = Table.of(DeptEmp.class).as("de");
 
         var query = employeeTable
-            .join(join -> join.with(deptEmpTable).match(
+            .join(join -> join.with(
+                deptEmpTable.matches(
+                    in(deptEmpTable.col(DeptEmp::getEmpNo), List.of(10010))
+                )
+            ).match(
                 employeeTable.col(Employee::getEmpNo),
                 deptEmpTable.col(DeptEmp::getEmpNo)
             ))
@@ -27,7 +35,7 @@ public class JoinTest extends HybatisSpringBootTestApplicationTest {
                 departmentTable.col(Department::getDeptNo)
             ))
             .matches(
-                Match.equal(employeeTable.col(Employee::getEmpNo), 10010)
+                equal(employeeTable.col(Employee::getEmpNo), 10010)
             )
             .columns(
                 employeeTable.col(Employee::getEmpNo),

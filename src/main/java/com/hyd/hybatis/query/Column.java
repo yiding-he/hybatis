@@ -1,7 +1,6 @@
 package com.hyd.hybatis.query;
 
 import com.hyd.hybatis.query.column.*;
-import com.hyd.hybatis.query.match.Equal;
 import com.hyd.hybatis.sql.SqlCommand;
 import com.hyd.hybatis.utils.EntityUtil;
 
@@ -18,7 +17,7 @@ public interface Column extends Alias, SqlFragment {
             obj instanceof Column ? (Column) obj : lit(obj);
     }
 
-    /// /////////////////////////////////////
+    //------------------------------------------------------
 
     static <T> PropColumn<T> prop(Getter<T, ?> getter) {
         return new PropColumn<>(getter);
@@ -103,9 +102,9 @@ public interface Column extends Alias, SqlFragment {
         return new ExpColumn(sqlCommand);
     }
 
-    /// ///////////////////////
+    //------------------------------------------------------
 
-    default Equal eq(Object value) {
-        return new Equal(this, value);
+    default SqlCommand toSqlFragmentWithAlias() {
+        return toSqlFragment().append(appendAlias());
     }
 }

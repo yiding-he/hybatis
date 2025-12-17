@@ -72,7 +72,7 @@ public interface Query extends Alias, Limit {
 
         // 从 getProjections() 拼接查询字段
         this.getColumns().forEach(c -> {
-            var f = c.toSqlFragment();
+            var f = c.toSqlFragmentWithAlias();
             columnsList.add(f.getStatement());
             paramsList.addAll(f.getParams());
         });

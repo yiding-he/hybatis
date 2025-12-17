@@ -1,8 +1,7 @@
 package com.hyd.hybatis.query;
 
-import com.hyd.hybatis.query.match.Between;
-import com.hyd.hybatis.query.match.CompositeMatch;
-import com.hyd.hybatis.query.match.Equal;
+import com.hyd.hybatis.query.match.*;
+import com.hyd.hybatis.query.query.AbstractQuery;
 import com.hyd.hybatis.sql.SqlCommand;
 
 import java.util.List;
@@ -36,6 +35,13 @@ public interface Match {
         return OR(List.of(matches));
     }
 
+    static CompositeMatch NOT(Match match) {
+        var compositeMatch = new CompositeMatch();
+        compositeMatch.setOperator(CompositeMatch.Operator.NOT);
+        compositeMatch.setMatches(List.of(match));
+        return compositeMatch;
+    }
+
     ////////////////////////// 构建 AbstractMatch 对象的静态方法
 
     static Equal<?> equal(Column column, Object value) {
@@ -52,6 +58,18 @@ public interface Match {
 
     static <T> Between<T> between(Getter<T, ?> getter, Object min, Object max) {
         return new Between<>(getter, min, max);
+    }
+
+    static In<?> in(Column column, List<Object> values) {
+        return new In<>(column, values);
+    }
+
+    static <T> In<T> in(Getter<T, ?> getter, List<Object> values) {
+        return new In<>(getter, values);
+    }
+
+    static Exists exists(AbstractQuery<?> query) {
+        return new Exists(query);
     }
 
     //////////////////////////

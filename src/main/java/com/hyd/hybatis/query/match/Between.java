@@ -24,7 +24,7 @@ public class Between<T> extends AbstractMatch {
         if (Obj.isEmpty(values)) {
             return null;
         }
-        var command = new SqlCommand().append(getColumn().toSqlFragmentWithoutAlias());
+        var command = new SqlCommand().append(getColumn().toSqlFragment());
         if (values.get(0) != null && values.get(1) != null) {
             return command
                 .appendMaybeColumn(" between ?", values.get(0))

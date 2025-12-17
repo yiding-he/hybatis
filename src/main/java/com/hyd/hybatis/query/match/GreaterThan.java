@@ -7,13 +7,13 @@ import com.hyd.hybatis.utils.Obj;
 
 import java.util.Collections;
 
-public class Equal<T> extends AbstractMatch {
+public class GreaterThan<T> extends AbstractMatch {
 
-    public Equal(Column column, Object value) {
+    public GreaterThan(Column column, Object value) {
         super(column, Collections.singletonList(value));
     }
 
-    public Equal(Getter<T, ?> getter, Object value) {
+    public GreaterThan(Getter<T, ?> getter, Object value) {
         this(Column.prop(getter), value);
     }
 
@@ -25,6 +25,6 @@ public class Equal<T> extends AbstractMatch {
         }
         var value = values.get(0);
         var command = new SqlCommand().append(getColumn().toSqlFragment());
-        return command.appendMaybeColumn("=?", value);
+        return command.appendMaybeColumn(">?", value);
     }
 }

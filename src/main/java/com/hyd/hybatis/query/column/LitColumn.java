@@ -1,37 +1,31 @@
 package com.hyd.hybatis.query.column;
 
+import com.hyd.hybatis.sql.SqlCommand;
+
+import java.util.List;
+
 /**
  * 表示这个列是一个值，在生成 SQL 时直接作为一个占位符
  */
 public class LitColumn extends AbstractColumn<LitColumn> {
 
+    private Object value;
+
     public LitColumn() {
     }
 
     public LitColumn(Object value) {
-        setValue(value);
+        this.value = value;
     }
 
-    public void setValue(Object value) {
+    @Override
+    public SqlCommand toSqlFragment() {
         if (value == null) {
-            setSqlCommand(null);
+            return null;
         } else if (value instanceof Number) {
-            setSqlCommand(String.valueOf(value));
+            return new SqlCommand(String.valueOf(value));
         } else {
-            setSqlCommand("?", value);
+            return new SqlCommand("?", List.of(value));
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getValue() {
-        var sqlCommand = getSqlCommand();
-        if (sqlCommand == null) {
-            return null;
-        }
-        var value = sqlCommand.getParams();
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        return (T) value.get(0);
     }
 }

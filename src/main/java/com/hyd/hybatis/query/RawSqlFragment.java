@@ -25,17 +25,9 @@ public class RawSqlFragment implements SqlFragment {
         this.sqlCommand = new SqlCommand(statement, List.of(params));
     }
 
-    public SqlCommand getSqlCommand() {
-        return this.sqlCommand;
-    }
-
     @Override
     public SqlCommand toSqlFragment() {
         return this.getSqlCommand();
     }
 
-    @Override
-    public SqlCommand toSqlFragmentWithoutAlias() {
-        return toSqlFragment();
-    }
 }

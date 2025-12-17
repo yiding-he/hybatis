@@ -5,16 +5,19 @@ import com.hyd.hybatis.query.Getter;
 import com.hyd.hybatis.sql.SqlCommand;
 import com.hyd.hybatis.utils.Obj;
 
-import java.util.Collections;
+import java.util.List;
 
-public class Equal<T> extends AbstractMatch {
+import static com.hyd.hybatis.utils.Str.repeat;
 
-    public Equal(Column column, Object value) {
-        super(column, Collections.singletonList(value));
+public class In<T> extends AbstractMatch {
+
+    public In(Column column, List<Object> values) {
+        setColumn(column);
+        setValues(values);
     }
 
-    public Equal(Getter<T, ?> getter, Object value) {
-        this(Column.prop(getter), value);
+    public In(Getter<T, ?> getter, List<Object> values) {
+        this(Column.prop(getter), values);
     }
 
     @Override
@@ -23,8 +26,8 @@ public class Equal<T> extends AbstractMatch {
         if (Obj.isEmpty(values)) {
             return null;
         }
-        var value = values.get(0);
+
         var command = new SqlCommand().append(getColumn().toSqlFragment());
-        return command.appendMaybeColumn("=?", value);
+        return command.append(" IN (" + repeat("?", values.size(), ",") + ")", values);
     }
 }
