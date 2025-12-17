@@ -12,4 +12,9 @@ public class Lst {
         }
         return result;
     }
+
+    @SafeVarargs
+    public static <T> List<Object> toObjectList(T... values) {
+        return List.of(values);
+    }
 }
