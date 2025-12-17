@@ -19,7 +19,7 @@ public class GroupConcatColumn extends AbstractColumn<GroupConcatColumn> {
     }
 
     @Override
-    public SqlCommand getSqlCommand() {
+    public SqlCommand toSqlFragment() {
         var sqlCommand = new SqlCommand("group_concat(")
             .append(column.toSqlFragment());
 

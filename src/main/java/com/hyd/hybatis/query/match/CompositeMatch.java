@@ -17,7 +17,7 @@ import static java.util.Collections.emptyList;
 public class CompositeMatch implements Match {
 
     public enum Operator {
-        AND, OR
+        AND, OR, NOT
     }
 
     private List<Match> matches;
@@ -53,6 +53,12 @@ public class CompositeMatch implements Match {
 
         if (statements.isEmpty()) {
             return new SqlCommand("", emptyList());
+        } else if (operator == Operator.NOT) {
+            // NOT 是前缀操作符，只需要处理第一个匹配项
+            if (matches.get(0) instanceof Exists) {
+                return new SqlCommand("NOT " + statements.get(0), params);
+            }
+            return new SqlCommand("NOT (" + statements.get(0) + ")", params);
         } else if (statements.size() == 1) {
             return new SqlCommand(statements.get(0), params);
         } else {

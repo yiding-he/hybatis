@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CaseColumn extends AbstractColumn<CaseColumn> {
 
-    private List<KeyValue<Match, Column>> cases = new ArrayList<>();
+    private final List<KeyValue<Match, Column>> cases = new ArrayList<>();
 
     private Column defaultColumn;
 
@@ -26,7 +26,7 @@ public class CaseColumn extends AbstractColumn<CaseColumn> {
     }
 
     @Override
-    public SqlCommand getSqlCommand() {
+    public SqlCommand toSqlFragment() {
         var command = new SqlCommand();
         command.append("CASE ");
         for (KeyValue<Match, Column> caseItem : cases) {

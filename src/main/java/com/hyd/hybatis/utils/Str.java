@@ -98,4 +98,15 @@ public class Str {
         }
         return s;
     }
+
+    public static String repeat(String s, int n, String separator) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            if (i > 0) {
+                sb.append(separator);
+            }
+            sb.append(s);
+        }
+        return sb.toString();
+    }
 }

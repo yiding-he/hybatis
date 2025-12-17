@@ -10,7 +10,6 @@ import lombok.Getter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -97,7 +96,7 @@ public class Join extends AbstractQuery<Join> {
 
         // 如果 query 表达式很简单就不用括号，如果复杂就用括号包围
         BiConsumer<SqlCommand, Query> appender = (main, query) -> {
-            var append = query.getFromFragment();
+            var append = query.toSqlCommand();
             if (append.getStatement().contains(" ")) {
                 main.append("(" + append.getStatement() + ")", append.getParams());
             } else {
