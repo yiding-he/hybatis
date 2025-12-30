@@ -1,7 +1,7 @@
-package com.hyd.hybatis.query.match;
+package com.hyd.hybatis.query.filter;
 
 import com.hyd.hybatis.query.Column;
-import com.hyd.hybatis.query.Match;
+import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.query.query.AbstractQuery;
 import com.hyd.hybatis.sql.SqlCommand;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.Data;
 import static com.hyd.hybatis.query.Column.lit;
 
 @Data
-public class Exists implements Match {
+public class Exists implements Filter {
 
     private AbstractQuery<?> query;
 

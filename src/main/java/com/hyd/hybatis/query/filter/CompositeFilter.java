@@ -1,7 +1,7 @@
-package com.hyd.hybatis.query.match;
+package com.hyd.hybatis.query.filter;
 
 import com.hyd.hybatis.query.Column;
-import com.hyd.hybatis.query.Match;
+import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.sql.SqlCommand;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,13 +14,13 @@ import static java.util.Collections.emptyList;
 
 @Getter
 @Setter
-public class CompositeMatch implements Match {
+public class CompositeFilter implements Filter {
 
     public enum Operator {
         AND, OR, NOT
     }
 
-    private List<Match> matches;
+    private List<Filter> filters;
 
     private Operator operator;
 
@@ -39,7 +39,7 @@ public class CompositeMatch implements Match {
     public SqlCommand toSqlFragment() {
         var statements = new ArrayList<String>();
         var params = new ArrayList<>();
-        for (var match : matches) {
+        for (var match : filters) {
             if (match == null) {
                 continue;
             }
@@ -55,7 +55,7 @@ public class CompositeMatch implements Match {
             return new SqlCommand("", emptyList());
         } else if (operator == Operator.NOT) {
             // NOT 是前缀操作符，只需要处理第一个匹配项
-            if (matches.get(0) instanceof Exists) {
+            if (filters.get(0) instanceof Exists) {
                 return new SqlCommand("NOT " + statements.get(0), params);
             }
             return new SqlCommand("NOT (" + statements.get(0) + ")", params);

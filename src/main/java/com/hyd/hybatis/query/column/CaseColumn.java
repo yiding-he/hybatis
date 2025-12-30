@@ -1,7 +1,7 @@
 package com.hyd.hybatis.query.column;
 
 import com.hyd.hybatis.query.Column;
-import com.hyd.hybatis.query.Match;
+import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.sql.SqlCommand;
 import org.apache.commons.collections4.KeyValue;
 import org.apache.commons.collections4.keyvalue.DefaultKeyValue;
@@ -11,12 +11,12 @@ import java.util.List;
 
 public class CaseColumn extends AbstractColumn<CaseColumn> {
 
-    private final List<KeyValue<Match, Column>> cases = new ArrayList<>();
+    private final List<KeyValue<Filter, Column>> cases = new ArrayList<>();
 
     private Column defaultColumn;
 
-    public CaseColumn when(Match match, Column column) {
-        this.cases.add(new DefaultKeyValue<>(match, column));
+    public CaseColumn when(Filter filter, Column column) {
+        this.cases.add(new DefaultKeyValue<>(filter, column));
         return this;
     }
 
@@ -29,7 +29,7 @@ public class CaseColumn extends AbstractColumn<CaseColumn> {
     public SqlCommand toSqlFragment() {
         var command = new SqlCommand();
         command.append("CASE ");
-        for (KeyValue<Match, Column> caseItem : cases) {
+        for (KeyValue<Filter, Column> caseItem : cases) {
             command.append("WHEN ");
             command.append(caseItem.getKey().toSqlFragment());
             command.append(" THEN ");

@@ -1,7 +1,7 @@
 package com.hyd.hybatis.query.query;
 
 import com.hyd.hybatis.query.Column;
-import com.hyd.hybatis.query.Match;
+import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.query.Query;
 import com.hyd.hybatis.sql.SqlCommand;
 import lombok.AllArgsConstructor;
@@ -88,9 +88,9 @@ public class Join extends AbstractQuery<Join> {
 
     @Override
     public SqlCommand getFromFragment() {
-        var match = Match.AND(
+        var match = Filter.AND(
             joinColumns.stream()
-                .map(p -> Match.equal(p.leftColumn, p.rightColumn))
+                .map(p -> Filter.equal(p.leftColumn, p.rightColumn))
                 .collect(Collectors.toList())
         );
 

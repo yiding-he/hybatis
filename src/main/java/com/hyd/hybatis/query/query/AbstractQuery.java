@@ -1,7 +1,7 @@
 package com.hyd.hybatis.query.query;
 
 import com.hyd.hybatis.query.Column;
-import com.hyd.hybatis.query.Match;
+import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.query.Query;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
     /**
      * 过滤条件
      */
-    protected List<Match> matches = new ArrayList<>();
+    protected List<Filter> filters = new ArrayList<>();
 
     /**
      * 本查询提供哪些字段
@@ -44,8 +44,8 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
     protected int offset = 0;
 
     @Override
-    public List<Match> getMatches() {
-        return this.matches;
+    public List<Filter> getMatches() {
+        return this.filters;
     }
 
     @Override
@@ -73,13 +73,13 @@ public abstract class AbstractQuery<Q extends AbstractQuery<Q>> implements Query
         return groupBy;
     }
 
-    public Q matches(List<Match> matches) {
-        this.matches.addAll(matches);
+    public Q filter(List<Filter> filters) {
+        this.filters.addAll(filters);
         return (Q) this;
     }
 
-    public Q matches(Match... matches) {
-        return matches(List.of(matches));
+    public Q filter(Filter... filters) {
+        return filter(List.of(filters));
     }
 
     public Q columns(List<Column> columns) {

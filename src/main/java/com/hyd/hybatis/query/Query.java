@@ -22,7 +22,7 @@ public interface Query extends Alias, Limit {
     /**
      * 过滤条件列表
      */
-    List<Match> getMatches();
+    List<Filter> getMatches();
 
     /**
      * 直接选取的字段列表
@@ -127,7 +127,7 @@ public interface Query extends Alias, Limit {
         if (isNotEmpty(this.getMatches())) {
             sqlCommand = sqlCommand
                 .append(" WHERE ")
-                .append(Match.AND(this.getMatches()).toSqlFragment());
+                .append(Filter.AND(this.getMatches()).toSqlFragment());
         }
 
         // TODO 自动添加 group by

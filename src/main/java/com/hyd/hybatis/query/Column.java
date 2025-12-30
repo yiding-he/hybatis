@@ -1,8 +1,11 @@
 package com.hyd.hybatis.query;
 
 import com.hyd.hybatis.query.column.*;
+import com.hyd.hybatis.query.filter.*;
 import com.hyd.hybatis.sql.SqlCommand;
 import com.hyd.hybatis.utils.EntityUtil;
+
+import java.util.List;
 
 /**
  * 表示字段。字段可以是三种情况之一：
@@ -43,7 +46,7 @@ public interface Column extends Alias, SqlFragment {
         return new CaseColumn();
     }
 
-    /// ///////////////////////
+    // -----------------------------------------------------
 
     static ExpColumn func1(String funcName, Column column) {
         var sqlCommand = new SqlCommand(funcName + "(")
@@ -102,7 +105,41 @@ public interface Column extends Alias, SqlFragment {
         return new ExpColumn(sqlCommand);
     }
 
-    //------------------------------------------------------
+    // -----------------------------------------------------
+
+    default Equal<?> equal(Object value) {
+        return Filter.equal(this, value);
+    }
+
+    default LowerThan<?> lowerThan(Object value) {
+        return Filter.lowerThan(this, value);
+    }
+
+    default LowerThanOrEqual<?> lowerThanOrEqual(Object value) {
+        return Filter.lowerThanOrEqual(this, value);
+    }
+
+    default GreaterThan<?> greaterThan(Object value) {
+        return Filter.greaterThan(this, value);
+    }
+
+    default GreaterThanOrEqual<?> greaterThanOrEqual(Object value) {
+        return Filter.greaterThanOrEqual(this, value);
+    }
+
+    default Between<?> between(Object min, Object max) {
+        return Filter.between(this, min, max);
+    }
+
+    default In<?> in(List<Object> values) {
+        return Filter.in(this, values);
+    }
+
+    default NotIn<?> notIn(List<Object> values) {
+        return Filter.notIn(this, values);
+    }
+
+    // -----------------------------------------------------
 
     default SqlCommand toSqlFragmentWithAlias() {
         return toSqlFragment().append(appendAlias());
