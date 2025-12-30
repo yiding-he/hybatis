@@ -35,37 +35,39 @@ public class PageHelperPage<T> implements Serializable {
         });
     }
 
-    @SuppressWarnings("resource")
     public PageHelperPage(HttpServletRequest request, Supplier<Page<T>> pageSupplier) {
         var pageNum = request.getParameter("pageNum") == null ? 1 : Integer.parseInt(request.getParameter("pageNum"));
         var pageSize = request.getParameter("pageSize") == null ? 10 : Integer.parseInt(request.getParameter("pageSize"));
-        PageHelper.startPage(pageNum, pageSize);
-        var page = pageSupplier.get();
-        this.list = new ArrayList<>(page);
-        this.total = (int) page.getTotal();
-        this.pages = page.getPages();
-        this.pageNum = pageNum;
-        this.pageSize = pageSize;
+        var page = runQuery(pageNum, pageSize, pageSupplier);
+        setupPage(pageNum, pageSize, page);
     }
 
-    @SuppressWarnings("resource")
     public PageHelperPage(int pageNum, int pageSize, Supplier<Page<T>> pageSupplier) {
-        PageHelper.startPage(pageNum, pageSize);
-        var page = pageSupplier.get();
+        var page = runQuery(pageNum, pageSize, pageSupplier);
+        setupPage(pageNum, pageSize, page);
+    }
+
+    private List<T> list;
+
+    private int total;
+
+    private int pages;
+
+    private int pageNum;
+
+    private int pageSize;
+
+    private Page<T> runQuery(int pageNum, int pageSize, Supplier<Page<T>> pageSupplier) {
+        try (var ignored = PageHelper.startPage(pageNum, pageSize)) {
+            return pageSupplier.get();
+        }
+    }
+
+    private void setupPage(int pageNum, int pageSize, Page<T> page) {
         this.list = new ArrayList<>(page);
         this.total = (int) page.getTotal();
         this.pages = page.getPages();
         this.pageNum = pageNum;
         this.pageSize = pageSize;
     }
-
-    private final List<T> list;
-
-    private final int total;
-
-    private final int pages;
-
-    private final int pageNum;
-
-    private final int pageSize;
 }

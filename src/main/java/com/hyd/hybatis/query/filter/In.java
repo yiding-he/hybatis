@@ -1,4 +1,4 @@
-package com.hyd.hybatis.query.match;
+package com.hyd.hybatis.query.filter;
 
 import com.hyd.hybatis.query.Column;
 import com.hyd.hybatis.query.Getter;
@@ -9,7 +9,7 @@ import java.util.List;
 
 import static com.hyd.hybatis.utils.Str.repeat;
 
-public class In<T> extends AbstractMatch {
+public class In<T> extends AbstractFilter {
 
     public In(Column column, List<Object> values) {
         setColumn(column);

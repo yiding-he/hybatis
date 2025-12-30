@@ -1,4 +1,4 @@
-package com.hyd.hybatis.query.match;
+package com.hyd.hybatis.query.filter;
 
 import com.hyd.hybatis.query.Column;
 import com.hyd.hybatis.query.Getter;
@@ -7,7 +7,7 @@ import com.hyd.hybatis.utils.Obj;
 
 import java.util.Arrays;
 
-public class Between<T> extends AbstractMatch {
+public class Between<T> extends AbstractFilter {
 
     public Between(Column column, Object min, Object max) {
         setColumn(column);

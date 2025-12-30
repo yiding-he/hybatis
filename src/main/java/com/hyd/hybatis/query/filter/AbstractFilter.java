@@ -1,6 +1,6 @@
-package com.hyd.hybatis.query.match;
+package com.hyd.hybatis.query.filter;
 
-import com.hyd.hybatis.query.Match;
+import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.query.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class AbstractMatch implements Match {
+public abstract class AbstractFilter implements Filter {
 
     private Column column;
 

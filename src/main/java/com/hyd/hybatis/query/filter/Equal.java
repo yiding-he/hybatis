@@ -1,4 +1,4 @@
-package com.hyd.hybatis.query.match;
+package com.hyd.hybatis.query.filter;
 
 import com.hyd.hybatis.query.Column;
 import com.hyd.hybatis.query.Getter;
@@ -7,13 +7,13 @@ import com.hyd.hybatis.utils.Obj;
 
 import java.util.Collections;
 
-public class LowerThan<T> extends AbstractMatch {
+public class Equal<T> extends AbstractFilter {
 
-    public LowerThan(Column column, Object value) {
+    public Equal(Column column, Object value) {
         super(column, Collections.singletonList(value));
     }
 
-    public LowerThan(Getter<T, ?> getter, Object value) {
+    public Equal(Getter<T, ?> getter, Object value) {
         this(Column.prop(getter), value);
     }
 
@@ -25,6 +25,6 @@ public class LowerThan<T> extends AbstractMatch {
         }
         var value = values.get(0);
         var command = new SqlCommand().append(getColumn().toSqlFragment());
-        return command.appendMaybeColumn("<?", value);
+        return command.appendMaybeColumn("=?", value);
     }
 }
