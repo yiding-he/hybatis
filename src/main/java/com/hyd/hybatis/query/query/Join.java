@@ -3,6 +3,7 @@ package com.hyd.hybatis.query.query;
 import com.hyd.hybatis.query.Column;
 import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.query.Query;
+import com.hyd.hybatis.query.QueryContextTracker;
 import com.hyd.hybatis.sql.SqlCommand;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -96,13 +97,16 @@ public class Join extends AbstractQuery<Join> {
 
         // 如果 query 表达式很简单就不用括号，如果复杂就用括号包围
         BiConsumer<SqlCommand, Query> appender = (main, query) -> {
-            var append = query.toSqlCommand();
-            if (append.getStatement().contains(" ")) {
-                main.append("(" + append.getStatement() + ")", append.getParams());
-            } else {
-                main.append(append.getStatement(), append.getParams());
-            }
-            main.append(query.appendAlias());
+            // 使用函数式接口检测循环引用
+            QueryContextTracker.withQuery(query, () -> {
+                var append = query.toSqlCommand();
+                if (append.getStatement().contains(" ")) {
+                    main.append("(" + append.getStatement() + ")", append.getParams());
+                } else {
+                    main.append(append.getStatement(), append.getParams());
+                }
+                main.append(query.appendAlias());
+            });
         };
 
         var result = new SqlCommand();

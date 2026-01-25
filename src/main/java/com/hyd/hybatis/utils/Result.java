@@ -51,7 +51,7 @@ public class Result<T> {
         if (this.success) {
             return this.value;
         } else {
-            throw new RuntimeException(String.valueOf(this.value));
+            throw new RuntimeException(String.valueOf(this.message));
         }
     }
 }

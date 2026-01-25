@@ -1,6 +1,7 @@
 package com.hyd.hybatis.query.query;
 
 import com.hyd.hybatis.query.Query;
+import com.hyd.hybatis.query.QueryContextTracker;
 import com.hyd.hybatis.sql.SqlCommand;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,10 @@ public class Wrap extends AbstractQuery<Wrap> {
 
     @Override
     public SqlCommand getFromFragment() {
-        return new SqlCommand("(").append(this.from.toSqlCommand()).append(")");
+        // 使用函数式接口检测循环引用
+        return QueryContextTracker.withQuery(this.from, () ->
+            new SqlCommand("(").append(this.from.toSqlCommand()).append(")")
+        );
     }
 
 }
