@@ -44,6 +44,8 @@ public class MapperUtil {
             }
             if (Str.isNotBlank(tableName)) {
                 return tableName;
+            } else if (entityType != null) {
+                return Str.camel2Underline(entityType.getSimpleName());
             }
         }
 

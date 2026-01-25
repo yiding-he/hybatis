@@ -2,6 +2,7 @@ package com.hyd.hybatis.query.filter;
 
 import com.hyd.hybatis.query.Column;
 import com.hyd.hybatis.query.Filter;
+import com.hyd.hybatis.query.QueryContextTracker;
 import com.hyd.hybatis.query.query.AbstractQuery;
 import com.hyd.hybatis.sql.SqlCommand;
 import lombok.Data;
@@ -29,8 +30,11 @@ public class Exists implements Filter {
 
     @Override
     public SqlCommand toSqlFragment() {
-        return new SqlCommand("EXISTS(")
-            .append(this.query.columns(lit(1)).toSqlCommand())
-            .append(")");
+        // 使用函数式接口检测循环引用
+        return QueryContextTracker.withQuery(this.query, () ->
+            new SqlCommand("EXISTS(")
+                .append(this.query.columns(lit(1)).toSqlCommand())
+                .append(")")
+        );
     }
 }

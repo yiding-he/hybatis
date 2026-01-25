@@ -188,11 +188,19 @@ public interface SampleMapper {
     @HbSelect(table = "sample")
     List<Sample> selectByConditions(Conditions conditions);
     
-    // 使用示例
-    default List<Sample> selectByConditions(String nameKeyword, int minId, int maxId) {
+    // 使用示例1
+    default List<Sample> selectByConditions1(String nameKeyword, int minId, int maxId) {
         Conditions conditions = new Conditions()
                 .with("id", c -> c.between(minId, maxId))
                 .with("name", c -> c.contains(nameKeyword));
+        return selectByConditions(conditions);
+    }
+    
+    // 使用示例2
+    default List<Sample> selectByConditions2(String nameKeyword, int minId, int maxId) {
+        Conditions conditions = new Conditions()
+                .withColumn("id").between(minId, maxId)
+                .withColumn("name").contains(nameKeyword);
         return selectByConditions(conditions);
     }
 }
