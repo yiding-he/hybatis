@@ -1,74 +1,216 @@
-# Hybatis - Agent Instructions
+# Hybatis Agent Guidelines
 
-## 构建限制
+This file contains guidelines for agentic coding assistants working on the Hybatis project.
 
-**禁止执行编译或构建命令。** LLM Agent 不允许运行以下类型的命令：
-- `mvn compile`, `mvn clean compile`
-- `mvn test`, `mvn test -Dtest=...`
-- `mvn package`, `mvn install`
-- 任何其他 Maven 构建命令
+## Agent Restrictions
 
-代码编写完成后，直接结束任务，由用户自行编译和测试。
+**LLM agents are not allowed to run any shell command or build/compile code, only text editing is allowed.**
 
-## 项目结构
+## Build and Test Commands
 
-- Java 17, Maven build
-- Spring Boot 3.4.0, MyBatis 3.5.11
-- Base package: `com.hyd.hybatis`
-- Source: `src/main/java/com/hyd/hybatis/`
-- Tests: `src/test/java/com/hyd/hybatis/`
+Hybatis is a Maven-based Java project using Spring Boot 2.7.5 and Java 11.
 
-## Code Style
+### Build Commands
+- `mvn clean compile` - Clean and compile the project
+- `mvn package` - Build the JAR with sources
+- `mvn install` - Install to local Maven repository
+- `mvn install -DskipTests` - Install without running tests
 
-### Formatting
-- Indent: 4 spaces (Java), 2 spaces (XML)
-- Line endings: LF
-- Charset: UTF-8
-- Max line length: ~120 chars (follow existing patterns)
+### Test Commands
+- `mvn test` - Run all tests
+- `mvn test -Dtest=ClassName` - Run specific test class
+- `mvn test -Dtest=ClassName#methodName` - Run specific test method
+- `mvn test -Dtest=com.hyd.hybatis.tests.mapper.EmployeeMapperTest#testSelectByQuery` - Example single test
+
+### Profiles
+- `mvn install -P mainland-prc-china` - Use Aliyun Maven repository (China)
+- `mvn deploy -P github` - Deploy to GitHub Packages
+- `mvn deploy -P maven-central-for-deploy` - Deploy to Maven Central (requires GPG signing)
+
+## Code Style Guidelines
+
+### Indentation and Formatting
+- Java: 4 spaces indentation (defined in .editorconfig)
+- XML: 2 spaces indentation
+- End of line: LF (Unix-style)
+- Trim trailing whitespace in Java/XML files
+- Insert final newline in Java/XML files
 
 ### Imports
-- Group imports: java.* first, then javax.*, then third-party, then project
-- Use `var` for local variable type inference (Java 10+)
-- Use static imports for test assertions: `import static org.junit.jupiter.api.Assertions.*`
+- Organize imports logically: standard library, third-party, project-specific
+- Use wildcard imports sparingly; prefer specific imports
+- Place static imports at the top, grouped separately
 
-### Naming
-- Classes: PascalCase (e.g., `HybatisCore`, `SqlHelper`)
-- Methods: camelCase, start with verb (e.g., `processMapperMethod`, `buildSelect`)
-- Fields: camelCase (e.g., `mappedStatementFactories`)
-- Constants: UPPER_SNAKE_CASE
-- Test classes: Suffix with `Test` (e.g., `HybatisBasicTest`)
+### Naming Conventions
+- Classes: PascalCase (e.g., `CrudMapper`, `HybatisConfiguration`)
+- Methods: camelCase (e.g., `queryOne`, `findById`)
+- Variables: camelCase (e.g., `dataSource`, `sqlSessionFactory`)
+- Constants: UPPER_SNAKE_CASE (e.g., `EMPTY`, `serialVersionUID`)
+- Packages: lowercase with dots (e.g., `com.hyd.hybatis.sql`)
+- Database columns: snake_case (automatically mapped to camelCase in Java)
 
-### Types
-- Prefer `var` for local variables
-- Use `List<T>`, `Map<K,V>` from `java.util`
-- Use Lombok `@Data`, `@Slf4j` for boilerplate reduction
-
-### Error Handling
-- Use specific exceptions, wrap in `HybatisException` when appropriate
-- Log errors with SLF4J: `log.error("message", exception)`
-- Prefer Optional over null where applicable
+### Type and Generics
+- Use generic types properly: `Condition<T>`, `List<T>`, `CrudMapper<T>`
+- Always specify generic type parameters (avoid raw types)
+- Use `@SuppressWarnings("unchecked")` only when unavoidable and document why
+- Declare method return types explicitly (avoid `var` for public APIs)
 
 ### Annotations
-- Use Lombok: `@Data`, `@Slf4j`, `@NoArgsConstructor`
-- Spring: `@SpringBootTest` for integration tests
-- Test: JUnit 5 (`@Test`, `@BeforeEach`)
+- Use Lombok annotations (`@Data`, `@Getter`, `@Slf4j`) to reduce boilerplate
+- Use `@Deprecated` for deprecated methods with explanation
+- Use `@Override` consistently for interface implementations
+- Annotate public methods with Javadoc when part of public API
 
-### Comments
-- Javadoc for public APIs
-- Use `//` for inline comments, `/* */` for multi-line
-- Separate logical sections with comment banners: `////////////////////////////////////////`
+### Error Handling
+- Wrap checked exceptions in runtime exceptions where appropriate
+- Use custom `HybatisException` for framework-specific errors
+- Log exceptions with appropriate levels using SLF4J
+- Use `SQLExceptionWrapper` to unwrap SQLException in stream operations
+
+### Method Design Patterns
+- Return `this` in builder-style methods for method chaining (e.g., `Condition.eq().lt()`)
+- Use Optional or return null for optional single results
+- Use functional interfaces for callbacks: `RowConsumer`, `EntityConsumer<T>`, `ConnectionFunction<T>`
+- Provide default methods in interfaces for common operations (see `CrudMapper`)
+
+### Stream and Resource Management
+- Always close `Stream<Row>` and `Stream<T>` returned from query methods
+- Use try-with-resources for JDBC resources
+- Add onClose handlers to streams for cleanup
+
+### Logging
+- Use SLF4J with `@Slf4j` annotation
+- Log SQL statements at DEBUG level: `log.debug("Preparing sql: {} {}", statement, params)`
+- Log exceptions at WARN or ERROR level appropriately
+
+### Mapper Interface Patterns
+- Use `@HbSelect`, `@HbInsert`, `@HbUpdate`, `@HbDelete` annotations for auto-generated SQL
+- Return `List<T>` for multiple results, `T` or `Row` for single results
+- Return `Long` for count queries (numeric return types)
+- Parameter types: `Condition`, `Conditions`, or JavaBean with `Condition` fields
+
+### Structured Query API (New in dev-new-query-model)
+- Use `Table.of(EntityClass)` to create query objects from entity classes
+- Use `Column` interface for type-safe column references with lambda expressions: `col(Entity::getField)`
+- Use `Filter` static methods to create conditions: `Filter.equal(col, value)`, `Filter.in(col, list)`
+- Chain filters with `Filter.AND(...)` and `Filter.OR(...)` for composite conditions
+- Use `Query.leftJoin()` and `Query.join()` for joins between queries
+- Use `Column` factory methods for expressions: `Column.sum()`, `Column.count()`, `Column.concat()`, `Column.cases()`
+- Avoid circular references in subqueries - use separate `Table` instances for inner queries
+- The framework automatically detects circular references in EXISTS subqueries
+
+### Circular Reference Detection
+- EXISTS subqueries cannot reference the same query object used in outer query
+- Create new `Table` instances for subqueries to avoid circular references
+- Framework throws `IllegalStateException` with detailed message on circular reference detection
+
+### Constants and Utilities
+- Place utility classes in `com.hyd.hybatis.utils` package
+- Static factory methods: `Condition.of()`, `Sql.Insert()`, `Sql.Select()`
+- String conversion utilities: `Str.camel2Underline()`, `Str.underline2Camel()`
+
+### Thread Safety
+- Most classes are NOT thread-safe (meant for Spring-managed singletons)
+- Document thread-safety requirements in class javadoc
+- Use thread-safe collections when needed (Caffeine cache, etc.)
 
 ### Testing
-- Extend `HybatisSpringBootTestApplicationTest` for Spring Boot tests
-- Use `@Autowired` to inject `Hybatis` instance
-- Use JUnit 5 assertions: `assertTrue()`, `assertFalse()`, `assertEquals()`
-- Test methods are `public void` and throw `Exception`
+- Extend `HybatisSpringBootTestApplicationTest` for integration tests
+- Use JUnit 5 (`@Test`, `@BeforeEach`, `@AfterEach`)
+- Use `@Autowired` for dependency injection in tests
+- Assert with `org.junit.jupiter.api.Assertions`
+- Test database files in `src/test/data/` (extracted to `.local/` for runtime)
 
-## Key Conventions
+### Project Structure
+- Main code: `src/main/java/com/hyd/hybatis/`
+- Test code: `src/test/java/com/hyd/hybatis/`
+- Key packages: `sql`, `statement`, `mapper`, `jdbc`, `utils`, `annotations`
 
-1. Use `var` keyword for local variables (Java 10+)
-2. Method chaining style: `Sql.Select("*").From(tableName)`
-3. Log with SLF4J via Lombok `@Slf4j`
-4. Use `Row` class for dynamic query results
-5. Entity annotations: `@HbEntity`, `@HbColumn` for table mapping
-6. Mapper interfaces extend `CrudMapper<T>` for CRUD operations
+## DataFrame-like Query DSL (com.hyd.hybatis.query)
+
+The `query` package provides a DataFrame-inspired DSL for building dynamic SQL statements. It does NOT execute SQL - it only generates `SqlCommand` objects.
+
+### Core Architecture
+- `Query` - Represents a queryable 2D table structure, can be converted to `SqlCommand` via `toSqlCommand()`
+- `Column` - Represents fields, constants, or expressions
+- `Filter` - Represents WHERE conditions
+- `Table<T>` - Data source based on entity class
+- `Join` - Joins multiple queries together
+- `Wrap` - Wraps a subquery
+
+### Key Design Principles
+1. **Executable** - Can generate complete SELECT...FROM...WHERE... statements
+2. **Nestable** - Can be embedded as subqueries in other queries
+3. **Joinable** - Supports JOIN operations to combine queries
+
+### Currently Implemented Features
+- Basic SELECT/FROM/WHERE structure
+- JOIN operations (LEFT, RIGHT, INNER via builder)
+- Filter conditions: =, >, <, >=, <=, IN, NOT IN, BETWEEN, EXISTS
+- Composite filters: AND, OR, NOT
+- Column selection, aliases, GROUP BY
+- LIMIT/OFFSET
+- Column expressions: count(), sum(), avg(), max(), min(), distinct(), ifnull(), concat(), groupConcat()
+- CASE WHEN expressions (CaseColumn)
+- Circular reference detection for EXISTS subqueries
+
+### TODO - Missing SQL Generation Features (20-30% remaining)
+
+**1. ORDER BY Clause**
+```java
+Query orderBy(Column... columns);
+Query orderByAsc(Column... columns);
+Query orderByDesc(Column... columns);
+```
+
+**2. Enhanced Aggregation - GROUP BY + AGG**
+Currently only has `getGroupBy()` list, needs aggregation column selection:
+```java
+Query agg(Column... aggregationColumns);
+// Usage: groupBy(col("dept_id")).agg(Column.count(col("*")), Column.sum(col("salary")))
+```
+
+**3. Set Operations**
+```java
+Query union(Query other);
+Query unionAll(Query other);
+Query intersect(Query other);
+Query except(Query other);
+```
+
+**4. Additional JOIN Types**
+```java
+Query innerJoin(Query other, String... columns);
+Query crossJoin(Query other);
+```
+
+**5. HAVING Clause**
+```java
+List<Filter> getHaving();
+Query having(Filter... filters);
+```
+
+**6. Window Functions**
+```java
+static ExpColumn over(Column column, WindowSpec spec);
+```
+
+**7. SELECT DISTINCT**
+```java
+boolean isDistinct();
+Query distinct();
+```
+
+**8. FOR UPDATE Locking**
+```java
+boolean isForUpdate();
+Query forUpdate();
+```
+
+**9. CTE (Common Table Expressions)**
+```java
+Query with(String alias, Query subquery);
+```
+
+**10. CASE WHEN Expression Improvements**
+Basic `CaseColumn` exists, may need enhancements for complex scenarios.
