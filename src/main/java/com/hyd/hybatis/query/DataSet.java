@@ -1,7 +1,7 @@
 package com.hyd.hybatis.query;
 
-import com.hyd.hybatis.query.column.JoinCondition;
-import com.hyd.hybatis.query.column.JoinCondition.JoinOperator;
+import com.hyd.hybatis.query.dataset.JoinCondition;
+import com.hyd.hybatis.query.dataset.JoinDataSet;
 import com.hyd.hybatis.sql.SqlCommand;
 
 import java.util.ArrayList;
@@ -14,6 +14,12 @@ public abstract class DataSet {
     protected final List<Column> columns = new ArrayList<>();
 
     protected Filter filter;
+
+    protected String alias;
+
+    protected Long id;
+
+    private static Long idCounter = 0L;
 
     public List<Column> getColumns() {
         return columns;
@@ -31,6 +37,28 @@ public abstract class DataSet {
 
     public abstract String getSourceName();
 
+    public abstract DataSet as(String alias);
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    protected synchronized static Long nextId() {
+        return ++idCounter;
+    }
+
     public Filter getFilter() {
         return filter;
     }
@@ -45,7 +73,27 @@ public abstract class DataSet {
     }
 
     public DataSet join(DataSet other, Column leftCol, Column rightCol, JoinDataSet.JoinType joinType) {
-        return new JoinDataSet(this, other, joinType, new JoinCondition(leftCol, rightCol, JoinOperator.EQUAL));
+        return new JoinDataSet(this, other, joinType, new JoinCondition(leftCol, rightCol, JoinCondition.JoinOperator.EQUAL));
+    }
+
+    public DataSet join(DataSet other, Filter filter, JoinDataSet.JoinType joinType) {
+        return new JoinDataSet(this, other, joinType, new JoinCondition(filter));
+    }
+
+    public DataSet join(DataSet other, Column leftCol, Column rightCol) {
+        return join(other, leftCol, rightCol, JoinDataSet.JoinType.INNER);
+    }
+
+    public DataSet join(DataSet other, Filter filter) {
+        return join(other, filter, JoinDataSet.JoinType.INNER);
+    }
+
+    public DataSet leftJoin(DataSet other, Column leftCol, Column rightCol) {
+        return join(other, leftCol, rightCol, JoinDataSet.JoinType.LEFT);
+    }
+
+    public DataSet leftJoin(DataSet other, Filter filter) {
+        return join(other, filter, JoinDataSet.JoinType.LEFT);
     }
 
     public SqlCommand toSqlCommand() {

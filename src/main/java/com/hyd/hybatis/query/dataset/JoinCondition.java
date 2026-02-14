@@ -1,6 +1,7 @@
-package com.hyd.hybatis.query.column;
+package com.hyd.hybatis.query.dataset;
 
 import com.hyd.hybatis.query.Column;
+import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.sql.SqlCommand;
 
 public class JoinCondition {
@@ -11,10 +12,20 @@ public class JoinCondition {
 
     private final JoinOperator operator;
 
+    private final Filter filter;
+
     public JoinCondition(Column left, Column right, JoinOperator operator) {
         this.left = left;
         this.right = right;
         this.operator = operator;
+        this.filter = null;
+    }
+
+    public JoinCondition(Filter filter) {
+        this.left = null;
+        this.right = null;
+        this.operator = null;
+        this.filter = filter;
     }
 
     public Column getLeft() {
@@ -29,7 +40,15 @@ public class JoinCondition {
         return operator;
     }
 
+    public Filter getFilter() {
+        return filter;
+    }
+
     public SqlCommand toSqlCommand() {
+        if (filter != null) {
+            return filter.toSqlCommand();
+        }
+
         var leftCmd = left.getExpression().toSqlCommand();
         var opStr = switch (operator) {
             case EQUAL -> " = ";
