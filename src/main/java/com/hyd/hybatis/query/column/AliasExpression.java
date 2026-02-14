@@ -8,7 +8,6 @@ public class AliasExpression extends Expression {
     private final String alias;
 
     public AliasExpression(Expression expression, String alias) {
-        super(expression);
         this.expression = expression;
         this.alias = alias;
     }

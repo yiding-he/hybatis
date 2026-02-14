@@ -80,3 +80,4 @@ deploy.bat
 .local/
 
 **/application-prod.properties
+nul

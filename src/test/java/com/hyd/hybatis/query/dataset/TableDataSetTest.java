@@ -1,4 +1,4 @@
-package com.hyd.hybatis.query;
+package com.hyd.hybatis.query.dataset;
 
 import com.hyd.hybatis.sql.SqlCommand;
 import org.junit.jupiter.api.Test;

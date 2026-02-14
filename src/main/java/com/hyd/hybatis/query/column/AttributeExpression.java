@@ -6,13 +6,40 @@ public class AttributeExpression extends Expression {
 
     private final String name;
 
+    private String dataSetAlias;
+
+    private Long dataSetId;
+
     public AttributeExpression(String name) {
-        super(null);
         this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDataSetAlias() {
+        return dataSetAlias;
+    }
+
+    public void setDataSetAlias(String dataSetAlias) {
+        this.dataSetAlias = dataSetAlias;
+    }
+
+    public Long getDataSetId() {
+        return dataSetId;
+    }
+
+    public void setDataSetId(Long dataSetId) {
+        this.dataSetId = dataSetId;
     }
 
     @Override
     public SqlCommand toSqlCommand() {
-        return new SqlCommand(name);
+        var cmd = new SqlCommand();
+        if (dataSetAlias != null && !dataSetAlias.isEmpty()) {
+            cmd.append(dataSetAlias).append(".");
+        }
+        return cmd.append(name);
     }
 }

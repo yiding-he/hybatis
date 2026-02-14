@@ -9,7 +9,6 @@ public class BinaryExpression extends Expression {
     private final Expression right;
 
     public BinaryExpression(Expression left, String operator, Expression right) {
-        super(null);
         this.left = left;
         this.operator = operator;
         this.right = right;

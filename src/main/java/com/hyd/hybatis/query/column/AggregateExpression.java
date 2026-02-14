@@ -8,7 +8,6 @@ public class AggregateExpression extends Expression {
     private final Expression column;
 
     public AggregateExpression(String aggFunc, Expression column) {
-        super(column);
         this.aggFunc = aggFunc;
         this.column = column;
     }

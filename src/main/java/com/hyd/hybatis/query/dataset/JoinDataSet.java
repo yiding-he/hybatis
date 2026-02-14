@@ -1,6 +1,8 @@
-package com.hyd.hybatis.query;
+package com.hyd.hybatis.query.dataset;
 
-import com.hyd.hybatis.query.column.JoinCondition;
+import com.hyd.hybatis.query.Column;
+import com.hyd.hybatis.query.DataSet;
+import com.hyd.hybatis.query.Filter;
 import com.hyd.hybatis.sql.SqlCommand;
 
 import java.util.ArrayList;
@@ -50,7 +52,20 @@ public class JoinDataSet extends DataSet {
 
     @Override
     public String getSourceName() {
+        if (alias != null && !alias.isEmpty()) {
+            return "(" + left.getSourceName() + " " + right.getSourceName() + ") " + alias;
+        }
         return "(" + left.getSourceName() + " " + right.getSourceName() + ")";
+    }
+
+    @Override
+    public JoinDataSet as(String alias) {
+        JoinDataSet result = new JoinDataSet(this.left, this.right, this.joinType, this.joinCondition);
+        result.setAlias(alias);
+        result.setId(this.id);
+        result.setFilter(this.filter);
+        result.setColumns(new ArrayList<>(this.columns));
+        return result;
     }
 
     @Override
@@ -109,7 +124,11 @@ public class JoinDataSet extends DataSet {
             cmd.append(joinTypeStr).append(right.getSourceName());
         }
 
-        cmd.append(" ON ").append(joinCondition.toSqlCommand());
+        if (joinCondition.getFilter() != null) {
+            cmd.append(" ON ").append(joinCondition.getFilter().toSqlCommand());
+        } else {
+            cmd.append(" ON ").append(joinCondition.toSqlCommand());
+        }
 
         if (filter != null) {
             cmd.append(" WHERE ").append(filter.toSqlCommand());

@@ -11,7 +11,6 @@ public class FunctionExpression extends Expression {
     private final List<Expression> args;
 
     public FunctionExpression(String funcName, Expression... args) {
-        super(null);
         this.funcName = funcName;
         this.args = Arrays.asList(args);
     }
