@@ -45,20 +45,6 @@ public class SqlCommand {
         return append(statement, Collections.emptyList());
     }
 
-    /**
-     * 拼凑后续内容，其中 value 有可能是 Column 对象
-     *
-     * @param statement 只包含一个占位符的语句
-     * @param value     占位符对应的值，可能是 Column 对象
-     */
-    public SqlCommand appendMaybeColumn(String statement, Object value) {
-        if (value instanceof Column c) {
-            return append(statement.replace("?", "")).append(c.toSqlFragment());
-        } else {
-            return append(statement, List.of(value));
-        }
-    }
-
     public SqlCommand clone() {
         SqlCommand newInstance;
         try {
